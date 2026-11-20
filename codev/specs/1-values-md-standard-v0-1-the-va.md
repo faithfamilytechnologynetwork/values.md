@@ -327,8 +327,11 @@ A `models` entry has three required fields:
 - `adapter`: the provider's own reference to the fine-tuned weights, 1 to 500 characters, for
   example a Tinker `tinker://<run_id>/sampler_weights/<name>` path.
 
-For now the standard assumes every declared model is public: anyone with access to the provider
-can load it. v0.1 does not distinguish public from restricted models and has no field for it.
+The standard refers only to public models. A package may declare only a model that anyone with
+access to the provider can load. There is no field for access and no notion of a restricted
+model. Whether a declared model really is loadable cannot be told from the files, so it is not
+a validity rule (part 11). A collection can check it when a package is submitted, and a host
+finds out when it tries.
 
 Four are optional:
 
@@ -379,7 +382,11 @@ chooses mode C. Tools from `.mcp.json` stay connected in every mode.
 
 Other rules:
 
-- When a chosen model fails to load, the host tells the user and goes back to mode A.
+- **When a declared model fails to load**, the host tells the user which model failed and goes
+  back to mode A: its own model, with the prompt and reinjection. It does not go on in mode C
+  without the model, and it does not try another entry unless the user chooses one. A package
+  that declares a model the public cannot load is breaking the rule above, and a host may say
+  so.
 - Mode C is available only when that package is the only active value system. With several
   active, every package has its wrapper in context (part 10).
 
@@ -571,6 +578,7 @@ by the standard's rules alone, with nothing beside it in `spec/` needed to make 
       adapter: tinker://b1ced84d-f02a-5c16-8930-4f7f2e6636cd:train:0/sampler_weights/final
   ```
 
+  The checkpoint is being published, as the rule in part 6 requires of any declared model.
   Until `base` is filled in, the entry is incomplete and the example does not pass V3.
 - **`example-roman-catholic`**: a folder package built around bundled texts and a skill, so
   that between them the examples exercise every part of the layout. It declares no model,
@@ -750,7 +758,8 @@ cannot be run.
 - [ ] The schema accepts `prompt` values `required`, `optional` and `omit` on a model entry and
       refuses any other. The specification's part on fine-tuned models states the three modes,
       who chooses, and what the user is shown in each.
-- [ ] `example-islam` declares the stage 2 checkpoint with a confirmed `base`.
+- [ ] `example-islam` declares the stage 2 checkpoint with a confirmed `base`, and the review
+      records that the checkpoint was confirmed as published.
 - [ ] The checker lives in its own directory under `spec/`, runs with one documented command,
       and needs no network access for the validity and rendering checks.
 - [ ] `spec/` contains no loader or chatbot code.
@@ -819,8 +828,10 @@ his comment on the issue. Also fixed.
 14. **Validators.** Code that checks the fixtures and renderings may live in a directory under
     `spec/`.
 15. **Reinjection.** Core only, as drafted.
-16. **Models.** For now the standard assumes every declared model is public. It does not
-    distinguish public from restricted models in v0.1, so the `access` field is dropped.
+16. **Models.** The standard refers only to public models: a package may declare only a model
+    that anyone with access to the provider can load. There is no `access` field and no
+    public/restricted distinction. The project's stage 2 fine-tuned checkpoint is to be
+    published, and the Islam example declares it.
 17. **Fine-tuned model and the prompt.** Make it flexible. The standard must allow a fine-tuned
     model to run with the prompt still injected and also to stand on its own without it, rather
     than fixing "replaces reinjection only". Design how that is declared and who chooses. What
@@ -1080,13 +1091,13 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 - Rejected: including reachability of tools and models. A check would then fail when a server
   is briefly down, and would need accounts to run.
 
-**Whether the standard distinguishes public from restricted models.**
+**Whether a package may declare a model that others cannot load.**
 
-- Adopted, by the owner's decision: no. For now every declared model is assumed public, and
-  v0.1 has no field for it.
+- Adopted, by the owner's decision: no. The standard refers only to public models, and has no
+  field for access. A value system that people can install should not depend on weights that
+  only its maker can reach.
 - Rejected: a required `access` field with `public` and `restricted`. This was in an earlier
-  draft. It can come back in a later version if packages start declaring models that most
-  people cannot load, which is a question issue #3 also raises for its browser.
+  draft. It let a package advertise something most people could not use.
 
 ## Open Questions
 
@@ -1212,8 +1223,8 @@ for this project.
     still injects the wrapper. It shows that a fine-tuned model is in use.
 33. **Different base model.** A host on a model that matches no entry ignores `models` and
     reinjects.
-34. **Model that fails to load.** A host that cannot load a chosen model tells the user and
-    goes back to its own model with the prompt and reinjection.
+34. **Model that fails to load.** A host that cannot load a chosen model tells the user which
+    model failed and goes back to its own model with the prompt and reinjection.
 35. **Level 2 host with a Level 3 package.** `skills/` and `references/` are ignored, the MCP
     tool works, and the prompt is complete without them.
 36. **Two value systems.** The preamble is present, each package has its own wrapper and its

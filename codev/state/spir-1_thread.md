@@ -107,10 +107,12 @@ The owner decided that the collection of value systems is a directory in this re
   for a marketplace at the repository root is `./values/<name>`.
 - The stage 2 checkpoint's base model ID is still unconfirmed and still unfilled.
 
-## 2026-11-20 — models are assumed public
+## 2026-11-20 — the standard covers public models only
 
-A correction to the owner's answer on models: for now the standard assumes every declared
-model is public. v0.1 does not distinguish public from restricted models, so the `access`
-field that earlier drafts added to each model entry is dropped, along with everything that
-depended on it. A model entry now has three required fields: `provider`, `base` and `adapter`.
-Earlier entries in this log that mention `access` describe those drafts.
+The owner's final word on models: the standard refers only to public models. A package may
+declare only a model that anyone with access to the provider can load. The `access` field that
+earlier drafts added to each model entry is dropped, along with everything that depended on
+it. A model entry has three required fields: `provider`, `base` and `adapter`. When a declared
+model fails to load, the host tells the user and goes back to its own model with the prompt
+and reinjection. The project's stage 2 checkpoint is being published, and its base model ID is
+still to be confirmed. Earlier entries in this log that mention `access` describe those drafts.
