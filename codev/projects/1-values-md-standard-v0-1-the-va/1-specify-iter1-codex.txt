@@ -1,0 +1,20 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Thorough design, but deterministic validation, MCP configuration, security boundaries, and multi-system reinjection require clarification before implementation planning.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- Core extraction is not deterministic enough for independent checkers. Specify whether the heading is included, recognized Markdown heading forms, fenced-code handling, whitespace normalization, exact body boundaries, Unicode character counting, YAML version/schema, duplicate YAML keys, and the exact case-sensitive list of prohibited closing tags.
+- V7 does not fully define valid `.mcp.json` server objects. Define remote/local discriminators, required and allowed properties, value types, unknown-key behavior, mixed `url`/`command` entries, server-name rules, and credential/header handling. Add fixtures for each structural branch, not only insecure HTTP.
+- Package security boundaries are incomplete. Define handling of symlinks and paths escaping the package, require host policy/consent before network connections or local command execution, and state that MCP responses and skill/reference content remain untrusted. Explicit installation alone does not safely authorize every declared capability.
+- Multiple active systems have ambiguous persistence behavior. “At most one reminder at a boundary” conflicts with reinjecting every due core unless it is explicitly per package. Define simultaneous thresholds, ordering/fairness, and which packages may skip reinjection when the selected fine-tune corresponds to only one package.
+- Several schema and marketplace mappings remain under-specified: exact SemVer interpretation; non-empty and bounded values for authors, tradition, languages, metadata, and model fields; `context-window` type/range; and omission rules plus exact `author` shape, tag ordering, and deduplication when optional marketplace source fields are absent. Frontmatter also needs an overall size or collection limits to prevent resource-exhaustion inputs.
+
+
+---
+
+## ⚠️ REPOSITORY MOVED during the codex review (#1649).
+A consultant reviews the commit in front of it; it must never commit, or switch refs.
+  - HEAD: 30b9fb59dfb65121b55591d6322c1cbb99cf86c4 -> ec0b8cb07d092b0b9e964007872ee656ba4804e9
+The files on disk may look untouched and still not be the ones this review describes.
+Check `git reflog` and `git status` before trusting this review or shipping the branch.

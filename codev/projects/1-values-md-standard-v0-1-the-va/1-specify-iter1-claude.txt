@@ -1,0 +1,108 @@
+I'll start by reading the actual spec file and the template it should follow.I read the spec from disk (`codev/specs/1-values-md-standard-v0-1-the-va.md`, 867 lines) and the builder thread. The template file `protocols/spir/templates/spec.md` is not in this worktree (it resolves from the installed package per `CLAUDE.md`), but the headings present — Problem Statement, Current State, Desired State, Success Criteria, Constraints, Assumptions, Solution Approaches, Open Questions, Test Scenarios, Risks and Mitigation, References — are the full SPIR spec set, in order, with no section stubbed out. Structure is fine.
+
+This is a strong spec: the research table carries check dates and honestly marks "summary only" items, every design call has its rejected alternatives, and the open questions are correctly triaged. My findings are precision gaps, not redesigns — but several of them bite hard, because the spec's entire value proposition is that *"a host at install and a collection's pull request check reach the same answer"* (line 307–309) and that rendering *"reproduces them exactly"* (line 444).
+
+## 1. Baked decision 5 is narrowed without asking (highest priority)
+
+Constraint 5 (line 480–482, "fixed"): *"the host reinjects **the prompt**, about every 5,000 tokens."*
+Part 5 (line 207): *"the reminder text with the core. **Never the whole prompt.**"*
+
+I think the spec is *right* on the merits — the 40%-overhead arithmetic at line 613–615 is sound (8,000 chars ≈ 2,000 tokens / 5,000 = 40%; the core's 1,500 chars ≈ 375 tokens ≈ 7.5%, so "6 to 8 percent" checks out). But this is a reinterpretation of a constraint the spec itself labels fixed, and it is the one such reinterpretation that is *not* surfaced to the owner. Decision 3 got a critical open question for exactly this treatment (OQ1); decision 5 did not. OQ6 asks about the character limits, which is not the same question.
+
+**Fix:** add a critical open question — "Decision 5 says reinject *the prompt*; the standard reinjects a short *core* instead, for the overhead reason in Solution Approaches. Is that the intended reading?" Cheap to add, and it protects the architect from discovering the gap at the gate.
+
+## 2. V6's forbidden set is undefined, and it is the injection boundary
+
+Line 145–146: *"must not contain a closing tag used by the normative texts in part 4, **such as** `</values>`"*. Line 319 (V6): *"contains no closing tag used by the normative texts."*
+
+"Such as" is not a specification. A builder cannot write the V6 fixture without inventing the list, and a registry checker and a host will diverge. The texts use four elements, so the candidate set is `</values>`, `</value-system>`, `</value-system-reminder>`, `</value-systems>`.
+
+Three sub-gaps:
+- **Enumerate the set exactly**, and say whether *opening* tags are also forbidden (a body containing `<value-system-reminder name="x">` can forge a reminder, which is worse than ending the wrapper early).
+- **Define matching.** Is it case-sensitive? Is `</values >` or `</ values>` caught? A literal substring check misses both, while a model reading the prompt will likely still treat them as closing tags. Recommend case-insensitive match allowing internal whitespace.
+- **Say V6 is not a security boundary.** The core is extracted *from* the body, so a forged `</value-system-reminder>` must be excluded too — and no delimiter rule stops a body from simply containing prose that countermands the wrapper. The risk table already says "the standard is neutral on content and says so" (line 831); V6 should be framed as hygiene, not defence.
+
+## 3. V2 contradicts test scenario 6 as it will be implemented
+
+Part 2, line 130: *"A host ignores keys it does not know."* Scenario 6, line 781: *"A frontmatter key the standard does not define is ignored and the file still validates."* V2, line 315: *"The frontmatter validates against the schema."*
+
+If the JSON Schema is written with `additionalProperties: false` — the default instinct for a strict format — scenario 6 fails and V2 contradicts part 2. The spec must state that the schema **permits** unknown top-level keys. It should also answer the case it currently doesn't: are unknown keys allowed *inside* `steward`, a `models` entry, and `persistence.reinject`? I'd argue strict there and permissive at the top level, but the spec has to pick, because success criterion "the schema has no field the text lacks" (line 426–427) makes this checkable.
+
+## 4. Body and core extraction is not deterministic enough to meet its own criteria
+
+Several unstated decisions, each of which makes a host and a checker disagree:
+
+- **Is the `## Core` heading line part of the extracted core?** Line 138–140 says the section "runs to the next first- or second-level heading", which doesn't say whether the matched heading itself is included. This changes the rendered reminder byte-for-byte, and criterion line 443–444 demands exact reproduction.
+- **Setext headings.** `Core` followed by `----` *is* a level-2 heading in Markdown. A regex on `^##\s` won't see it; a Markdown parser will. Say which one the standard means (I'd say ATX only, explicitly).
+- **Fenced code blocks.** A `## Core` inside a fence would be matched by a naive scanner and ignored by a parser. Say whether fences are excluded — this is the likeliest real-world divergence, since bodies will contain example prompts.
+- **Closed ATX (`## Core ##`) and inline formatting (`## **Core**`)** — matched or not?
+- **Whitespace and line endings.** Is the body trimmed of leading/trailing whitespace before counting and before substitution into `{body}`? Are CRLF line endings normalized to LF before the character count? A CRLF-authored 7,900-char body can cross 8,000 purely on line endings.
+- **"Unicode characters" (line 141)** — say *codepoints* (scalar values), not graphemes or UTF-8 bytes. An emoji or a combining sequence otherwise counts differently in different checkers.
+- **A body ≤1,500 chars that *does* have a core section** — implied that the section wins, but not stated (line 143–144 only covers the no-core case).
+
+None of these needs a design change; they need one paragraph of normalization rules. Without them, "the rendered wrapper reproduces exactly" and "fixtures give the labelled result" are not achievable claims.
+
+## 5. Testing strategy: a third of the scenarios aren't executable in this deliverable
+
+Criterion line 463: *"`spec/` contains no loader or chatbot code."* Constraint: loader code is issue #2.
+
+Against that:
+- Scenarios 11, 12, 13, 14, 23 describe **host runtime behaviour** ("the host skips reinjection", "the host tells the user and reinjects"). There is no host in this deliverable. These are *conformance tests the standard defines for hosts*, to be exercised by issue #2 — they are not pass/fail gates for issue #1. Label them as such, or the builder either builds a loader (violating scope) or ticks them off hollow.
+- Scenarios 1–8 and 18–22 require *applying* the validity rules to fixtures (criterion line 435). By what? A hand-check by an agent, or a small validation script? If a script, is it "loader code"? Where does it live — `spec/`, or nowhere? The spec needs one sentence here, because the plan cannot be written without the answer.
+- Scenarios 15, 17, 24 and criteria lines 436–438, 449–450, 453–456 require `claude plugin validate`, a live Claude Code install, `skills-ref validate`, and a network call to Ansari. Record tool availability as an assumption and say what happens to the criterion if a tool isn't present — otherwise these are unfalsifiable gates.
+
+## 6. Security: the promised section isn't a deliverable, and "never executes anything" isn't true
+
+- Line 831 commits to *"A security section says this"*, but part 14's seven deliverables (line 381–389) contain no security section and no success criterion checks for one. Add it to deliverable 1 and to Success Criteria.
+- **Real contradiction:** line 104–105 says *"A host never executes anything in a package because the package was installed."* But V7 (line 320) admits local MCP servers *"with a command"*, and part 7 (line 262) only says *"A host may decline to run a local server command."* A local command is execution, and nothing forbids it pointing inside the package (`command: ./scripts/serve.sh`). Make this a MUST: a host MUST NOT start a local MCP server without explicit per-package user consent, and say whether a command may reference a path inside the package. "May decline" is far too weak for the one arbitrary-code-execution surface in the format.
+- **The marketplace path loses the claim.** Part 9 (line 291–293) requires a host to *"show the steward, the kind of claim and the source at install"*. The part 12 mapping (line 344–353) carries `author` from `steward.name`/`steward.url` and drops `steward.claim` entirely — so a Claude Code user installing `example-islam` from a marketplace never sees whether the steward claims to be `official`. Either fold the claim into the generated `description`, or have the compatibility note state plainly that Claude Code's install path cannot satisfy part 9. Also specify the shape of marketplace `author` (string vs object), since the mapping says "taken from" two fields without saying how they combine.
+
+## 7. Feasibility risks not yet captured
+
+- **Redistributable Catholic texts.** Part 13 builds `example-roman-catholic` *"around bundled texts"*, the constraints rule out the Catechism and modern translations (line 514–515), and criterion line 460–461 is a hard gate: *"No bundled reference text is under third-party copyright."* The intersection is narrow and genuinely awkward — Vatican documents of any age are claimed by Libreria Editrice Vaticana in some jurisdictions; Douay-Rheims and the Baltimore Catechism are the obvious safe candidates. OQ17 only asks about MCP servers. Add an open question or assumption naming the candidate texts, with a stated fallback (a `references/` file that *cites and summarizes* rather than reproduces).
+- **The 10,000-character hook-cap margin is ~400 characters, and the multi-system case already blows it.** OQ6 (line 741–743) rests the 8,000 limit on the cap. By my count the wrapper's fixed text is ≈1,600 characters, so one package renders at ≈9,600 — under, but with ~4% headroom and no room for any wording growth. Add the ≈470-character multi-system preamble and a second wrapper+body and you are far over. Put the arithmetic in the spec as an explicit overhead budget, and have the compatibility note say what the Claude Code adapter does when the wrapped prompt exceeds the cap (chunk across hooks? refuse?). The risk table's "the body limit stands on cost grounds without it" (line 836) covers the *limit*, not the *overflow behaviour*.
+
+## 8. Smaller items
+
+- **"Invalid" vs "unsupported version."** V3 (line 316) makes `spec-version: "0.2"` *invalid*. It isn't malformed — it's newer. A v0.1 registry checker would reject forward-looking packages as broken. Say that validity is always relative to a spec version, and distinguish "unsupported `spec-version`" as a separate outcome from a rule failure. This matters for a format whose point is longevity.
+- **`metadata` is string-to-string (line 128), yet collections may only extend there (line 131–132).** The spec rejected Approach 2 partly because *"the extension map holds strings only, which cannot express a list of models"* (line 570) — and then reproduces that exact limitation in its own extension space. Either allow arbitrary JSON values under `metadata`, or allow namespaced top-level keys (`x-*`), which hosts already ignore anyway.
+- **`models` matching rule.** Line 240 says entries are ignored when the host's model *"is not the `base` of any entry"*. Say that a match requires the same `provider` *and* an exact string match on the provider's model identifier; otherwise scenario 12 has no defined pass condition.
+- **`.mcp.json` and loopback.** Scenario 22 makes an `http` URL invalid. Say explicitly whether `http://localhost`/`127.0.0.1` is excluded — local MCP dev uses it constantly, and a checker needs the answer.
+- **Validation scopes.** V1–V6 are file rules, V7–V8 folder-only, V9 collection-only. State the three scopes and which rules apply in each, so fixtures are unambiguous.
+- **Duplicate names among simultaneously active packages.** `name` is unique *"within a collection"* (line 116) only, so two packages installed from different sources can share a name — and part 10 then renders two wrappers with the same `{name}` and a `{names}` list with a repeat. Add a rule (host disambiguates, or refuses).
+- **`tradition` normalization.** Free-case strings (line 123) while `tags` must be `name`-form. `Islam` / `islam` / `Muslim` won't group. Say the comparison is case-insensitive and that the controlled vocabulary belongs to the registry.
+- **Deliverable 1 says "parts 1 to 12"** (line 383) but criterion line 424–425 requires parts 1–12 **and 16**. Reconcile.
+- **"the issue's eight questions"** (line 424) — the spec enumerates eight owner *decisions*, not questions. A builder can't verify this criterion from the spec alone. Reword or enumerate.
+- **Criterion line 422–423 forbids changes outside `spec/`**, but OQ11 may produce a root `LICENSE`, and constraint 6 names a `reference/` part. Carve out root licence/README files.
+- **Criterion line 453–455 ("each example folder, with only `plugin.json` added…")** can't apply to the single-file example. Scope it to folder examples.
+- **Part 13 states the checkpoint declaration and the minimal example as decided** while OQ4 and OQ10 ask permission for both. Phrase them conditionally in Desired State so the gate answer doesn't leave the section self-contradicting.
+- **Reinjection placement branch.** Line 208–211 prefers a mid-conversation system message "if the model's API allows one", else attaches to the user message — but the Anthropic-style API has a single system parameter, so the branch is host-dependent. The worked example (criterion line 447–448) must name which branch it renders, or it isn't reproducible.
+
+## What I did not do
+
+I read files only. I made no edits to this worktree, and I did not run any state-changing command.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Thorough, well-reasoned spec, but it narrows baked decision 5 without asking, leaves V6's forbidden-token set and the body/core extraction rules too loose to meet its own "one answer" and "renders exactly" criteria, contradicts itself on unknown keys and on package execution, and marks host-runtime behaviour as testable in a code-free deliverable.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- Baked decision 5 says "reinjects the prompt"; the spec reinjects only a short core. The reasoning is sound but the reinterpretation is not surfaced as a critical open question, unlike the equivalent treatment given to decision 3.
+- V6's forbidden set is "such as `</values>`" — not enumerable, not matchable, and it is the injection boundary. Enumerate all four closing tags, decide on opening tags, define case/whitespace matching, and state that V6 is hygiene rather than a security boundary.
+- V2 ("validates against the schema") contradicts part 2 and scenario 6 ("unknown key is ignored and still validates") unless the spec states the schema permits additional top-level properties. Also unspecified for keys inside `steward`, `models`, `persistence`.
+- Body/core extraction lacks normalization rules: whether the core heading line is included, setext headings, `## Core` inside code fences, whitespace trimming, CRLF handling, codepoints vs graphemes. Without these, "a host and a checker reach the same answer" and "rendering reproduces exactly" are unachievable.
+- Scenarios 11–14 and 23 test host runtime behaviour that cannot exist in a code-free `spec/` deliverable; and it is unspecified whether a fixture-checking script is in scope or where it lives. The plan can't be written without that answer.
+- Security: the section promised at line 831 is not in the deliverable list or Success Criteria; and "a host never executes anything in a package" (line 104) is contradicted by V7's local MCP commands with only a "may decline" (line 262) — make it a MUST-consent rule.
+- The part 12 marketplace mapping drops `steward.claim`, so Claude Code's install path cannot satisfy part 9's disclosure requirement. Fold it into the generated description or say so in the compatibility note.
+- `example-roman-catholic` is built around bundled texts under a hard no-third-party-copyright gate, with no open question naming candidate public-domain texts or a fallback.
+- The 8,000-char body limit leaves ~400 characters of headroom under the 10,000-char hook cap for a single package and overflows it outright for two. Put the overhead budget in the spec and define overflow behaviour.
+- V3 conflates "newer `spec-version`" with "invalid", which would make a v0.1 registry checker reject forward-looking packages as malformed.
+
+---
+
+## ⚠️ REPOSITORY MOVED during the claude review (#1649).
+A consultant reviews the commit in front of it; it must never commit, or switch refs.
+  - HEAD: 30b9fb59dfb65121b55591d6322c1cbb99cf86c4 -> ec0b8cb07d092b0b9e964007872ee656ba4804e9
+The files on disk may look untouched and still not be the ones this review describes.
+Check `git reflog` and `git status` before trusting this review or shipping the branch.
