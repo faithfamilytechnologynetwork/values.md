@@ -1,0 +1,26 @@
+id: '1'
+title: values-md-standard-v0-1-the-va
+protocol: spir
+phase: specify
+plan_phases: []
+current_plan_phase: null
+gates:
+  spec-approval:
+    status: pending
+    requested_at: '2026-11-20T19:51:03.765Z'
+  plan-approval:
+    status: pending
+  pr:
+    status: pending
+  verify-approval:
+    status: pending
+iteration: 1
+build_complete: true
+history: []
+started_at: '2026-11-20T19:27:27.204Z'
+updated_at: '2026-11-20T21:50:51.824Z'
+pr_history:
+  - phase: specify
+    pr_number: 4
+    branch: builder/spir-1
+    created_at: '2026-11-20T21:50:51.823Z'
