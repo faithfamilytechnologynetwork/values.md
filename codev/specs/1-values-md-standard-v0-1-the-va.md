@@ -579,7 +579,7 @@ by the standard's rules alone, with nothing beside it in `spec/` needed to make 
   ```
 
   The checkpoint was confirmed as published on Tinker on 2026-11-20, as the rule in part 6
-  requires of any declared model. Its `prompt` value is open question 4. The entry also gets a
+  requires of any declared model. Its `prompt` value is open question 3. The entry also gets a
   `description` saying what the model was trained to do.
 - **`example-roman-catholic`**: a folder package built around bundled texts and a skill, so
   that between them the examples exercise every part of the layout. It declares no model,
@@ -861,6 +861,14 @@ replaces the "separate registry repository" of item 9.
       so the examples must be loadable from there by the standard's rules alone.
     - The browser, the submission check and the acceptance policy stay with #3.
 
+Confirmed by the owner on 2026-11-20, relayed by the architect. Also fixed.
+
+21. **The `prompt` field.** The design in part 6 for running a fine-tuned model with or without
+    the prompt is accepted: a `prompt` value of `required`, `optional` or `omit` on each model
+    entry, declared by the package and chosen within by the user or operator.
+22. **Several value systems.** When more than one is active, all of them are injected, as part
+    10 says.
+
 Further constraints:
 
 - Out of scope: the chatbot and any loader code (issue #2), the collection's browser, its
@@ -889,7 +897,7 @@ Further constraints:
   documentation describes the file as "an `mcpServers` map" without showing it. Tested during
   implementation.
 - The Ansari MCP server stays available without a key. Its repository has been quiet since
-  September 2025. Open question 6 asks the Ansari project to confirm its standing.
+  September 2025. Open question 5 asks the Ansari project to confirm its standing.
 - Hosts can place text next to a user message that is distinguishable from what the user typed.
   This holds for the chat APIs in common use.
 - Counting characters is an acceptable stand-in for counting tokens when setting limits and when
@@ -1107,46 +1115,40 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 ## Open Questions
 
 The owner answered the first round of questions on 2026-11-20. His answers are in Constraints,
-items 12 to 18, and the spec was revised to match. What remains:
+items 12 to 22, and the spec was revised to match. What remains:
 
 **Critical** (the answer changes the deliverables)
 
-1. **The design for running a fine-tuned model with or without the prompt.** The owner asked
-   for both to be possible and for a design of how it is declared and who chooses. Part 6
-   proposes a `prompt` field on each model entry (`required`, `optional` or `omit`, default
-   `required`), with the package declaring what a model supports and the user or operator
-   choosing within that. Is this the flexibility that was meant? Two points to confirm in
-   particular: the default is `required`, so a model with no declaration always runs with the
-   prompt, and running without the prompt is limited to the case where one value system is
-   active.
+None. The owner confirmed the design for running a fine-tuned model with or without the
+prompt on 2026-11-20 (Constraints, item 21).
 
 **Important** (shapes the design, and has a recommended answer above)
 
-2. `steward` as a required field and as an object, with a required `claim` of `individual`,
+1. `steward` as a required field and as an object, with a required `claim` of `individual`,
    `organization` or `official`, where the issue's sketch had a string.
-3. Whether three kinds of claim are enough. The values come from issue #3. A fourth, for a
+2. Whether three kinds of claim are enough. The values come from issue #3. A fourth, for a
    package that states plainly it has no standing at all, would suit the examples better than
    `organization`, at the cost of a longer list.
-4. Which `prompt` value `example-islam` declares for its checkpoint. The checkpoint was
+3. Which `prompt` value `example-islam` declares for its checkpoint. The checkpoint was
    trained with no system prompt, and running it with a value-system prompt on top is
    untested. Recommended: `optional` if issue #2's test of that combination goes well, and
    `omit` if it does not.
-5. The `tradition` value for `example-islam`. The checkpoint is described as Sunni. Recommended:
+4. The `tradition` value for `example-islam`. The checkpoint is described as Sunni. Recommended:
    `[Islam, Sunni]` if that also describes Ansari's answers, and `[Islam]` otherwise.
-6. Whether the Ansari MCP server is the endpoint the Ansari project wants a public example to
+5. Whether the Ansari MCP server is the endpoint the Ansari project wants a public example to
    point at, given that its repository has been quiet since September 2025.
-7. The licence for everything that is not the specification text: the schema, the fixtures,
+6. The licence for everything that is not the specification text: the schema, the fixtures,
    the checker, and the example packages in `values/`. The text is CC BY 4.0 by the owner's decision.
    Recommended for the rest: MIT.
-8. `metadata` holds any JSON value, where Agent Skills allows strings only. This is what lets
+7. `metadata` holds any JSON value, where Agent Skills allows strings only. This is what lets
    a collection add structured fields of its own without a new version of the standard.
 
 **Nice-to-know** (does not block v0.1)
 
-9. Translations of the wrapper for value systems written in other languages.
-10. A way to verify a steward: a well-known URL or a signature.
-11. How a single package is distributed outside a collection: an archive, a URL.
-12. Whether a Catholic source exists as an MCP server with clear standing, and which of the
+8. Translations of the wrapper for value systems written in other languages.
+9. A way to verify a steward: a well-known URL or a signature.
+10. How a single package is distributed outside a collection: an archive, a URL.
+11. Whether a Catholic source exists as an MCP server with clear standing, and which of the
     candidate texts in part 13 can be shown to be in the public domain. Both are researched
     during planning. The example cites and links whatever cannot be shown.
 

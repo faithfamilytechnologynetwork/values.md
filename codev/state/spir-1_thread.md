@@ -126,3 +126,10 @@ open question, because the checkpoint was trained with no system prompt and has 
 with one. Loading the checkpoint from a second account has not been tested. The spec records
 that as an assumption and a risk, and asks the review to record a test or say plainly that it
 was not done.
+
+## 2026-11-20 — the prompt field is decided
+
+The owner confirmed the `prompt` field design for fine-tuned models, and that with several
+value systems active all of them are injected. Both are recorded in the spec's Constraints.
+The spec now has no critical open question. The ones left have a recommended answer each and
+do not change what is delivered. The spec-approval gate is still pending.
