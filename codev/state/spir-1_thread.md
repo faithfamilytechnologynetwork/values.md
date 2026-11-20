@@ -133,3 +133,10 @@ The owner confirmed the `prompt` field design for fine-tuned models, and that wi
 value systems active all of them are injected. Both are recorded in the spec's Constraints.
 The spec now has no critical open question. The ones left have a recommended answer each and
 do not change what is delivered. The spec-approval gate is still pending.
+
+## 2026-11-20 — paused for outside review
+
+The owner approves the spec's content and has paused the project here so that other people can
+review pull request #4 first. The spec-approval gate has not been approved, and planning has
+not begun. The pull request stays spec-only. Review comments on it are not acted on until the
+architect relays which ones the owner accepts.
