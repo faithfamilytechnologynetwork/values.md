@@ -141,14 +141,17 @@ A package is one of two things:
 | Entry | Purpose | Format |
 |---|---|---|
 | `VALUES.md` | The value system: metadata and the always-on prompt. Required. | Defined by this standard. |
-| `.mcp.json` | Tools and sources. | A JSON object with an `mcpServers` key, as MCP clients already use. |
+| `.mcp.json` | Tools and sources. | A JSON object with an `mcpServers` key, as MCP clients already use. See part 7. |
 | `skills/` | Depth that loads on demand. One folder per skill. | Agent Skills, unmodified. |
 | `references/` | Bundled texts the model can read on demand. | Any text files. |
 
-The standard defines nothing else in the folder. A host ignores every other entry. A host never
-executes anything in a package because the package was installed. Files such as
-`.claude-plugin/plugin.json` or `hooks/` may be present for one product's benefit, and other
-hosts ignore them.
+The standard defines nothing else in the folder. A host ignores every other entry. Files such
+as `.claude-plugin/plugin.json` or `hooks/` may be present for one product's benefit, and other
+hosts ignore them. A folder package contains no symbolic links, and a host reads nothing
+outside the folder on a package's behalf.
+
+Installing a package runs nothing. The only thing in a package a host may ever execute is a
+local MCP server command, and only under the consent rule in part 7.
 
 ### 2. `VALUES.md` frontmatter
 
@@ -157,37 +160,70 @@ Claude Code do.
 
 | Field | Required | Type and limits | Purpose |
 |---|---|---|---|
-| `name` | Yes | 1 to 64 characters. Lowercase letters, digits and hyphens. No leading, trailing or doubled hyphen. | Identifier. Unique within a collection. Appears in the injected prompt. |
+| `name` | Yes | 1 to 64 characters. Lowercase letters `a` to `z`, digits and hyphens. No leading, trailing or doubled hyphen. | Identifier. Unique within a collection. Appears in the injected prompt. |
 | `description` | Yes | 1 to 1,024 characters. | What the value system is and who it is for. Shown to the user at install and on a listing. |
-| `steward` | Yes | Object. `name`: 1 to 100 characters on one line, without `<`, `>` or `"`. `claim`: one of `individual`, `organization`, `official`. `url`: an `https` URL, required unless `claim` is `individual`. | Who vouches for the package and what kind of authority they claim. See part 9. The name appears in the injected prompt. |
-| `version` | Recommended | Semantic version string. | Version of the package. |
-| `spec-version` | No | String. Default `"0.1"`. | Version of this standard the file targets. |
-| `license` | No | String. An SPDX identifier where one exists. | Licence of the package's content. |
-| `authors` | No | List of strings. | Who wrote the text, when different from the steward. |
-| `tradition` | No | List of 1 to 4 strings, broadest first, for example `[Islam, Sunni]`. | The tradition, school or community the value system belongs to, in its adherents' own terms. A listing groups and filters by it. |
-| `languages` | No | List of BCP 47 language tags. | The languages the package is written in and meant to answer in. |
-| `tags` | No | List of up to 20 strings in the same form as `name`. | Free keywords for search. |
-| `persistence` | No | Object. `reinject.every-tokens`: integer, at least 1,000, default 5,000. `reinject.section`: string, default `Core`. | Tunes reinjection. See part 5. |
-| `models` | No | List of objects. Each has `provider`, `base`, `adapter` and `access`, and optionally `context-window`, `description` and `trained-on`. | Declares fine-tuned models. See part 6. |
-| `metadata` | No | Map from string to string. | Extension space. |
+| `steward` | Yes | Object. `name`: 1 to 100 characters on one line, without `<`, `>` or `"`. `claim`: one of `individual`, `organization`, `official`. `url`: an `https` URL of at most 500 characters, required unless `claim` is `individual`. | Who vouches for the package and what kind of authority they claim. See part 9. The name appears in the injected prompt. |
+| `version` | Recommended | A version string as Semantic Versioning 2.0.0 defines it. | Version of the package. |
+| `spec-version` | No | Two numbers joined by a dot, as a string. Default `"0.1"`. | Version of this standard the file targets. |
+| `license` | No | 1 to 100 characters. An SPDX identifier where one exists. | Licence of the package's content. |
+| `authors` | No | List of 1 to 20 strings, each 1 to 100 characters. | Who wrote the text, when different from the steward. |
+| `tradition` | No | List of 1 to 4 strings, each 1 to 64 characters, broadest first, for example `[Islam, Sunni]`. | The tradition, school or community the value system belongs to, in its adherents' own terms. A listing groups and filters by it, comparing without regard to case. Any controlled vocabulary belongs to the collection. |
+| `languages` | No | List of 1 to 20 BCP 47 language tags. | The languages the package is written in and meant to answer in. |
+| `tags` | No | List of 1 to 20 strings in the same form as `name`. | Free keywords for search. |
+| `persistence` | No | Object holding `reinject`, an object. `reinject.every-tokens`: integer from 1,000 to 1,000,000, default 5,000. `reinject.section`: 1 to 100 characters on one line, default `Core`. | Tunes reinjection. See part 5. |
+| `models` | No | List of 1 to 20 objects. See part 6. | Declares fine-tuned models. |
+| `metadata` | No | Object with any JSON values. | Extension space. The standard gives it no meaning. |
 
-A host ignores keys it does not know. A host refuses a file whose `spec-version` it does not
-implement. A collection may require fields that are optional here, such as `version` and
-`license`. It adds fields of its own only under `metadata`.
+Unknown keys:
+
+- At the top level, an unknown key is allowed and ignored. The schema permits it. This is what
+  lets a later version add a field without breaking a v0.1 host.
+- Inside `steward`, `persistence`, `persistence.reinject` and each `models` entry, an unknown
+  key makes the file invalid. A misspelled `claim` or `access` must not pass silently.
+
+A collection may require fields that are optional here, such as `version` and `license`. It
+adds fields of its own only under `metadata`.
 
 ### 3. Body, prompt and core
 
-- **The always-on prompt is the entire Markdown body**, everything after the frontmatter. The
-  host injects it verbatim. It does not summarise, shorten or reorder it.
-- **The core** is the short part that is reinjected. It is the second-level section whose
-  heading matches `persistence.reinject.section` (default `Core`), compared without regard to
-  case, running to the next first- or second-level heading or the end of the file.
-- **Limits**, counted in Unicode characters because tokenizers differ between hosts: the body
-  is at most 8,000 characters and the core is at most 1,500 characters.
-- If the body is 1,500 characters or fewer and has no core section, the whole body is the core.
-  If the body is longer, it must contain a core section.
-- The body must not contain a closing tag used by the normative texts in part 4, such as
-  `</values>`, since that would end the wrapper early.
+The always-on prompt is the entire Markdown body. The core is the short part of it that is
+reinjected. To make two independent readers get the same text, the standard fixes how the file
+is read:
+
+1. **Encoding.** The file is UTF-8. A leading byte-order mark is dropped. Every CRLF or lone CR
+   is turned into LF before anything else is done.
+2. **Frontmatter.** The first line is exactly `---`. The frontmatter runs to the next line that
+   is exactly `---`. It is at most 8,000 characters. It is parsed as YAML 1.2 with the core
+   schema, and it must be a mapping with no duplicate keys, no anchors and no aliases.
+3. **Body.** Everything after the closing `---` line, with whitespace trimmed from both ends.
+4. **Characters** means Unicode code points, counted after steps 1 to 3. No Unicode
+   normalization is applied.
+5. **Headings.** Only ATX headings count: a line that starts with one or two `#` characters and
+   a space. Lines inside a fenced code block (opened by three or more backticks or tildes) are
+   never headings. Setext headings (a line underlined with `---` or `===`) are not recognised.
+6. **Heading text** is the rest of the line after the `#` characters, with any closing run of
+   `#` characters removed and whitespace trimmed. Inline formatting is not stripped, so
+   `## **Core**` has the text `**Core**`.
+7. **The core section** is the second-level heading whose text equals
+   `persistence.reinject.section` (default `Core`), compared without regard to case. **The
+   core** is the text after that heading line, up to the next first- or second-level heading
+   or the end of the body, with whitespace trimmed from both ends. The heading line itself is
+   not part of the core.
+8. **No core section.** If no heading matches and the body is 1,500 characters or fewer, the
+   whole body is the core. If no heading matches and the body is longer, the file is invalid.
+   If a heading matches, that section is the core, whatever the body's length. Two matching
+   headings make the file invalid.
+
+Limits: the body is at most 7,500 characters and is not empty. The core is at most 1,500
+characters and is not empty.
+
+Reserved text: the body must not contain a tag that belongs to the normative texts in part 4,
+whether opening or closing. Precisely, it must not contain a match, ignoring case, for a `<`,
+optional whitespace, an optional `/`, optional whitespace, and then `values` or `value-system`.
+This covers all four elements those texts use. The rule keeps a body from ending its wrapper
+or forging a reminder by accident. It is hygiene and not a security boundary: a body is a
+prompt, and a hostile one can say anything in plain prose. Part 8 and the security section deal
+with that.
 
 A file that breaks any of these rules is invalid. A host refuses it with an error naming the
 rule. It does not truncate or repair the file. Part 11 gives the full list of validity rules.
@@ -197,6 +233,10 @@ rule. It does not truncate or repair the file. Part 11 gives the full list of va
 The standard fixes three texts. A host substitutes the placeholders and changes nothing else.
 The wording below is the draft for the spec gate. The final wording is fixed in `spec/`, and any
 change of meaning after the gate goes back to the architect.
+
+Rendering rules: every placeholder is replaced in a single pass, so a body that happens to
+contain the text `{name}` is left as it is. `{body}` and `{core}` are the trimmed texts from
+part 3. Each normative text ends with exactly one line feed.
 
 **Wrapper**, placed once, in the system prompt after the host's own instructions. Placeholders:
 `{name}`, `{steward}` (the steward's name) and `{body}`.
@@ -232,7 +272,8 @@ The value system "{name}" is still installed for this conversation and still app
 ```
 
 **Preamble for more than one value system**, placed before the wrappers when a host activates
-several. Placeholder: `{names}`, the names separated by commas.
+several. Placeholder: `{names}`, the names in activation order, separated by a comma and a
+space.
 
 ```
 <value-systems>
@@ -242,22 +283,32 @@ More than one value system is installed for this conversation: {names}. Keep the
 
 The texts are English in v0.1, whatever language the body is written in.
 
+Size budget: the wrapper's fixed text is 1,504 characters. With the longest name (64 characters,
+used twice), the longest steward name (100, used three times) and the longest body (7,500), a
+rendered wrapper is at most 9,432 characters. The body limit was set so that this stays under
+10,000, the cap Claude Code is reported to put on one hook's output, with room for the wording
+to change.
+
 ### 5. Prompt fade and reinjection
 
 A host addresses prompt fade in one of two ways: it reinjects the core, or it runs a fine-tuned
 model the package declares. Every conforming host must be able to reinject, because it is the
 only way that works on a model the package has no fine-tune for.
 
-- **What is reinjected:** the reminder text with the core. Never the whole prompt.
-- **Where:** as a system message if the model's API allows one mid-conversation. Otherwise
-  attached to the next user message, outside the user's own text. It is placed at the next user
-  message after the threshold is crossed. A host may also place it at a tool-result boundary
-  during a long run with no user message. It never goes inside an assistant turn.
+- **What is reinjected:** the reminder text with the core. Never the whole prompt, unless the
+  body is short enough to be its own core. Open question 4 puts this choice to the owner.
+- **Where:** at the start of the next user message after the threshold is crossed, before the
+  user's own text and separate from it: a separate content block where the API has them,
+  otherwise the reminder, a blank line, and then the user's text. A host whose model accepts a
+  system message mid-conversation may use one instead. A host may also place a reminder at a
+  tool-result boundary during a long run with no user message. A reminder never goes inside an
+  assistant turn.
 - **How "every N tokens" is counted:** the host counts every token added to the conversation,
-  from the user, the model and tools, since the value system's text was last placed in context.
-  The count starts at zero when the wrapper is injected and resets after each reminder. The
-  host uses the model's tokenizer when it has one and otherwise estimates one token per four
-  characters. At most one reminder is placed at a boundary, however large the count.
+  from the user, the model and tools, since that value system's text was last placed in
+  context. The count starts at zero when the wrapper is injected and resets after each
+  reminder. The host uses the model's tokenizer when it has one and otherwise estimates one
+  token per four characters. A value system gets at most one reminder at a boundary, however
+  large its count.
 - A host may drop older reminders from context and keep the most recent.
 - A package can change the interval and the section name. It cannot turn reinjection off.
 
@@ -265,30 +316,32 @@ only way that works on a model the package has no fine-tune for.
 
 A `models` entry has four required fields:
 
-- `provider`: the service that serves the weights, for example `tinker`.
-- `base`: the base model the fine-tune was trained from, as the provider names it. The same
-  weights saved for two context windows are two entries with two `base` values.
-- `adapter`: the provider's own reference to the fine-tuned weights, for example a Tinker
-  `tinker://<run_id>/sampler_weights/<name>` path.
+- `provider`: the service that serves the weights, in the same form as `name`, for example
+  `tinker`.
+- `base`: the base model the fine-tune was trained from, exactly as the provider names it, 1 to
+  200 characters. The same weights saved for two context windows are two entries with two
+  `base` values.
+- `adapter`: the provider's own reference to the fine-tuned weights, 1 to 500 characters, for
+  example a Tinker `tinker://<run_id>/sampler_weights/<name>` path.
 - `access`: `public` if any account at the provider can load the weights, `restricted` if only
   accounts the owner has authorised can. A package may declare a restricted model. Saying so
   lets a host and a listing show the truth, which is that most people cannot use it.
 
-Three are optional: `context-window` in tokens, a `description` of up to 500 characters saying
-what the model was trained to do and on what, and `trained-on`, the package version it was
-trained to embody.
+Three are optional: `context-window`, a whole number of tokens from 1 to 100,000,000; a
+`description` of up to 500 characters saying what the model was trained to do and on what; and
+`trained-on`, the package version it was trained to embody.
 
-- A host is never required to use a declared model. It may use one only when it can reach that
-  provider and the user or operator has explicitly chosen to. It never switches models
-  automatically.
-- When the host's model is not the `base` of any entry, the entries are ignored and the host
-  reinjects. There is no nearest-match and no conversion.
+- **Matching.** An entry matches when the host is using that `provider` and the model it would
+  otherwise run is named by exactly the `base` string. There is no nearest-match and no
+  conversion. When nothing matches, the entries are ignored and the host reinjects.
+- A host is never required to use a matching model. It may use one only when the user or
+  operator has explicitly chosen to. It never switches models automatically.
 - When a chosen model fails to load, for example because it is restricted, the host tells the
   user and reinjects on its own model.
-- **A declared model replaces reinjection only.** A host running one may skip reinjection. It
-  still injects the wrapper and body, because the fine-tune may be older than the package, the
-  host cannot inspect what the weights do, and the wrapper's rules on disclosure and user
-  choice must be in context either way. Nothing replaces the prompt.
+- **A declared model replaces reinjection only.** A host running one may skip reinjection for
+  that package. It still injects the wrapper and body, because the fine-tune may be older than
+  the package, the host cannot inspect what the weights do, and the wrapper's rules on
+  disclosure and user choice must be in context either way. Nothing replaces the prompt.
 
 ### 7. Tools, skills and conformance levels
 
@@ -297,13 +350,38 @@ A host claims one of three levels. Each includes the one before it.
 | Level | The host does | Typical host |
 |---|---|---|
 | 1. Prompt | Reads `VALUES.md`, injects the wrapper, addresses prompt fade, discloses what is installed. | Any chat product. Enough for a single-file package. |
-| 2. Tools | Also connects the MCP servers in `.mcp.json`, at least the remote ones. | A plain chat loop with an MCP client. |
-| 3. Package | Also exposes `skills/` as Agent Skills and lets the model read `references/` on demand. | A coding agent or desktop assistant. |
+| 2. Tools | Also connects the remote MCP servers in `.mcp.json`. | A plain chat loop with an MCP client. |
+| 3. Package | Also exposes `skills/` as Agent Skills and lets the model read `references/` on demand. May run local MCP servers. | A coding agent or desktop assistant. |
 
 MCP is how a host with no skill or plugin loader uses declared tools. Consequences for authors:
-anything essential goes in the body, any essential tool goes in `.mcp.json`, and `skills/` and
-`references/` are for depth a lower-level host can do without. A package should prefer remote
-MCP servers that need no user secret. A host may decline to run a local server command.
+anything essential goes in the body, any essential tool goes in `.mcp.json` as a remote server,
+and `skills/` and `references/` are for depth a lower-level host can do without.
+
+**The shape of `.mcp.json`.** A JSON object with an `mcpServers` object. Other top-level keys
+are ignored. Each key of `mcpServers` is a server name of 1 to 64 letters, digits, hyphens and
+underscores. Each value is an object that is exactly one of:
+
+- **Remote:** has `url`, a string beginning `https://`. May have `type`, either `http` or
+  `sse`. An `http://` address is invalid, loopback included.
+- **Local:** has `command`, a non-empty string. May have `args`, a list of strings, and `env`,
+  an object whose values are strings.
+
+An object with both `url` and `command`, or with neither, is invalid. `headers` is not allowed
+in v0.1, because the only use for it in a published package is a credential. A server that
+needs a credential gets it from the host, through MCP's own authorisation or the host's
+settings. Any other key is ignored.
+
+**Consent and trust.** Installing a package does not authorise what it declares.
+
+- A host must have the user's or operator's consent, given for that package and that server,
+  before it first connects to a remote server, and it shows the address when it asks. A user's
+  questions go to that address.
+- A host must not start a local server without the same consent, shown with the full command.
+  A host may refuse all local servers, and a collection may refuse to list packages that have
+  them.
+- What comes back from a tool, and what is in a skill or a reference text, is untrusted
+  content like any other tool output. It does not gain the standing of the wrapper or of the
+  host's own instructions.
 
 ### 8. Discovery and installation
 
@@ -317,6 +395,10 @@ MCP servers that need no user secret. A host may decline to run a local server c
   file-based hosts is `~/.agents/values/<name>/`.
 - Before activating, a host shows the user the name, description, steward and kind of claim,
   version, where the package came from, and the tools and models it declares.
+- The specification text has a security section. It says, in one place: the standard is neutral
+  on content; a body is third-party prompt text and can say anything; the wrapper cannot
+  override the host's rules; installation is explicit; declared tools and models need their own
+  consent; and a steward's claim is unverified.
 
 ### 9. Provenance
 
@@ -342,36 +424,56 @@ on the steward's domain or a signature, is left to a later version.
 ### 10. More than one value system
 
 A host must support one active value system per conversation. It may let a user keep several
-installed and choose between them. It may activate several at once, and then it must use the
-preamble in part 4, wrap each package separately, and reinject each one's core. Value systems
-are never merged. A package cannot declare precedence over another. Only the user can.
+installed and choose between them. It may activate several at once, under these rules:
+
+- The preamble in part 4 comes first, then one wrapper per package, in the order the user
+  activated them.
+- Two packages with the same `name` are never active together. The host refuses the second.
+- Each package has its own token count and its own interval. At a boundary, every package
+  whose count is due gets its reminder, in activation order.
+- A fine-tuned model belongs to the package that declares it. Running it lets the host skip
+  reinjection for that package only. The others are reinjected as usual.
+- Value systems are never merged. A package cannot declare precedence over another. Only the
+  user can.
 
 ### 11. Validity
 
 The standard gives one definition of a valid package, so that a host at install and a
 collection's pull request check reach the same answer. Validity is decided from the package's
-files alone. It needs no network call and no model. Each rule has a stable identifier, and a
-checker reports the identifiers of the rules that failed.
+files alone. It needs no network call and no model.
 
-| Rule | A package is valid only if |
-|---|---|
-| V1 | The file is named exactly `VALUES.md`, is UTF-8, and opens with YAML frontmatter between `---` lines. |
-| V2 | The frontmatter validates against the schema. The schema carries every field rule in part 2, including the `steward.url` condition. |
-| V3 | `spec-version`, if present, is `"0.1"`. |
-| V4 | The body is not empty and is at most 8,000 characters. |
-| V5 | The core resolves to exactly one non-empty text of at most 1,500 characters, by the rules in part 3. Two sections that both match the core heading make the file invalid. |
-| V6 | The body contains no closing tag used by the normative texts. |
-| V7 | In a folder package, `.mcp.json`, if present, is a JSON object with an `mcpServers` object. Each server is either remote, with an `https` URL, or local, with a command. |
-| V8 | In a folder package, every folder under `skills/` is a valid Agent Skill by that standard's own rules. |
-| V9 | In a collection, the package's folder name equals its `name`, and no other package in the collection has that name. |
+A check has three possible outcomes:
+
+- **Valid.**
+- **Invalid**, with the identifiers of every rule that failed.
+- **Unsupported version**, when `spec-version` is well formed but names a version the checker
+  does not implement. This is not a rule failure. A package written for a later version is not
+  malformed, and a v0.1 checker says only that it cannot judge it.
+
+The rules apply in three scopes. A single file is checked against the file rules. A folder is
+checked against the file and folder rules. A collection checks every package against all of
+them.
+
+| Rule | Scope | A package is valid only if |
+|---|---|---|
+| V1 | File | The file is named exactly `VALUES.md`, is UTF-8, and opens with frontmatter between two `---` lines, of at most 8,000 characters. |
+| V2 | File | The frontmatter is a YAML 1.2 mapping with no duplicate keys, anchors or aliases. |
+| V3 | File | The frontmatter validates against the schema. The schema carries every field rule in parts 2 and 6, including the `steward.url` condition and the rules on unknown keys. |
+| V4 | File | The body is not empty and is at most 7,500 characters. |
+| V5 | File | The core resolves to exactly one non-empty text of at most 1,500 characters, by the rules in part 3. |
+| V6 | File | The body contains no reserved text, as part 3 defines it. |
+| V7 | Folder | `.mcp.json`, if present, has the shape part 7 defines. |
+| V8 | Folder | Every folder under `skills/` is a valid Agent Skill by that standard's own rules. |
+| V9 | Folder | The folder contains no symbolic links. |
+| V10 | Collection | The package's folder name equals its `name`, and no other package in the collection has that name. |
 
 Things validity does not cover: whether a declared tool answers, whether a declared model
 loads, whether a steward's claim is true, and whether the content is acceptable. Those need a
 network, an account or a human, and a collection adds them as its own checks.
 
-`spec/` carries a set of fixtures: valid packages, and one invalid package for each rule,
-labelled with the rule it breaks. A checker written for a collection can be tested against
-them.
+`spec/` carries a set of fixtures: valid packages, and at least one invalid package for each
+rule, labelled with the rule it breaks. V3 and V7 have several structural branches, and each
+branch has a fixture. A checker written for a collection can be tested against them.
 
 ### 12. Collections and listings
 
@@ -389,12 +491,16 @@ Every valid package maps to a Claude Code marketplace entry with no information 
 |---|---|
 | `name` | `name`. Every valid package name is a valid entry name. |
 | `source` | `./` followed by the folder name. |
-| `description` | `description` |
+| `description` | `description`, then a space, then the fixed sentence `Vouched for by {steward.name} ({steward.claim}).` |
 | `version` | `version` |
-| `author` | `steward.name` and `steward.url` |
+| `author` | An object with `name` from `steward.name`, and `url` from `steward.url` when there is one. |
 | `license` | `license` |
 | `category` | The first item of `tradition` |
-| `tags` | `tradition`, `languages` and `tags` together |
+| `tags` | The items of `tradition`, then `languages`, then `tags`, in that order, with a repeated value kept once. |
+
+When an optional field is absent from `VALUES.md`, its marketplace key is left out. It is never
+written as null or as an empty value. The claim goes into the description because a
+marketplace entry has no field for it, and Claude Code shows a user the description at install.
 
 A package folder needs no `.claude-plugin/plugin.json` to be listed this way, because Claude
 Code treats the marketplace entry as the manifest when the folder has none.
@@ -403,34 +509,39 @@ Code treats the marketplace entry as the manifest when the folder has none.
 
 - **`example-islam`**: a folder package. `.mcp.json` declares the Ansari MCP server. The body
   tells the model to use it for rulings, verses and hadith. The Ansari skill is not bundled, so
-  that the model has one path to Ansari and the package works at Level 2. It declares the
-  owner's checkpoint from issue #2 as two `restricted` model entries, one per context window,
-  so that the reference implementation can load a fine-tuned model from the package with no
-  private extension. This needs the owner's agreement to print the checkpoint paths. See Open
-  Questions.
+  that the model has one path to Ansari and the package works at Level 2. If the owner agrees
+  (open question 5), it declares the owner's checkpoint from issue #2 as two `restricted` model
+  entries, one per context window, so that the reference implementation can load a fine-tuned
+  model from the package with no private extension. If he does not, it declares no model.
 - **`example-roman-catholic`**: a folder package built around bundled texts and a skill, so
-  that between them the two examples exercise every part of the layout. It declares an MCP
-  server only if research during planning finds one with clear standing.
-- **A minimal single-file example** of a non-religious value system, to show the smallest valid
-  package and that the format is not limited to faith. This is an addition to the issue's
-  deliverable list. See Open Questions.
+  that between them the two examples exercise every part of the layout. It declares no model,
+  because none exists and a placeholder would be a false claim. It declares an MCP server only
+  if research during planning finds one with clear standing. Its bundled texts are limited to
+  ones whose public-domain status can be shown. The candidates are the Douay-Rheims Bible in
+  the Challoner revision, the Baltimore Catechism, and the Apostles' and Nicene creeds in an
+  English translation old enough to be out of copyright. Where the status of a text cannot be
+  shown, the package cites and links it and does not reproduce it.
+- **A minimal single-file example**, if the owner agrees (open question 11): the
+  `plain-speaking` file shown at the top of this spec, to show the smallest valid package and
+  that the format is not limited to faith. It is a valid fixture either way.
 
 Both tradition examples name the values.md project as steward with the claim `organization`,
 carry an "illustrative, not endorsed by any religious authority" notice in the description, the
-body and their README, and keep their own statements to high-consensus basics. The Roman
-Catholic example declares no fine-tuned model, because none exists and a placeholder would be a
-false claim. The examples are laid out as a collection, so they are also the seed content issue
-#3 asks for.
+body and their README, and keep their own statements to high-consensus basics. The examples
+are laid out as a collection, so they are also the seed content issue #3 asks for.
 
 ### 14. Deliverables under `spec/`
 
-1. The specification text, in RFC 2119 language, covering parts 1 to 12.
-2. The rationale document.
+1. The specification text, in RFC 2119 language, covering parts 1 to 12 and including the
+   security section described in part 8.
+2. The rationale document, which also carries part 16.
 3. A JSON Schema (draft 2020-12) for the frontmatter.
 4. The three normative prompt texts, each available as a standalone file a host can copy.
 5. The example packages, with the expected rendered wrapper and reminder for each.
 6. The compatibility note.
 7. The validity fixtures described in part 11.
+8. If the owner agrees (open question 3), a small self-test that applies the validity rules to
+   the fixtures and checks the renderings. See part 17.
 
 ### 15. Compatibility note: what it must say
 
@@ -440,9 +551,17 @@ false claim. The examples are laid out as a collection, so they are also the see
   the manifest: hooks that emit the wrapper at session start and the reminder as the transcript
   grows, or a forced output style that carries the wrapped prompt without reinjection. The note
   describes both. The hook adapter is code and belongs to issue #2.
+- **The hook size cap.** A rendered wrapper is at most 9,432 characters (part 4), under the
+  10,000-character cap on one hook's output. Each hook's output is measured separately, so with
+  several value systems the adapter emits one hook output per package, and the preamble on its
+  own. If a rendered text would still exceed the cap, the adapter refuses with an error. It
+  does not truncate. The note re-checks the cap against the documentation before stating it.
 - **A Claude Code marketplace.** The mapping in part 12, with a worked `marketplace.json` for
-  the examples. The note also records that a marketplace entry can declare hooks inline, which
-  gives a registry one place to attach the prompt adapter for every package it lists.
+  the examples. The note says plainly that Claude Code's install screen shows the steward and
+  the kind of claim only through the description, and that this is weaker than what part 9
+  asks of a conforming host. It also records that a marketplace entry can declare hooks
+  inline, which gives a registry one place to attach the prompt adapter for every package it
+  lists.
 - **A host that only understands skills** gets the skills in `skills/`, each a valid Agent
   Skill, and nothing always-on.
 - **A host that only understands AGENTS.md** gets nothing automatically. A user can paste the
@@ -461,51 +580,104 @@ and its use as a host's default when nothing is installed, are recorded as futur
 needs Michael Graham's agreement. What a host does when nothing is installed is outside the
 standard.
 
+### 17. How this project is verified without a host
+
+This project ships a standard and no host, so its checks are of two kinds.
+
+- **Checked here.** Whether a fixture is valid, whether an example renders to the expected
+  wrapper and reminder, and whether the field table, the schema and the quoted normative texts
+  agree. These need the validity and rendering rules applied mechanically. The recommended way
+  is a small self-test kept beside the fixtures in `spec/`. It is the standard testing itself.
+  It is not a loader, it talks to no model, and it is not the registry's checker, though issue
+  #3 may reuse it. Whether code of this kind may live in `spec/` is open question 3. The
+  alternative is a check by hand, recorded in the review, which nobody can re-run.
+- **Defined here, exercised by issue #2.** What a host does at run time: when it reinjects,
+  what it does with a declared model, how it handles several value systems, what it asks
+  consent for. The specification states each as a rule and shows it in a worked example.
+  Running them needs a host, which is issue #2.
+
+Some checks need outside tools: `claude plugin validate` and a Claude Code install (present in
+this environment, version 2.1.329), `skills-ref validate` (not installed here, and to be
+installed from the Agent Skills repository), and a network call to the Ansari server. If one of
+them cannot be run, the criterion that depends on it is reported as not verified in the review
+and to the architect. It is never ticked on trust.
+
+### 18. Where the issue's eight questions are answered
+
+| The issue asks | Answered in |
+|---|---|
+| 1. How a host with no skill or plugin loader uses declared tools | Part 7 |
+| 2. What is reinjected, where, and how "every N tokens" is counted | Parts 3 and 5 |
+| 3. How model declarations work across providers, and what a host does on a base model with no adapter | Part 6 |
+| 4. Whether a fine-tuned model replaces reinjection, the prompt, both or neither | Part 6 |
+| 5. Provenance: who authored a package, who vouches for it, and how a user can tell | Part 9 |
+| 6. Whether more than one value system can be installed, and what happens when they conflict | Part 10 |
+| 7. Where principled pluralism fits | Part 16 |
+| 8. The literal file name and discovery rules | Part 8 |
+
 ## Success Criteria
 
-- [ ] `spec/` contains the seven deliverables listed in Desired State part 14, and nothing in
-      the repository outside `spec/` changes except Codev artifacts.
+Criteria marked (tool) depend on an outside tool or service. Part 17 says what happens when one
+cannot be run.
+
+- [ ] `spec/` contains the deliverables listed in Desired State part 14. Nothing else in the
+      repository changes except Codev artifacts and, if the owner asks for one, a licence file
+      at the root.
 - [ ] The specification text opens with the smallest valid `VALUES.md` in full, of no more
       than 12 lines, and with the two lists of what a first-time author and a Level 1 host can
       ignore. That file is one of the valid fixtures.
-- [ ] The specification text answers each of the issue's eight questions in an identifiable
-      section, with the decisions recorded in Desired State parts 1 to 12 and 16.
+- [ ] The specification text answers each of the issue's eight questions, listed in part 18, in
+      an identifiable section, with the decisions recorded in parts 1 to 12. The rationale
+      carries part 16.
+- [ ] The specification text has a security section that makes the six points listed in part 8.
 - [ ] Every frontmatter field in the specification text is in the schema with the same
-      requiredness and limits, and the schema has no field the text lacks.
+      requiredness and limits, and the schema has no field the text lacks. The schema allows
+      unknown keys at the top level and refuses them inside `steward`, `persistence`,
+      `persistence.reinject` and a `models` entry.
 - [ ] The schema is valid JSON Schema draft 2020-12, and every example's frontmatter validates
       against it.
-- [ ] The specification lists validity rules V1 to V9 with stable identifiers. `spec/` has at
-      least one valid fixture and, for each rule, at least one invalid fixture labelled with the
-      rule it breaks. The schema fixtures cover at least: missing `name`, missing `steward`, a
-      malformed `name`, a missing `steward.claim`, an `official` claim with no `url`,
-      `every-tokens` below 1,000, and a `models` entry without `base` or without `access`.
+- [ ] The specification lists validity rules V1 to V10 with stable identifiers, their scopes,
+      and the three outcomes. `spec/` has at least one valid fixture and, for each rule, at
+      least one invalid fixture labelled with the rule it breaks.
+- [ ] The V3 fixtures cover at least: missing `name`, missing `steward`, a malformed `name`, a
+      missing `steward.claim`, an `official` claim with no `url`, an unknown key inside
+      `steward`, `every-tokens` below 1,000, and a `models` entry without `base` or without
+      `access`. A fixture with an unknown top-level key is valid.
+- [ ] The V5 fixtures cover at least: a long body with no core section, two matching headings,
+      a core over the limit, a core heading inside a code fence, a Setext heading that does not
+      count, and a CRLF file that is valid only after line endings are normalized.
+- [ ] The V7 fixtures cover each branch: remote, local, both `url` and `command`, neither, an
+      `http` address, `headers` present, and a bad server name.
+- [ ] A fixture with `spec-version: "0.2"` gives the outcome "unsupported version" and not
+      "invalid".
 - [ ] Applying the rules to every fixture, with no network access, gives the labelled result.
-- [ ] A `marketplace.json` generated from the examples by the mapping in part 12 passes
-      `claude plugin validate`, and an example installs from it in Claude Code with no
-      `plugin.json` in its folder.
 - [ ] The wrapper, reminder and multiple-system preamble each exist as a standalone file, and
       every copy quoted elsewhere in `spec/` is identical to it.
-- [ ] Every example body is at most 8,000 characters and every example core is at most 1,500
+- [ ] Every example body is at most 7,500 characters and every example core is at most 1,500
       characters.
 - [ ] Each example has an expected rendered wrapper and reminder in `spec/`, and rendering the
       example by the specification's rules reproduces them exactly.
 - [ ] A reader given only `spec/` can produce the rendered wrapper and reminder for an example
       and state when the first reminder is due. Tested with an agent that has no other context.
 - [ ] The specification includes a worked example of the exact messages a Level 2 host sends
-      for `example-islam`, including the first reminder.
-- [ ] `example-islam` declares the Ansari MCP server, and the review records the date on which
-      that server answered `initialize` and listed its tool.
+      for `example-islam`, including the first reminder. It uses the default placement, at the
+      start of the user message.
+- [ ] (tool) `example-islam` declares the Ansari MCP server, and the review records the date on
+      which that server answered `initialize` and listed its tool.
 - [ ] Each tradition example carries the illustrative notice in its description, body and
       README, names the values.md project as steward, and has a name beginning `example-`.
-- [ ] Each example folder, with only `.claude-plugin/plugin.json` added, passes
+- [ ] (tool) Each folder example, with only `.claude-plugin/plugin.json` added, passes
       `claude plugin validate` and loads in Claude Code with its skills and MCP servers
       available. The compatibility note states what Claude Code does not provide.
-- [ ] Every skill inside an example passes `skills-ref validate`.
+- [ ] (tool) A `marketplace.json` generated from the folder examples by the mapping in part 12
+      passes `claude plugin validate`, and an example installs from it in Claude Code with no
+      `plugin.json` in its folder.
+- [ ] (tool) Every skill inside an example passes `skills-ref validate`.
 - [ ] The rationale covers the four options with their trade-offs, compares the format with
       AGENTS.md, Agent Skills, Claude Code plugins and Belief Protocol, and says why option 3.
       Every claim about another format links to its source and gives the date it was checked.
 - [ ] No bundled reference text is under third-party copyright. Each one states its source and
-      its public-domain or licence status.
+      the basis for its public-domain or licence status.
 - [ ] No package, mode or file is published under the name "principled pluralism".
 - [ ] `spec/` contains no loader or chatbot code.
 
@@ -547,6 +719,10 @@ Added by the architect on 2026-11-20, relaying the owner. Also fixed.
 10. **Lighter than Belief Protocol.** The owner's test for the format, relayed by the architect
     on 2026-11-20. The smallest valid package and what an author and a Level 1 host can ignore
     are shown at the top of this spec.
+
+11. **The Claude Code prompt adapter belongs to issue #2.** Confirmed by the architect on
+    2026-11-20. Adding `plugin.json` gives Claude Code a package's tools and skills and not its
+    prompt. This project describes the adapter in the compatibility note and does not build it.
 
 Further constraints:
 
@@ -592,6 +768,11 @@ Further constraints:
   the owner's checkpoint. How well the checkpoint behaves with a value-system prompt on top of
   it is untested, and issue #2 tests it. The rule that a declared model never replaces the
   prompt depends on this.
+- The outside tools the checks need can be run: Claude Code is installed here, `skills-ref`
+  is not and has to be installed from the Agent Skills repository, and the Ansari server has
+  to be reachable. Part 17 says what happens when one cannot be run.
+- The Claude Code hook cap is 10,000 characters for each hook's output, measured separately.
+  This was read through a summary and is re-checked before the compatibility note states it.
 - Issue #3 writes its checker against the validity rules and fixtures delivered here. Where
   that checker's code lives is issue #3's question.
 
@@ -662,7 +843,7 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 - Adopted: a short core, capped at 1,500 characters. At the default interval that adds roughly
   6 to 8 percent to the conversation. This departs from the owner's wording in decision 5 for
   any body longer than the core limit. Open question 4 puts the choice to him with the costs.
-- Rejected: the whole prompt. An 8,000-character body every 5,000 tokens would add about 40
+- Rejected: the whole prompt. A 7,500-character body every 5,000 tokens would add about 38
   percent.
 - Rejected: a fixed one-line pointer with no content. It restates that a value system exists
   without restating what it says, which is the part that fades.
@@ -778,10 +959,13 @@ Each of these was open. The first alternative listed is the one adopted in Desir
    source of the wrapper's structure, with no package or mode under that name? If any mention
    needs Michael Graham's agreement first, the rationale describes the structure without the
    name until that agreement exists.
-3. **The Claude Code gap.** Adding `plugin.json` gives Claude Code the tools and skills and not
-   the prompt. Is it acceptable that the prompt adapter (hooks) is delivered by issue #2 and
-   only described here?
-
+3. **A self-test in `spec/`.** Checking the fixtures and the renderings needs the validity and
+   rendering rules applied by a program. May a small self-test live beside the fixtures in
+   `spec/`? The issue puts "the chatbot and any loader code" out of scope, and issue #3 asks
+   separately where its checker should live. Recommended: yes. It is the standard testing its
+   own fixtures, it loads nothing into a model, and issue #3 stays free to reuse or replace it.
+   Without it, the checks are done by hand and recorded in the review, and nobody can re-run
+   them. The plan depends on this answer. See part 17.
 4. **Reinjecting a core, not the prompt.** The owner's decision 5 says the host "reinjects the
    prompt". This spec reinjects only the core, a section of at most 1,500 characters. For a
    package whose body is 1,500 characters or fewer, the core is the whole body, so the owner's
@@ -793,7 +977,7 @@ Each of these was open. The first alternative listed is the one adopted in Desir
    | A typical core of 1,000 characters | about 290 | about 6% | about 5,800 |
    | The largest core, 1,500 characters | about 415 | about 8% | about 8,300 |
    | A whole body of 4,000 characters | about 1,040 | about 21% | about 20,800 |
-   | The largest body, 8,000 characters | about 2,040 | about 41% | about 40,800 |
+   | The largest body, 7,500 characters | about 1,915 | about 38% | about 38,300 |
 
    The last column assumes the host keeps every reminder in context. A host that keeps only
    the newest one holds a single reminder at a time, and pays the full figure once per
@@ -815,9 +999,9 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 
 6. `steward` as a required field and as an object, with a required `claim` of `individual`,
    `organization` or `official`, where the issue's sketch had a string.
-7. The limits: body at most 8,000 characters, core at most 1,500. The body limit keeps the
-   wrapped prompt under Claude Code's 10,000-character hook cap and pushes depth into skills
-   and references.
+7. The limits: body at most 7,500 characters, core at most 1,500, frontmatter at most 8,000.
+   The body limit keeps a rendered wrapper at 9,432 characters at most, under Claude Code's
+   10,000-character hook cap, and pushes depth into skills and references.
 8. Hyphenated keys (`every-tokens`), where the issue's sketch had `every_tokens`.
 9. Example names (`example-islam`, `example-roman-catholic`) and the values.md project as their
    steward, with the claim `organization`. The owner may prefer to arrange a knowledgeable
@@ -836,66 +1020,105 @@ Each of these was open. The first alternative listed is the one adopted in Desir
     package that states plainly it has no standing at all, would suit the examples better than
     `organization`, at the cost of a longer list.
 
+15. Local MCP servers. The draft allows a package to declare one, as a Claude Code plugin can,
+    and requires consent before a host starts it. The stricter choice is remote servers only in
+    v0.1, which removes the one way a package can cause code to run, at the cost of excluding
+    the many MCP servers that run as a local command. Recommended: allow, with consent, and let
+    a collection refuse them.
+16. `metadata` holds any JSON value, where Agent Skills allows strings only. This is what lets
+    a collection add structured fields of its own without a new version of the standard.
+
 **Nice-to-know** (does not block v0.1)
 
-15. Translations of the wrapper for value systems written in other languages.
-16. A way to verify a steward: a well-known URL or a signature.
-17. How a single package is distributed outside a collection: an archive, a URL.
-18. Whether a Catholic source exists as an MCP server with clear standing. Researched during
-    planning. The example is text-backed if none is found.
+17. Translations of the wrapper for value systems written in other languages.
+18. A way to verify a steward: a well-known URL or a signature.
+19. How a single package is distributed outside a collection: an archive, a URL.
+20. Whether a Catholic source exists as an MCP server with clear standing, and which of the
+    candidate texts in part 13 can be shown to be in the public domain. Both are researched
+    during planning. The example cites and links whatever cannot be shown.
 
 ## Test Scenarios
 
-Functional:
+### Checked in this project
 
-1. **Minimal file.** A `VALUES.md` with the three required fields and a short body with no core
-   section validates, and its core is the whole body.
-2. **Long body without a core.** A body over 1,500 characters with no core section is invalid.
-3. **Custom core section.** `reinject.section` names a different heading, and the core is that
-   section's content, matched without regard to case.
-4. **Oversized body or core.** Each is invalid. Nothing is truncated.
-5. **Wrapper break-out.** A body containing `</values>` is invalid.
-6. **Unknown key.** A frontmatter key the standard does not define is ignored and the file
-   still validates.
-7. **Unknown `spec-version`.** The file is refused.
-8. **Interval below the minimum.** `every-tokens` of 500 is invalid.
-9. **Rendering.** For each example, substituting the placeholders gives exactly the expected
-   rendered wrapper and reminder.
-10. **Reminder timing.** In the worked example, the first reminder falls at the first user
-    message after 5,000 conversation tokens. A single large tool result produces one reminder,
-    not several.
-11. **Fine-tuned model in use.** The host skips reinjection and still injects the wrapper.
-12. **Different base model.** A host on a model that matches no entry ignores `models` and
-    reinjects.
-13. **Level 2 host with a Level 3 package.** `skills/` and `references/` are ignored, the MCP
-    tool works, and the prompt is complete without them.
-14. **Two value systems.** The preamble is present, each package has its own wrapper, and each
-    core is reinjected.
-15. **Claude Code.** Each example with `plugin.json` added validates and loads, with its skills
-    and MCP servers available.
-16. **Skills.** Every bundled skill passes the Agent Skills validator.
-17. **Ansari.** The declared server answers `initialize` and lists its tool.
-18. **Claim without a URL.** `claim: official` with no `steward.url` is invalid. `claim:
-    individual` with no URL is valid.
-19. **Each validity rule.** For each of V1 to V9, the fixture that breaks it is reported
-    invalid with that rule's identifier, and with no network access.
-20. **Duplicate core heading.** Two sections matching the core heading make the file invalid.
-21. **Name and folder.** In a collection, a package whose folder name differs from its `name`
-    is invalid, and so is a second package with a name already taken.
-22. **Insecure tool URL.** A remote server in `.mcp.json` with an `http` URL is invalid.
-23. **Restricted model.** A host that cannot load a chosen `restricted` model tells the user
-    and reinjects.
-24. **Marketplace.** The `marketplace.json` generated from the examples validates, and an
-    example with no `plugin.json` installs from it in Claude Code.
+Validity, each against a fixture and with no network access:
+
+1. **Minimal file.** The `plain-speaking` file at the top of this spec is valid, and its core
+   is the whole body.
+2. **Long body without a core.** A body over 1,500 characters with no core section is invalid
+   under V5.
+3. **Custom core section.** `reinject.section` names a different heading. The core is the text
+   under that heading, without the heading line, matched without regard to case.
+4. **Short body with a core section.** The section is the core, not the whole body.
+5. **Two matching headings.** Invalid under V5.
+6. **Headings that do not count.** A `## Core` line inside a code fence and a Setext heading
+   are not core headings.
+7. **Line endings.** A CRLF file gives the same body, core and counts as its LF twin.
+8. **Oversized body or core.** Invalid under V4 or V5. Nothing is truncated.
+9. **Reserved text.** A body containing `</values>`, `</VALUES >` or an opening
+   `<value-system-reminder` is invalid under V6.
+10. **Unknown keys.** An unknown top-level key is valid. An unknown key inside `steward` is
+    invalid under V3.
+11. **Duplicate YAML key.** Invalid under V2.
+12. **Later `spec-version`.** The outcome is "unsupported version".
+13. **Interval below the minimum.** `every-tokens` of 500 is invalid under V3.
+14. **Claim without a URL.** `claim: official` with no `steward.url` is invalid.
+    `claim: individual` with no URL is valid.
+15. **`.mcp.json` branches.** Remote and local servers are valid. Both keys, neither key, an
+    `http` address, `headers` and a bad server name are each invalid under V7.
+16. **Symbolic link.** A folder containing one is invalid under V9.
+17. **Name and folder.** In a collection, a package whose folder name differs from its `name`
+    is invalid under V10, and so is a second package with a name already taken.
+
+Rendering and consistency:
+
+18. **Rendering.** For each example, substituting the placeholders gives exactly the expected
+    rendered wrapper and reminder. A body that contains the text `{name}` keeps it.
+19. **Size budget.** A rendering with the longest name, steward name and body is 9,432
+    characters.
+20. **Consistency.** The field table and the schema agree, and quoted normative text is
+    identical to the standalone files.
+21. **Marketplace mapping.** The entry generated for each example matches the table in part 12,
+    with absent optional fields left out.
+
+With outside tools:
+
+22. **Claude Code plugin.** Each folder example with `plugin.json` added validates and loads,
+    with its skills and MCP servers available.
+23. **Marketplace.** The generated `marketplace.json` validates, and an example with no
+    `plugin.json` installs from it in Claude Code.
+24. **Skills.** Every bundled skill passes the Agent Skills validator.
+25. **Ansari.** The declared server answers `initialize` and lists its tool.
 
 Non-functional:
 
-25. **Implementable from the text.** An agent given only `spec/` produces the correct rendered
+26. **Implementable from the text.** An agent given only `spec/` produces the correct rendered
     prompt and reminder timing for an example.
-26. **Consistency.** The field table and the schema agree, and quoted normative text is
-    identical to the standalone files.
-27. **Honesty of the examples.** The illustrative notice appears in all three places, and no
+27. **Lightness.** The smallest valid file is no more than 12 lines, and the opening of the
+    specification tells a first-time author what to ignore.
+28. **Honesty of the examples.** The illustrative notice appears in all three places, and no
     bundled text is under third-party copyright.
+
+### Defined here, exercised by a host (issue #2)
+
+The specification states each of these as a rule and shows it in the worked example. Running
+them needs a host. They are conformance tests for hosts, and they are not pass or fail gates
+for this project.
+
+29. **Reminder timing.** The first reminder falls at the first user message after 5,000
+    conversation tokens. A single large tool result produces one reminder, not several.
+30. **Fine-tuned model in use.** The host skips reinjection for that package and still injects
+    the wrapper.
+31. **Different base model.** A host on a model that matches no entry ignores `models` and
+    reinjects.
+32. **Restricted model.** A host that cannot load a chosen `restricted` model tells the user
+    and reinjects.
+33. **Level 2 host with a Level 3 package.** `skills/` and `references/` are ignored, the MCP
+    tool works, and the prompt is complete without them.
+34. **Two value systems.** The preamble is present, each package has its own wrapper and its
+    own count, and each core is reinjected when due. Two packages with one name are refused.
+35. **Consent.** The host asks before first connecting to a declared server and before
+    starting a local command.
 
 ## Risks and Mitigation
 

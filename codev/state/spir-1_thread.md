@@ -35,3 +35,33 @@
 - Principled pluralism: placed as guidance in the wrapper, credited in the rationale, nothing
   published under the name. Whether even citing it by name needs agreement first is a critical
   open question.
+
+## 2026-11-20 — specify, after the 3-way review (iteration 1)
+
+- Architect notes folded in before the reviews landed: the smallest valid `VALUES.md` is shown
+  in full at the top with the two "can ignore" lists (the owner's test is "lighter than Belief
+  Protocol"), and core-only reinjection is now critical open question 4 with a cost table,
+  because the owner's words were "reinjects the prompt".
+- Verdicts: Gemini approve, Codex request changes, Claude request changes. No reviewer
+  disputed the design. All findings were precision gaps, and all were accepted:
+  - Reading rules for the file are now fixed (line endings, YAML 1.2 with no duplicate keys,
+    code points, ATX headings only, fences, heading line excluded from the core, trimming).
+  - Reserved text is defined exactly and described as hygiene, not a security boundary.
+  - Unknown keys: allowed at the top level, refused inside nested objects. `metadata` takes any
+    JSON value.
+  - `.mcp.json` shape is defined (remote or local, never both, no `headers`, https only), with
+    a consent rule for both kinds and a "tool output is untrusted" rule.
+  - Validity now has three outcomes (valid, invalid, unsupported version), three scopes and
+    ten rules. V9 is new: no symbolic links.
+  - Body limit dropped from 8,000 to 7,500 characters so that a worst-case rendered wrapper is
+    9,432 characters, under the reported 10,000-character hook cap with room to spare.
+  - The marketplace mapping now carries the steward's claim in the description, since an entry
+    has no field for it.
+  - Test scenarios are split into "checked in this project" and "defined here, exercised by a
+    host (issue #2)".
+- New critical open question 3: may a small self-test live in `spec/` to apply the validity and
+  rendering rules to the fixtures? The plan depends on the answer.
+- Mistake to avoid: I committed while the reviews were running, so two reviews carry a
+  "repository moved" warning. The move was my own commit ec0b8cb (checked in the reflog). Do
+  not commit while consultations are in flight.
+- `skills-ref` is not installed in this environment. Claude Code 2.1.329 is.
