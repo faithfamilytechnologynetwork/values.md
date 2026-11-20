@@ -1,7 +1,7 @@
 id: '1'
 title: values-md-standard-v0-1-the-va
 protocol: spir
-phase: specify
+phase: plan
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -16,12 +16,15 @@ gates:
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
+build_complete: false
 history: []
 started_at: '2026-11-20T19:27:27.204Z'
-updated_at: '2026-11-20T22:53:17.114Z'
+updated_at: '2026-11-20T22:53:19.601Z'
 pr_history:
   - phase: specify
     pr_number: 4
     branch: builder/spir-1
     created_at: '2026-11-20T21:50:51.823Z'
+context_refreshes:
+  - boundary: enter:plan
+    at: '2026-11-20T22:53:19.598Z'
