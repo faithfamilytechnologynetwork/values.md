@@ -7,8 +7,11 @@ Keep implementation phases, file paths, code, and "first we will… then we will
 out of the spec — those belong in codev/plans/<id>-*.md.
 -->
 
-Issue: #1. Protocol: SPIR. Everything this project delivers lives under `spec/`. The reference
-implementation is issue #2 and is not part of this work.
+Issue: #1. Protocol: SPIR. The repository has three parts: `spec/` (the standard), `reference/`
+(the reference implementation, issue #2) and `values/` (the collection of value systems, issue
+#3). This project delivers the standard under `spec/` and the first four packages of the
+collection under `values/`. It builds neither the reference implementation nor the collection's
+browser and submission check.
 
 Terms used throughout:
 
@@ -21,8 +24,8 @@ Terms used throughout:
 - **Steward**: the person or body that vouches for a package being a faithful statement of its
   value system.
 - **Prompt fade**: a value-system prompt losing force as a conversation grows.
-- **Collection**: a directory that holds many packages, one folder each. The values registry
-  planned in issue #3 is a collection.
+- **Collection**: a directory that holds many packages, one folder each. The `values/`
+  directory at the root of this repository is one.
 
 ### The format at a glance
 
@@ -124,7 +127,7 @@ The limitations that motivate the work:
 A community writes one `VALUES.md` file and, if it wants, a folder around it. Any host that
 follows the standard installs it the same way: the same prompt goes into the conversation, the
 same reminder keeps it in force, the same tools become available, and the user can always see
-what is installed and who vouches for it. A registry can check a submitted package against one
+what is installed and who vouches for it. A collection can check a submitted package against one
 stated rule, list it from its own metadata, and offer it to Claude Code through a marketplace
 file without the author doing anything further.
 
@@ -513,15 +516,16 @@ Things validity does not cover: whether a declared tool answers, whether a decla
 loads, whether a steward's claim is true, and whether the content is acceptable. Those need a
 network, an account or a human, and a collection adds them as its own checks.
 
-`spec/` carries a set of fixtures: valid packages, and at least one invalid package for each
-rule, labelled with the rule it breaks. V3 and V7 have several structural branches, and each
+`spec/` carries a set of fixtures: valid packages, each with its expected rendered wrapper and
+reminder, and at least one invalid package for each rule, labelled with the rule it breaks.
+Fixtures are small and purpose-made. They are not copies of the packages in `values/`. V3 and V7 have several structural branches, and each
 branch has a fixture. A checker written for a collection can be tested against them.
 
 ### 12. Collections and listings
 
 A collection is a directory with one folder per package, each named for its package. The
-standard defines this much so that a registry and a Claude Code marketplace can be generated
-from the same folders.
+standard defines this much so that a browser and a Claude Code marketplace can be generated
+from the same folders. In this repository the collection is `values/`.
 
 A listing page has what it needs from the frontmatter: `name`, `description`, the steward with
 the kind of claim, `version`, `license`, `tradition`, `languages`, `tags`, the declared models
@@ -532,7 +536,7 @@ Every valid package maps to a Claude Code marketplace entry with no information 
 | Marketplace entry | Taken from |
 |---|---|
 | `name` | `name`. Every valid package name is a valid entry name. |
-| `source` | `./` followed by the folder name. |
+| `source` | The path from the marketplace file's root to the package folder, beginning `./`. For a marketplace at the root of this repository, `./values/` followed by the folder name. |
 | `description` | `description`, then a space, then the fixed sentence `Vouched for by {steward.name} ({steward.claim}).` |
 | `version` | `version` |
 | `author` | An object with `name` from `steward.name`, and `url` from `steward.url` when there is one. |
@@ -549,8 +553,10 @@ Code treats the marketplace entry as the manifest when the folder has none.
 
 ### 13. Example packages
 
-Four examples, laid out together as a collection, so they are also the seed content issue #3
-asks for.
+Four examples. They are the first entries of the collection and live in `values/`, one folder
+each, and nowhere else. `spec/` refers to them where they live and keeps no copy. The reference
+implementation loads value systems from `values/`, so each example must be loadable from there
+by the standard's rules alone, with nothing beside it in `spec/` needed to make it work.
 
 - **`example-islam`**: a folder package. `.mcp.json` declares the Ansari MCP server. The body
   tells the model to use it for rulings, verses and hadith. The Ansari skill is not bundled, so
@@ -599,18 +605,23 @@ No example is treated specially by the standard. The wrapper, the validity rules
 specification text are the same for all four and mention none of them outside the places where
 examples are listed.
 
-### 14. Deliverables under `spec/`
+### 14. Deliverables
+
+Under `spec/`:
 
 1. The specification text, in RFC 2119 language, covering parts 1 to 12 and including the
    security section described in part 8.
 2. The rationale document.
 3. A JSON Schema (draft 2020-12) for the frontmatter.
 4. The three normative prompt texts, each available as a standalone file a host can copy.
-5. The four example packages, with the expected rendered wrapper and reminder for each.
-6. The compatibility note.
-7. The validity fixtures described in part 11.
-8. A checker, in its own directory under `spec/`, that applies the validity rules to the
-   fixtures and checks the renderings. See part 16.
+5. The compatibility note.
+6. The validity fixtures described in part 11, with their expected renderings.
+7. A checker, in its own directory, that applies the validity rules and checks the renderings.
+   See part 16.
+
+Under `values/`:
+
+8. The four example packages of part 13, one folder each.
 
 ### 15. Compatibility note: what it must say
 
@@ -629,7 +640,7 @@ examples are listed.
   the examples. The note says plainly that Claude Code's install screen shows the steward and
   the kind of claim only through the description, and that this is weaker than what part 9
   asks of a conforming host. It also records that a marketplace entry can declare hooks
-  inline, which gives a registry one place to attach the prompt adapter for every package it
+  inline, which gives a collection one place to attach the prompt adapter for every package it
   lists.
 - **A host that only understands skills** gets the skills in `skills/`, each a valid Agent
   Skill, and nothing always-on.
@@ -640,12 +651,12 @@ examples are listed.
 
 This project ships a standard and no host, so its checks are of two kinds.
 
-- **Checked here.** Whether a fixture is valid, whether an example renders to the expected
-  wrapper and reminder, and whether the field table, the schema and the quoted normative texts
-  agree. A checker in its own directory under `spec/` applies the validity and rendering rules
-  mechanically, so that anyone can re-run the checks. It is the standard testing itself. It is
-  not a loader, it talks to no model, and it is not the registry's checker, though issue #3
-  may reuse it.
+- **Checked here.** Whether a fixture is valid and renders to its expected wrapper and
+  reminder, whether every package in `values/` is valid where it lives, and whether the field
+  table, the schema and the quoted texts agree. A checker in its own directory under `spec/`
+  applies the validity and rendering rules mechanically, so that anyone can re-run the checks.
+  It is the standard testing itself. It is not a loader and it talks to no model. Issue #3's
+  check on a submitted package uses it.
 - **Defined here, exercised by issue #2.** What a host does at run time: when it reinjects,
   what it does with a declared model, how it handles several value systems, what it asks
   consent for. The specification states each as a rule and shows it in a worked example.
@@ -675,12 +686,16 @@ architect. It is never ticked on trust.
 Criteria marked (tool) depend on an outside tool or service. Part 16 says what happens when one
 cannot be run.
 
-- [ ] `spec/` contains the deliverables listed in Desired State part 14. Nothing else in the
-      repository changes except Codev artifacts and, if the owner asks for one, a licence file
-      at the root.
+- [ ] `spec/` and `values/` contain the deliverables listed in Desired State part 14. Nothing
+      else in the repository changes except Codev artifacts and, if the owner asks for one, a
+      licence file at the root.
+- [ ] The four example packages exist once, in `values/`. `spec/` holds no copy of any of them
+      and refers to them by path.
+- [ ] Applying the validity rules to `values/` as a collection, with no network access, finds
+      every package valid.
 - [ ] The specification text opens with the smallest valid `VALUES.md` in full, of no more
       than 12 lines, and with the two lists of what a first-time author and a Level 1 host can
-      ignore. That file is one of the valid fixtures.
+      ignore. The file shown is identical to `values/plain-speaking/VALUES.md`.
 - [ ] The specification text answers each of the issue's eight questions, listed in part 17, in
       an identifiable section, with the decisions recorded in parts 1 to 13.
 - [ ] The specification text has a security section that makes the six points listed in part 8.
@@ -688,8 +703,7 @@ cannot be run.
       requiredness and limits, and the schema has no field the text lacks. The schema allows
       unknown keys at the top level and refuses them inside `steward`, `persistence`,
       `persistence.reinject` and a `models` entry.
-- [ ] The schema is valid JSON Schema draft 2020-12, and every example's frontmatter validates
-      against it.
+- [ ] The schema is valid JSON Schema draft 2020-12.
 - [ ] The specification lists validity rules V1 to V10 with stable identifiers, their scopes,
       and the three outcomes. `spec/` has at least one valid fixture and, for each rule, at
       least one invalid fixture labelled with the rule it breaks.
@@ -707,23 +721,25 @@ cannot be run.
 - [ ] Applying the rules to every fixture, with no network access, gives the labelled result.
 - [ ] The wrapper, reminder and multiple-system preamble each exist as a standalone file, and
       every copy quoted elsewhere in `spec/` is identical to it.
+- [ ] Each valid fixture has an expected rendered wrapper and reminder, and rendering the
+      fixture by the specification's rules reproduces them exactly.
 - [ ] Every example body is at most 7,500 characters and every example core is at most 1,500
       characters.
-- [ ] Each example has an expected rendered wrapper and reminder in `spec/`, and rendering the
-      example by the specification's rules reproduces them exactly.
-- [ ] A reader given only `spec/` can produce the rendered wrapper and reminder for an example
-      and state when the first reminder is due. Tested with an agent that has no other context.
+- [ ] A reader given only `spec/` and one package from `values/` can produce the rendered
+      wrapper and reminder for it and state when the first reminder is due. Tested with an
+      agent that has no other context.
 - [ ] The specification includes a worked example of the exact messages a Level 2 host sends
-      for `example-islam`, including the first reminder. It uses the default placement, at the
-      start of the user message.
+      for a fixture that declares a remote tool, including the first reminder. It uses the
+      default placement, at the start of the user message.
 - [ ] (tool) `example-islam` declares the Ansari MCP server, and the review records the date on
       which that server answered `initialize` and listed its tool.
 - [ ] Each of the three `example-` packages carries its "illustrative, not endorsed" notice in
       its description, body and README, and names the values.md project as steward.
-- [ ] (tool) Each folder example, with only `.claude-plugin/plugin.json` added, passes
+- [ ] (tool) A temporary copy of each folder example, with only `.claude-plugin/plugin.json`
+      added, passes
       `claude plugin validate` and loads in Claude Code with its skills and MCP servers
       available. The compatibility note states what Claude Code does not provide.
-- [ ] (tool) A `marketplace.json` generated from the folder examples by the mapping in part 12
+- [ ] (tool) A `marketplace.json` generated for `values/` by the mapping in part 12
       passes `claude plugin validate`, and an example installs from it in Claude Code with no
       `plugin.json` in its folder.
 - [ ] (tool) Every skill inside an example passes `skills-ref validate`.
@@ -826,12 +842,26 @@ Relayed by the architect on 2026-11-20:
 
 19. The Islam example declares the stage 2 checkpoint, not stage 1.
 
+Decided by the owner on 2026-11-20, copied from his later comment on the issue. Also fixed. It
+replaces the "separate registry repository" of item 9.
+
+20. **The collection lives in this repository, not a separate one.**
+    - The repository has three parts: `spec/`, `reference/` and a collection directory. The
+      architect's choice for its name is `values/` at the repository root.
+    - The four example packages are the collection's first entries and live there once.
+      `spec/` keeps the specification, schema, normative texts, fixtures, checker and
+      compatibility note, and refers to the examples where they live, with no copies under
+      `spec/`.
+    - The reference implementation (#2) will load value systems from the collection directory,
+      so the examples must be loadable from there by the standard's rules alone.
+    - The browser, the submission check and the acceptance policy stay with #3.
+
 Further constraints:
 
-- Out of scope: the chatbot and any loader code (issue #2), the registry, its browser and its
-  submission check (issue #3), governance, funding, outreach to AI labs, and training a
+- Out of scope: the chatbot and any loader code (issue #2), the collection's browser, its
+  submission check and its acceptance policy (issue #3), governance, funding, outreach to AI labs, and training a
   fine-tuned model.
-- The registry's own questions stay with issue #3: what is accepted and who decides, what
+- The collection's own questions stay with issue #3: what is accepted and who decides, what
   evidence a claim of authority needs, what review a declared tool gets, and name squatting.
   The standard supplies the fields and the validity rule those answers will use.
 - Adoption cost decides reach. A Level 1 host should need no new dependency: read a file,
@@ -1036,7 +1066,7 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 - Adopted: a required `steward.claim` with three values, matching the three cases issue #3
   names. Requiring it means nobody acquires a claim by leaving a field out, and a listing never
   has to guess.
-- Rejected: optional, defaulting to `individual`. It is the safe default, but a registry would
+- Rejected: optional, defaulting to `individual`. It is the safe default, but a collection would
   still have to require the field, and two rules are worse than one.
 - Rejected: a free-text statement. A listing cannot filter on it and a check cannot test it.
 
@@ -1097,8 +1127,8 @@ items 12 to 18, and the spec was revised to match. What remains:
    `[Islam, Sunni]` if that also describes Ansari's answers, and `[Islam]` otherwise.
 6. Whether the Ansari MCP server is the endpoint the Ansari project wants a public example to
    point at, given that its repository has been quiet since September 2025.
-7. The licence for everything in `spec/` that is not the specification text: the schema, the
-   fixtures, the examples and the checker. The text is CC BY 4.0 by the owner's decision.
+7. The licence for everything that is not the specification text: the schema, the fixtures,
+   the checker, and the example packages in `values/`. The text is CC BY 4.0 by the owner's decision.
    Recommended for the rest: MIT.
 8. `metadata` holds any JSON value, where Agent Skills allows strings only. This is what lets
    a collection add structured fields of its own without a new version of the standard.
@@ -1144,14 +1174,14 @@ Validity, each against a fixture and with no network access:
 16. **Symbolic link.** A folder containing one is invalid under V9.
 17. **Model entry.** `prompt: omit` is valid. `prompt: sometimes` and a model entry with an
     unknown key are invalid under V3.
-18. **The four examples.** Each is valid, including `example-principled-pluralism`, which is
-    `VALUES.md` alone.
+18. **The four examples.** Each is valid where it lives in `values/`, including
+    `example-principled-pluralism`, which is `VALUES.md` alone.
 19. **Name and folder.** In a collection, a package whose folder name differs from its `name`
     is invalid under V10, and so is a second package with a name already taken.
 
 Rendering and consistency:
 
-20. **Rendering.** For each example, substituting the placeholders gives exactly the expected
+20. **Rendering.** For each valid fixture, substituting the placeholders gives exactly the expected
     rendered wrapper and reminder. A body that contains the text `{name}` keeps it.
 21. **Size budget.** A rendering with the longest name, steward name and body is 9,432
     characters.
@@ -1171,8 +1201,8 @@ With outside tools:
 
 Non-functional:
 
-28. **Implementable from the text.** An agent given only `spec/` produces the correct rendered
-    prompt and reminder timing for an example.
+28. **Implementable from the text.** An agent given only `spec/` and one package from `values/`
+    produces the correct rendered prompt and reminder timing for it.
 29. **Lightness.** The smallest valid file is no more than 12 lines, and the opening of the
     specification tells a first-time author what to ignore.
 30. **Honesty of the examples.** Each `example-` package carries its notice in all three
@@ -1222,8 +1252,8 @@ for this project.
 | External formats change after the rationale is written. | High | Low | Every claim carries a link and a check date. |
 | The 10,000-character hook cap is misread, since it was verified only from a summary. | Low | Low | The body limit stands on cost grounds without it. Re-check the page before the compatibility note cites the number. |
 | The principled pluralism example misstates the essay it is drawn from. | Medium | Medium | The package cites the essay, keeps to what the essay says, carries the "not endorsed by its author" notice, and is treated like every other example. |
-| The standard's fields turn out not to fit what the registry needs once issue #3 is specified. | Medium | Medium | Part 12 is written against issue #3's stated needs. A collection may require optional fields and extend under `metadata` without a new version of the standard. A real gap is a finding for v0.2. |
-| A package states `official` falsely and a host shows it as fact. | Medium | High | The standard calls it a claim everywhere. A host shows it with the source and URL, and the registry decides what evidence it needs before listing. |
+| The standard's fields turn out not to fit what the collection needs once issue #3 is specified. | Medium | Medium | Part 12 is written against issue #3's stated needs. A collection may require optional fields and extend under `metadata` without a new version of the standard. A real gap is a finding for v0.2. |
+| A package states `official` falsely and a host shows it as fact. | Medium | High | The standard calls it a claim everywhere. A host shows it with the source and URL, and the collection decides what evidence it needs before listing. |
 | A fine-tuned checkpoint behaves badly with a value-system prompt on top of it. | Medium | Medium | Untested today. Issue #2 tests it. The package then declares `prompt: omit` for that model, which the standard allows. |
 | The Islam example says a checkpoint is public before it has been published. | Low | Medium | `access` is left unfilled until the architect confirms publication, and a success criterion checks that no pushed commit says otherwise. |
 
@@ -1250,4 +1280,4 @@ Checked on 2026-11-20 unless noted.
   https://code.claude.com/docs/en/plugins/marketplace-reference.md
 - BCP 47, language tags. SPDX licence list: https://spdx.org/licenses/
 - Issue #1 (this work), issue #2 (reference implementation, with the checkpoint details in its
-  first comment) and issue #3 (the values registry).
+  first comment) and issue #3 (the values collection).

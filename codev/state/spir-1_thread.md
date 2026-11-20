@@ -90,3 +90,21 @@ still pending. The spec was revised to match:
 - The spec, this thread and the pull request are written for public readers.
 
 A pull request with the spec is open so that it can be shared before the gate is decided.
+
+## 2026-11-20 — the collection moves into this repository
+
+The owner decided that the collection of value systems is a directory in this repository,
+`values/` at the root, and not a separate repository. The spec was updated:
+
+- The repository has three parts: `spec/`, `reference/` and `values/`.
+- The four example packages live once, in `values/`. `spec/` keeps no copy and refers to them
+  by path. They must be loadable from there by the standard's rules alone, because the
+  reference implementation reads `values/` directly.
+- Expected renderings now belong to the purpose-made fixtures in `spec/`, not to the examples,
+  so that nothing in `spec/` duplicates a package's text. The one exception is the smallest
+  valid file shown at the top of the specification, which the checker compares with
+  `values/plain-speaking/VALUES.md`.
+- The marketplace mapping's `source` is now the path from the marketplace file's root, which
+  for a marketplace at the repository root is `./values/<name>`.
+- The `access` field keeps both `public` and `restricted`, as the architect agreed.
+- The stage 2 checkpoint's `base` and `access` are still unconfirmed and still unfilled.
