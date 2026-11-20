@@ -1,0 +1,19 @@
+# Codev
+.agent-farm/
+.consult/
+codev/.update-hashes.json
+.builders/
+.architect-role.md
+codev/state/*.md
+!codev/state/*_thread.md
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# OS files
+.DS_Store
+*.swp
+*.swo
