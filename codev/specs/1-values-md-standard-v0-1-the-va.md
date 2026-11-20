@@ -24,6 +24,50 @@ Terms used throughout:
 - **Collection**: a directory that holds many packages, one folder each. The values registry
   planned in issue #3 is a collection.
 
+### The format at a glance
+
+The owner's test for this format is that it is lighter than Belief Protocol. This is the
+smallest valid `VALUES.md`, in full:
+
+```markdown
+---
+name: plain-speaking
+description: One person's rules for honest, direct advice.
+steward:
+  name: Sam Example
+  claim: individual
+---
+Tell me the truth even when it is unwelcome. If I am wrong, say so and say why.
+Do not flatter me. Give me your real view before you give me the alternatives.
+When you are unsure, tell me you are unsure.
+```
+
+Three frontmatter fields and a body in ordinary prose. There is no folder, no required heading
+and no required structure inside the body. For comparison, the smallest valid `BELIEF.md` needs
+a `decision-surface` structure and an Agent Orientations section, and every belief in it must
+carry a `layer`, a `grip` and a `source`.
+
+**A first-time author can ignore** everything else in this specification:
+
+- Every other frontmatter field. `version`, `license`, `tradition`, `languages`, `tags`,
+  `authors`, `persistence`, `models` and `metadata` are all optional.
+- The core section. A body of 1,500 characters or fewer is its own core.
+- The folder and everything in it: `.mcp.json`, `skills/` and `references/`.
+- The wrapper and reminder texts. The host supplies them.
+- Conformance levels, collections and marketplaces.
+
+**A Level 1 host can ignore:**
+
+- `.mcp.json`, `skills/` and `references/`. Those are Levels 2 and 3.
+- `models`. Using a declared model is always optional.
+- `tradition`, `languages`, `tags`, `license`, `authors` and `metadata`. They are for listings
+  and display.
+- Collections, marketplaces and installing more than one value system at a time.
+
+What a Level 1 host does do: read one file, check it against validity rules V1 to V6, put the
+body inside the wrapper text, count tokens, add the reminder when the count passes the
+interval, and show the user the name, the steward and the kind of claim.
+
 ## Problem Statement
 
 Almost all questions about faith and values go to general-purpose assistants, not to
@@ -421,6 +465,9 @@ standard.
 
 - [ ] `spec/` contains the seven deliverables listed in Desired State part 14, and nothing in
       the repository outside `spec/` changes except Codev artifacts.
+- [ ] The specification text opens with the smallest valid `VALUES.md` in full, of no more
+      than 12 lines, and with the two lists of what a first-time author and a Level 1 host can
+      ignore. That file is one of the valid fixtures.
 - [ ] The specification text answers each of the issue's eight questions in an identifiable
       section, with the decisions recorded in Desired State parts 1 to 12 and 16.
 - [ ] Every frontmatter field in the specification text is in the schema with the same
@@ -496,6 +543,10 @@ Added by the architect on 2026-11-20, relaying the owner. Also fixed.
    license, version, tags such as tradition and language), a rule for what is valid so that a
    pull request check can pass or fail a submission, and compatibility with a Claude Code
    `marketplace.json` entry.
+
+10. **Lighter than Belief Protocol.** The owner's test for the format, relayed by the architect
+    on 2026-11-20. The smallest valid package and what an author and a Level 1 host can ignore
+    are shown at the top of this spec.
 
 Further constraints:
 
@@ -609,7 +660,8 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 **What is reinjected.**
 
 - Adopted: a short core, capped at 1,500 characters. At the default interval that adds roughly
-  6 to 8 percent to the conversation.
+  6 to 8 percent to the conversation. This departs from the owner's wording in decision 5 for
+  any body longer than the core limit. Open question 4 puts the choice to him with the costs.
 - Rejected: the whole prompt. An 8,000-character body every 5,000 tokens would add about 40
   percent.
 - Rejected: a fixed one-line pointer with no content. It restates that a value system exists
@@ -730,41 +782,66 @@ Each of these was open. The first alternative listed is the one adopted in Desir
    the prompt. Is it acceptable that the prompt adapter (hooks) is delivered by issue #2 and
    only described here?
 
-4. **The checkpoint in a public example.** May `example-islam` print the two `tinker://` paths
+4. **Reinjecting a core, not the prompt.** The owner's decision 5 says the host "reinjects the
+   prompt". This spec reinjects only the core, a section of at most 1,500 characters. For a
+   package whose body is 1,500 characters or fewer, the core is the whole body, so the owner's
+   words hold exactly. For a longer body they do not, and the owner should choose. Costs, at
+   four characters to a token and the default interval of 5,000 tokens:
+
+   | What is reinjected | Tokens per reminder | Added to the conversation | Reminder tokens after 100,000 tokens of conversation |
+   |---|---|---|---|
+   | A typical core of 1,000 characters | about 290 | about 6% | about 5,800 |
+   | The largest core, 1,500 characters | about 415 | about 8% | about 8,300 |
+   | A whole body of 4,000 characters | about 1,040 | about 21% | about 20,800 |
+   | The largest body, 8,000 characters | about 2,040 | about 41% | about 40,800 |
+
+   The last column assumes the host keeps every reminder in context. A host that keeps only
+   the newest one holds a single reminder at a time, and pays the full figure once per
+   interval on a provider that does not cache. The choices:
+
+   - **(a) Core only**, as drafted. Recommended. The cost is bounded and small, and the author
+     decides what must not fade.
+   - **(b) The whole body, always**, as the owner's words say. Simplest to state, with no core
+     section to define. To keep the cost tolerable the body limit would have to come down,
+     probably to about 2,000 characters, which pushes more into skills and references.
+   - **(c) The package chooses**: core by default, with a frontmatter switch to reinject the
+     whole body. Flexible, at the cost of one more field and a cost the host does not control.
+
+5. **The checkpoint in a public example.** May `example-islam` print the two `tinker://` paths
    from the comment on issue #2, marked `restricted`? If not, the example declares no model and
    the reference implementation needs its own package to show the fine-tuned path.
 
 **Important** (shapes the design, and has a recommended answer above)
 
-5. `steward` as a required field and as an object, with a required `claim` of `individual`,
+6. `steward` as a required field and as an object, with a required `claim` of `individual`,
    `organization` or `official`, where the issue's sketch had a string.
-6. The limits: body at most 8,000 characters, core at most 1,500. The body limit keeps the
+7. The limits: body at most 8,000 characters, core at most 1,500. The body limit keeps the
    wrapped prompt under Claude Code's 10,000-character hook cap and pushes depth into skills
    and references.
-7. Hyphenated keys (`every-tokens`), where the issue's sketch had `every_tokens`.
-8. Example names (`example-islam`, `example-roman-catholic`) and the values.md project as their
+8. Hyphenated keys (`every-tokens`), where the issue's sketch had `every_tokens`.
+9. Example names (`example-islam`, `example-roman-catholic`) and the values.md project as their
    steward, with the claim `organization`. The owner may prefer to arrange a knowledgeable
    reviewer for each before v0.1 is publicised.
-9. The `tradition` value for `example-islam`. The checkpoint is Sunni. Recommended:
+10. The `tradition` value for `example-islam`. The checkpoint is Sunni. Recommended:
    `[Islam, Sunni]` if the owner confirms that also describes Ansari's answers, and `[Islam]`
    otherwise.
-10. Whether to include the minimal non-religious single-file example, which the issue did not
+11. Whether to include the minimal non-religious single-file example, which the issue did not
     list.
-11. The licence for `spec/`. Recommended: CC BY 4.0 for the text, and a permissive code licence
+12. The licence for `spec/`. Recommended: CC BY 4.0 for the text, and a permissive code licence
     for the schema and examples. The repository has no licence file yet. The registry's own
     licensing question (issue #3) will lean on this answer.
-12. Whether the Ansari MCP server is the endpoint the Ansari project wants a public example to
+13. Whether the Ansari MCP server is the endpoint the Ansari project wants a public example to
     point at, given that its repository has been quiet since September 2025.
-13. Whether three kinds of claim are enough. The values come from issue #3. A fourth, for a
+14. Whether three kinds of claim are enough. The values come from issue #3. A fourth, for a
     package that states plainly it has no standing at all, would suit the examples better than
     `organization`, at the cost of a longer list.
 
 **Nice-to-know** (does not block v0.1)
 
-14. Translations of the wrapper for value systems written in other languages.
-15. A way to verify a steward: a well-known URL or a signature.
-16. How a single package is distributed outside a collection: an archive, a URL.
-17. Whether a Catholic source exists as an MCP server with clear standing. Researched during
+15. Translations of the wrapper for value systems written in other languages.
+16. A way to verify a steward: a well-known URL or a signature.
+17. How a single package is distributed outside a collection: an archive, a URL.
+18. Whether a Catholic source exists as an MCP server with clear standing. Researched during
     planning. The example is text-backed if none is found.
 
 ## Test Scenarios
@@ -838,7 +915,7 @@ Non-functional:
 | The standard's fields turn out not to fit what the registry needs once issue #3 is specified. | Medium | Medium | Part 12 is written against issue #3's stated needs. A collection may require optional fields and extend under `metadata` without a new version of the standard. A real gap is a finding for v0.2. |
 | A package states `official` falsely and a host shows it as fact. | Medium | High | The standard calls it a claim everywhere. A host shows it with the source and URL, and the registry decides what evidence it needs before listing. |
 | The fine-tuned checkpoint behaves badly with a value-system prompt on top of it. | Medium | Medium | Untested today. Issue #2 tests it. If it fails, the finding comes back to the standard before v0.1 is called final. |
-| Printing private checkpoint paths in a public example exposes something the owner did not intend. | Low | Medium | Open question 4. Nothing is printed until the owner agrees. This spec refers to the paths by pointing at the issue comment. |
+| Printing private checkpoint paths in a public example exposes something the owner did not intend. | Low | Medium | Open question 5. Nothing is printed until the owner agrees. This spec refers to the paths by pointing at the issue comment. |
 
 ## References
 
