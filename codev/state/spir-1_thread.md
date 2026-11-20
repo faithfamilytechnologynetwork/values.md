@@ -84,9 +84,8 @@ still pending. The spec was revised to match:
   is shown about what is installed holds in every mode, and when a model runs without the
   prompt the host's own display carries it. This design is the one critical open question
   left.
-- The Islam example declares the stage 2 checkpoint. Its `base` and `access` are still to be
-  confirmed, so the entry in the spec leaves both unfilled. Nothing is pushed saying
-  `access: public` until the architect confirms the checkpoint has been published.
+- The Islam example declares the stage 2 checkpoint. Its base model ID is still to be
+  confirmed, so the entry in the spec leaves it unfilled.
 - The spec, this thread and the pull request are written for public readers.
 
 A pull request with the spec is open so that it can be shared before the gate is decided.
@@ -106,5 +105,12 @@ The owner decided that the collection of value systems is a directory in this re
   `values/plain-speaking/VALUES.md`.
 - The marketplace mapping's `source` is now the path from the marketplace file's root, which
   for a marketplace at the repository root is `./values/<name>`.
-- The `access` field keeps both `public` and `restricted`, as the architect agreed.
-- The stage 2 checkpoint's `base` and `access` are still unconfirmed and still unfilled.
+- The stage 2 checkpoint's base model ID is still unconfirmed and still unfilled.
+
+## 2026-11-20 — models are assumed public
+
+A correction to the owner's answer on models: for now the standard assumes every declared
+model is public. v0.1 does not distinguish public from restricted models, so the `access`
+field that earlier drafts added to each model entry is dropped, along with everything that
+depended on it. A model entry now has three required fields: `provider`, `base` and `adapter`.
+Earlier entries in this log that mention `access` describe those drafts.

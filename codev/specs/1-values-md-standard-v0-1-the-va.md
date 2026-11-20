@@ -106,8 +106,8 @@ document relies on them.
 | Claude Code hooks | `SessionStart` and `UserPromptSubmit` can add context, through plain output or `additionalContext`. `SessionStart` fires again after compaction. Injected strings are capped at 10,000 characters. Hooks receive `transcript_path` and no running token count. One exception: `SessionStart` on resume or fork receives `context_tokens`. | Cap and common fields are summary only. Re-check before relying on them. |
 | Belief Protocol | `BELIEF.md`, version 2.2, Apache-2.0. A schema for the beliefs themselves, with 10 structure types and per-belief attributes. Loaded at session start and kept active. Its "Agent Orientations" section of about 200 to 500 tokens is held in context throughout. It has nothing for tools, models, a host-side wrapper or reinjection, and calls itself complementary to Agent Skills. | Checked. Matches the issue. |
 | Claude Code marketplaces | `.claude-plugin/marketplace.json` requires `name`, `owner` and `plugins`. Each plugin entry requires `name` and `source`. An entry name is letters, digits, `.`, `_` and `-`, starting with a letter or digit. A relative `source` starts with `./` and resolves from the marketplace root. An entry may also carry `description`, `version`, `author`, `homepage`, `license`, `category` (a string) and `tags` (a list of strings). A plugin folder with no `plugin.json` can be listed: "the entry is the manifest". An entry can declare hooks inline. | Checked. |
-| Tinker fine-tunes | A checkpoint runs on the base model it was trained on. Sampler weights are addressed as `tinker://<run_id>/sampler_weights/<name>`. The OpenAI-compatible API accepts that path alone, or `<base model ID>;<path>` to select a context length. Publishing lets other accounts load a checkpoint. `thinkingmachines/Inkling-2-Small` is listed as a base model. | API forms checked. Publishing and the model list are summary only. |
-| The project's fine-tuned checkpoints | Described in a comment on issue #2, as checked against the Tinker API on 2026-11-20. Stage 1 is a LoRA fine-tune of Inkling 2 Small: Islamic (Sunni), English only, trained to be good company for a practising Muslim and not to issue rulings, with no system prompt in training. Both the base model and that checkpoint honour a system prompt on the OpenAI-compatible endpoint. A value-system prompt on top of the fine-tune is untested. A later stage 2 checkpoint is the one the Islam example is to declare. Its base model, context window and publication status were still being confirmed when this was written. There is no Roman Catholic checkpoint. | Reported, not re-checked here. |
+| Tinker fine-tunes | A checkpoint runs on the base model it was trained on. Sampler weights are addressed as `tinker://<run_id>/sampler_weights/<name>`. The OpenAI-compatible API accepts that path alone, or `<base model ID>;<path>` to select a context length. `thinkingmachines/Inkling-2-Small` is listed as a base model. | API forms checked. The model list is summary only. |
+| The project's fine-tuned checkpoints | Described in a comment on issue #2, as checked against the Tinker API on 2026-11-20. Stage 1 is a LoRA fine-tune of Inkling 2 Small: Islamic (Sunni), English only, trained to be good company for a practising Muslim and not to issue rulings, with no system prompt in training. Both the base model and that checkpoint honour a system prompt on the OpenAI-compatible endpoint. A value-system prompt on top of the fine-tune is untested. A later stage 2 checkpoint is the one the Islam example is to declare. Its base model ID was still being confirmed when this was written. There is no Roman Catholic checkpoint. | Reported, not re-checked here. |
 | Ansari | A hosted MCP server exists at `https://mcp.ansari.chat/mcp`. It needs no key. On 2026-11-20 it answered `initialize` (protocol version `2024-11-05`) and listed one tool, `answer_islamic_question`, which takes a `question` string. Its repository was last pushed in September 2025 and has no licence file. The separate Ansari skill (MIT, version 3.4.1, August 2026) calls a different HTTP endpoint with `curl`, so it needs a shell. | Checked by calling the server. |
 | Principled pluralism | Michael Graham, The Gospel Coalition, 21 May 2026. For basic, high-consensus questions the answer opens by saying it comes from the tradition's perspective, gives the body to that tradition alone, and closes by offering other or skeptical perspectives. Lower-consensus questions get a summary of each view within the tradition. Published as prose with one worked example. No prompt, skill or licence statement. Silent on comparative questions and on questions that name no tradition. | Checked. Matches the issue. |
 
@@ -182,7 +182,7 @@ Unknown keys:
 - At the top level, an unknown key is allowed and ignored. The schema permits it. This is what
   lets a later version add a field without breaking a v0.1 host.
 - Inside `steward`, `persistence`, `persistence.reinject` and each `models` entry, an unknown
-  key makes the file invalid. A misspelled `claim` or `access` must not pass silently.
+  key makes the file invalid. A misspelled `claim` or `prompt` must not pass silently.
 
 A collection may require fields that are optional here, such as `version` and `license`. It
 adds fields of its own only under `metadata`.
@@ -317,7 +317,7 @@ only way that works on a model the package has no fine-tune for.
 
 ### 6. Fine-tuned models
 
-A `models` entry has four required fields:
+A `models` entry has three required fields:
 
 - `provider`: the service that serves the weights, in the same form as `name`, for example
   `tinker`.
@@ -326,9 +326,9 @@ A `models` entry has four required fields:
   `base` values.
 - `adapter`: the provider's own reference to the fine-tuned weights, 1 to 500 characters, for
   example a Tinker `tinker://<run_id>/sampler_weights/<name>` path.
-- `access`: `public` if anyone with access to the provider can load the weights, `restricted`
-  if only those the publisher has authorised can. A package may declare a restricted model.
-  Saying so lets a host and a listing show the truth, which is that most people cannot use it.
+
+For now the standard assumes every declared model is public: anyone with access to the provider
+can load it. v0.1 does not distinguish public from restricted models and has no field for it.
 
 Four are optional:
 
@@ -379,8 +379,7 @@ chooses mode C. Tools from `.mcp.json` stay connected in every mode.
 
 Other rules:
 
-- When a chosen model fails to load, for example because it is restricted, the host tells the
-  user and goes back to mode A.
+- When a chosen model fails to load, the host tells the user and goes back to mode A.
 - Mode C is available only when that package is the only active value system. With several
   active, every package has its wrapper in context (part 10).
 
@@ -529,7 +528,7 @@ from the same folders. In this repository the collection is `values/`.
 
 A listing page has what it needs from the frontmatter: `name`, `description`, the steward with
 the kind of claim, `version`, `license`, `tradition`, `languages`, `tags`, the declared models
-with their `access` and `prompt`, and from `.mcp.json` the tools a package connects to.
+with their `prompt` value, and from `.mcp.json` the tools a package connects to.
 
 Every valid package maps to a Claude Code marketplace entry with no information invented:
 
@@ -562,21 +561,17 @@ by the standard's rules alone, with nothing beside it in `spec/` needed to make 
   tells the model to use it for rulings, verses and hadith. The Ansari skill is not bundled, so
   that the model has one path to Ansari and the package works at Level 2. It declares the
   project's stage 2 fine-tuned checkpoint, so that the reference implementation can load a
-  fine-tuned model from the package with no extension of its own. The entry, with two items
-  still to be confirmed:
+  fine-tuned model from the package with no extension of its own. The entry, with its base
+  model ID still to be confirmed:
 
   ```yaml
   models:
     - provider: tinker
       base: # to be confirmed
       adapter: tinker://b1ced84d-f02a-5c16-8930-4f7f2e6636cd:train:0/sampler_weights/final
-      access: # to be confirmed
   ```
 
-  The owner's decision is that the checkpoint is published and declared `access: public`. That
-  value is written only after the architect confirms publication, and nothing is pushed with
-  it before then. Until `base` and `access` are filled in, the entry is incomplete and the
-  example does not pass V3.
+  Until `base` is filled in, the entry is incomplete and the example does not pass V3.
 - **`example-roman-catholic`**: a folder package built around bundled texts and a skill, so
   that between them the examples exercise every part of the layout. It declares no model,
   because none exists and a placeholder would be a false claim. It declares an MCP server only
@@ -709,8 +704,7 @@ cannot be run.
       least one invalid fixture labelled with the rule it breaks.
 - [ ] The V3 fixtures cover at least: missing `name`, missing `steward`, a malformed `name`, a
       missing `steward.claim`, an `official` claim with no `url`, an unknown key inside
-      `steward`, `every-tokens` below 1,000, and a `models` entry without `base` or without
-      `access`. A fixture with an unknown top-level key is valid.
+      `steward`, `every-tokens` below 1,000, and a `models` entry without `base`. A fixture with an unknown top-level key is valid.
 - [ ] The V5 fixtures cover at least: a long body with no core section, two matching headings,
       a core over the limit, a core heading inside a code fence, a Setext heading that does not
       count, and a CRLF file that is valid only after line endings are normalized.
@@ -756,8 +750,7 @@ cannot be run.
 - [ ] The schema accepts `prompt` values `required`, `optional` and `omit` on a model entry and
       refuses any other. The specification's part on fine-tuned models states the three modes,
       who chooses, and what the user is shown in each.
-- [ ] `example-islam` declares the stage 2 checkpoint with a confirmed `base` and `access`. No
-      pushed commit says `access: public` before the architect has confirmed publication.
+- [ ] `example-islam` declares the stage 2 checkpoint with a confirmed `base`.
 - [ ] The checker lives in its own directory under `spec/`, runs with one documented command,
       and needs no network access for the validity and rendering checks.
 - [ ] `spec/` contains no loader or chatbot code.
@@ -826,9 +819,8 @@ his comment on the issue. Also fixed.
 14. **Validators.** Code that checks the fixtures and renderings may live in a directory under
     `spec/`.
 15. **Reinjection.** Core only, as drafted.
-16. **Models.** The fine-tuned checkpoints are to be made public. The Islam example declares
-    them with `access: public`. The architect will confirm when publishing is done; do not mark
-    them public in a pushed commit before that confirmation.
+16. **Models.** For now the standard assumes every declared model is public. It does not
+    distinguish public from restricted models in v0.1, so the `access` field is dropped.
 17. **Fine-tuned model and the prompt.** Make it flexible. The standard must allow a fine-tuned
     model to run with the prompt still injected and also to stand on its own without it, rather
     than fixing "replaces reinjection only". Design how that is declared and who chooses. What
@@ -1088,14 +1080,13 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 - Rejected: including reachability of tools and models. A check would then fail when a server
   is briefly down, and would need accounts to run.
 
-**Whether a package may declare a model others cannot load.**
+**Whether the standard distinguishes public from restricted models.**
 
-- Adopted: yes, with a required `access` field. A model can exist, and be useful to the people
-  who trained it, before it is published.
-- Rejected: public models only. It would force publishing a checkpoint before a package could
-  mention it.
-- Rejected: allowing it without saying so. A listing would then advertise something most
-  visitors cannot use.
+- Adopted, by the owner's decision: no. For now every declared model is assumed public, and
+  v0.1 has no field for it.
+- Rejected: a required `access` field with `public` and `restricted`. This was in an earlier
+  draft. It can come back in a later version if packages start declaring models that most
+  people cannot load, which is a question issue #3 also raises for its browser.
 
 ## Open Questions
 
@@ -1120,10 +1111,11 @@ items 12 to 18, and the spec was revised to match. What remains:
 3. Whether three kinds of claim are enough. The values come from issue #3. A fourth, for a
    package that states plainly it has no standing at all, would suit the examples better than
    `organization`, at the cost of a longer list.
-4. Which `prompt` value `example-islam` declares for the checkpoints. They were trained with no
-   system prompt, and running them with a value-system prompt on top is untested. Recommended:
-   `optional` if issue #2's test of that combination goes well, and `omit` if it does not.
-5. The `tradition` value for `example-islam`. The checkpoints are Sunni. Recommended:
+4. Which `prompt` value `example-islam` declares for its checkpoint. The stage 1 checkpoint was
+   trained with no system prompt, and running a checkpoint with a value-system prompt on top
+   is untested. Recommended: `optional` if issue #2's test of that combination goes well, and
+   `omit` if it does not.
+5. The `tradition` value for `example-islam`. The stage 1 checkpoint is described as Sunni. Recommended:
    `[Islam, Sunni]` if that also describes Ansari's answers, and `[Islam]` otherwise.
 6. Whether the Ansari MCP server is the endpoint the Ansari project wants a public example to
    point at, given that its repository has been quiet since September 2025.
@@ -1220,8 +1212,8 @@ for this project.
     still injects the wrapper. It shows that a fine-tuned model is in use.
 33. **Different base model.** A host on a model that matches no entry ignores `models` and
     reinjects.
-34. **Restricted model.** A host that cannot load a chosen `restricted` model tells the user
-    and goes back to its own model with the prompt and reinjection.
+34. **Model that fails to load.** A host that cannot load a chosen model tells the user and
+    goes back to its own model with the prompt and reinjection.
 35. **Level 2 host with a Level 3 package.** `skills/` and `references/` are ignored, the MCP
     tool works, and the prompt is complete without them.
 36. **Two value systems.** The preamble is present, each package has its own wrapper and its
@@ -1255,7 +1247,6 @@ for this project.
 | The standard's fields turn out not to fit what the collection needs once issue #3 is specified. | Medium | Medium | Part 12 is written against issue #3's stated needs. A collection may require optional fields and extend under `metadata` without a new version of the standard. A real gap is a finding for v0.2. |
 | A package states `official` falsely and a host shows it as fact. | Medium | High | The standard calls it a claim everywhere. A host shows it with the source and URL, and the collection decides what evidence it needs before listing. |
 | A fine-tuned checkpoint behaves badly with a value-system prompt on top of it. | Medium | Medium | Untested today. Issue #2 tests it. The package then declares `prompt: omit` for that model, which the standard allows. |
-| The Islam example says a checkpoint is public before it has been published. | Low | Medium | `access` is left unfilled until the architect confirms publication, and a success criterion checks that no pushed commit says otherwise. |
 
 ## References
 
