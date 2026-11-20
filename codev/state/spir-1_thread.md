@@ -114,5 +114,15 @@ declare only a model that anyone with access to the provider can load. The `acce
 earlier drafts added to each model entry is dropped, along with everything that depended on
 it. A model entry has three required fields: `provider`, `base` and `adapter`. When a declared
 model fails to load, the host tells the user and goes back to its own model with the prompt
-and reinjection. The project's stage 2 checkpoint is being published, and its base model ID is
-still to be confirmed. Earlier entries in this log that mention `access` describe those drafts.
+and reinjection. The project's stage 2 checkpoint was being published at that point. Earlier entries in this log that mention `access` describe those drafts.
+
+## 2026-11-20 — stage 2 checkpoint confirmed
+
+The architect relayed confirmation that the stage 2 checkpoint is published on Tinker with no
+expiry. Base `thinkingmachines/Inkling-2-Small`, LoRA rank 32, the standard 65,536-token
+window, and no larger-window copy. The model entry for the Islam example in the spec is now
+complete: `provider`, `base`, `adapter` and `context-window`. Its `prompt` value is still an
+open question, because the checkpoint was trained with no system prompt and has not been tried
+with one. Loading the checkpoint from a second account has not been tested. The spec records
+that as an assumption and a risk, and asks the review to record a test or say plainly that it
+was not done.

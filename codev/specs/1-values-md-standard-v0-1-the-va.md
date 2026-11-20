@@ -107,7 +107,7 @@ document relies on them.
 | Belief Protocol | `BELIEF.md`, version 2.2, Apache-2.0. A schema for the beliefs themselves, with 10 structure types and per-belief attributes. Loaded at session start and kept active. Its "Agent Orientations" section of about 200 to 500 tokens is held in context throughout. It has nothing for tools, models, a host-side wrapper or reinjection, and calls itself complementary to Agent Skills. | Checked. Matches the issue. |
 | Claude Code marketplaces | `.claude-plugin/marketplace.json` requires `name`, `owner` and `plugins`. Each plugin entry requires `name` and `source`. An entry name is letters, digits, `.`, `_` and `-`, starting with a letter or digit. A relative `source` starts with `./` and resolves from the marketplace root. An entry may also carry `description`, `version`, `author`, `homepage`, `license`, `category` (a string) and `tags` (a list of strings). A plugin folder with no `plugin.json` can be listed: "the entry is the manifest". An entry can declare hooks inline. | Checked. |
 | Tinker fine-tunes | A checkpoint runs on the base model it was trained on. Sampler weights are addressed as `tinker://<run_id>/sampler_weights/<name>`. The OpenAI-compatible API accepts that path alone, or `<base model ID>;<path>` to select a context length. `thinkingmachines/Inkling-2-Small` is listed as a base model. | API forms checked. The model list is summary only. |
-| The project's fine-tuned checkpoints | Described in a comment on issue #2, as checked against the Tinker API on 2026-11-20. Stage 1 is a LoRA fine-tune of Inkling 2 Small: Islamic (Sunni), English only, trained to be good company for a practising Muslim and not to issue rulings, with no system prompt in training. Both the base model and that checkpoint honour a system prompt on the OpenAI-compatible endpoint. A value-system prompt on top of the fine-tune is untested. A later stage 2 checkpoint is the one the Islam example is to declare. Its base model ID was still being confirmed when this was written. There is no Roman Catholic checkpoint. | Reported, not re-checked here. |
+| The project's fine-tuned checkpoints | Described in the first comment on issue #2, as reported against the Tinker API on 2026-11-20. They are LoRA fine-tunes of Inkling 2 Small: Islamic (Sunni), English only, trained to be good company for a practising Muslim and not to issue rulings, with no system prompt in training. The Islam example declares the stage 2 checkpoint, which is stage 1 plus preference optimization: base `thinkingmachines/Inkling-2-Small`, LoRA rank 32, the standard 65,536-token window, with no larger-window copy. It is reported as published on Tinker with no expiry. Loading it from a second account has not been tested. Both the base model and a checkpoint honour a system prompt on the OpenAI-compatible endpoint. A value-system prompt on top of a fine-tune is untested. There is no Roman Catholic checkpoint. | Reported on 2026-11-20, not re-checked here. |
 | Ansari | A hosted MCP server exists at `https://mcp.ansari.chat/mcp`. It needs no key. On 2026-11-20 it answered `initialize` (protocol version `2024-11-05`) and listed one tool, `answer_islamic_question`, which takes a `question` string. Its repository was last pushed in September 2025 and has no licence file. The separate Ansari skill (MIT, version 3.4.1, August 2026) calls a different HTTP endpoint with `curl`, so it needs a shell. | Checked by calling the server. |
 | Principled pluralism | Michael Graham, The Gospel Coalition, 21 May 2026. For basic, high-consensus questions the answer opens by saying it comes from the tradition's perspective, gives the body to that tradition alone, and closes by offering other or skeptical perspectives. Lower-consensus questions get a summary of each view within the tradition. Published as prose with one worked example. No prompt, skill or licence statement. Silent on comparative questions and on questions that name no tradition. | Checked. Matches the issue. |
 
@@ -568,18 +568,19 @@ by the standard's rules alone, with nothing beside it in `spec/` needed to make 
   tells the model to use it for rulings, verses and hadith. The Ansari skill is not bundled, so
   that the model has one path to Ansari and the package works at Level 2. It declares the
   project's stage 2 fine-tuned checkpoint, so that the reference implementation can load a
-  fine-tuned model from the package with no extension of its own. The entry, with its base
-  model ID still to be confirmed:
+  fine-tuned model from the package with no extension of its own. The entry:
 
   ```yaml
   models:
     - provider: tinker
-      base: # to be confirmed
+      base: thinkingmachines/Inkling-2-Small
       adapter: tinker://b1ced84d-f02a-5c16-8930-4f7f2e6636cd:train:0/sampler_weights/final
+      context-window: 65536
   ```
 
-  The checkpoint is being published, as the rule in part 6 requires of any declared model.
-  Until `base` is filled in, the entry is incomplete and the example does not pass V3.
+  The checkpoint was confirmed as published on Tinker on 2026-11-20, as the rule in part 6
+  requires of any declared model. Its `prompt` value is open question 4. The entry also gets a
+  `description` saying what the model was trained to do.
 - **`example-roman-catholic`**: a folder package built around bundled texts and a skill, so
   that between them the examples exercise every part of the layout. It declares no model,
   because none exists and a placeholder would be a false claim. It declares an MCP server only
@@ -758,8 +759,9 @@ cannot be run.
 - [ ] The schema accepts `prompt` values `required`, `optional` and `omit` on a model entry and
       refuses any other. The specification's part on fine-tuned models states the three modes,
       who chooses, and what the user is shown in each.
-- [ ] `example-islam` declares the stage 2 checkpoint with a confirmed `base`, and the review
-      records that the checkpoint was confirmed as published.
+- [ ] `example-islam` declares the stage 2 checkpoint as shown in part 13.
+- [ ] (tool) The review records whether the stage 2 checkpoint loads from an account other
+      than the one that trained it. If that cannot be tried, it is reported as not verified.
 - [ ] The checker lives in its own directory under `spec/`, runs with one documented command,
       and needs no network access for the validity and rendering checks.
 - [ ] `spec/` contains no loader or chatbot code.
@@ -897,8 +899,11 @@ Further constraints:
   prompt fade only where a source can be found and checked.
 - Issue #2 builds the loader and the Claude Code hook adapter against this standard. Nothing
   here depends on that work being finished.
+- The stage 2 checkpoint can be loaded by anyone with access to Tinker. It is reported as
+  published. Loading it from a second account has not been tested, and until it has, the
+  example's compliance with the public-models rule rests on that report.
 - A fine-tuned model still honours a system prompt. This is reported for Inkling 2 Small and
-  the stage 1 checkpoint. How well a checkpoint behaves with a value-system prompt on top of it
+  one of the checkpoints. How well a checkpoint behaves with a value-system prompt on top of it
   is untested, and issue #2 tests it. The result decides which `prompt` value the example
   declares.
 - The outside tools the checks need can be run: Claude Code is installed here, `skills-ref`
@@ -1122,11 +1127,11 @@ items 12 to 18, and the spec was revised to match. What remains:
 3. Whether three kinds of claim are enough. The values come from issue #3. A fourth, for a
    package that states plainly it has no standing at all, would suit the examples better than
    `organization`, at the cost of a longer list.
-4. Which `prompt` value `example-islam` declares for its checkpoint. The stage 1 checkpoint was
-   trained with no system prompt, and running a checkpoint with a value-system prompt on top
-   is untested. Recommended: `optional` if issue #2's test of that combination goes well, and
+4. Which `prompt` value `example-islam` declares for its checkpoint. The checkpoint was
+   trained with no system prompt, and running it with a value-system prompt on top is
+   untested. Recommended: `optional` if issue #2's test of that combination goes well, and
    `omit` if it does not.
-5. The `tradition` value for `example-islam`. The stage 1 checkpoint is described as Sunni. Recommended:
+5. The `tradition` value for `example-islam`. The checkpoint is described as Sunni. Recommended:
    `[Islam, Sunni]` if that also describes Ansari's answers, and `[Islam]` otherwise.
 6. Whether the Ansari MCP server is the endpoint the Ansari project wants a public example to
    point at, given that its repository has been quiet since September 2025.
@@ -1257,6 +1262,7 @@ for this project.
 | The principled pluralism example misstates the essay it is drawn from. | Medium | Medium | The package cites the essay, keeps to what the essay says, carries the "not endorsed by its author" notice, and is treated like every other example. |
 | The standard's fields turn out not to fit what the collection needs once issue #3 is specified. | Medium | Medium | Part 12 is written against issue #3's stated needs. A collection may require optional fields and extend under `metadata` without a new version of the standard. A real gap is a finding for v0.2. |
 | A package states `official` falsely and a host shows it as fact. | Medium | High | The standard calls it a claim everywhere. A host shows it with the source and URL, and the collection decides what evidence it needs before listing. |
+| The published checkpoint turns out not to load from other accounts. | Low | Medium | Reported as published, but untested from a second account. The review records a test or says it was not done. If it fails, the model entry comes out of the example until it is fixed. |
 | A fine-tuned checkpoint behaves badly with a value-system prompt on top of it. | Medium | Medium | Untested today. Issue #2 tests it. The package then declares `prompt: omit` for that model, which the standard allows. |
 
 ## References
