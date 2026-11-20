@@ -104,7 +104,7 @@ document relies on them.
 | Belief Protocol | `BELIEF.md`, version 2.2, Apache-2.0. A schema for the beliefs themselves, with 10 structure types and per-belief attributes. Loaded at session start and kept active. Its "Agent Orientations" section of about 200 to 500 tokens is held in context throughout. It has nothing for tools, models, a host-side wrapper or reinjection, and calls itself complementary to Agent Skills. | Checked. Matches the issue. |
 | Claude Code marketplaces | `.claude-plugin/marketplace.json` requires `name`, `owner` and `plugins`. Each plugin entry requires `name` and `source`. An entry name is letters, digits, `.`, `_` and `-`, starting with a letter or digit. A relative `source` starts with `./` and resolves from the marketplace root. An entry may also carry `description`, `version`, `author`, `homepage`, `license`, `category` (a string) and `tags` (a list of strings). A plugin folder with no `plugin.json` can be listed: "the entry is the manifest". An entry can declare hooks inline. | Checked. |
 | Tinker fine-tunes | A checkpoint runs on the base model it was trained on. Sampler weights are addressed as `tinker://<run_id>/sampler_weights/<name>`. The OpenAI-compatible API accepts that path alone, or `<base model ID>;<path>` to select a context length. Publishing lets other accounts load a checkpoint. `thinkingmachines/Inkling-2-Small` is listed as a base model. | API forms checked. Publishing and the model list are summary only. |
-| The owner's checkpoint | Reported by the taqwabench architect in a comment on issue #2, checked there against the Tinker API on 2026-11-20. A LoRA fine-tune of Inkling 2 Small: Islamic (Sunni), English only, trained to be good company for a practising Muslim and not to issue rulings, with no system prompt in training. It exists as two saves of the same weights, one for a 64k window and one for a 256k window on a different base model ID. It is private to the training account. Both the base model and the checkpoint honour a system prompt on the OpenAI-compatible endpoint. A system prompt carrying a value system on top of the fine-tune is untested. There is no Roman Catholic checkpoint. | Reported, not re-checked here. |
+| The project's fine-tuned checkpoints | Described in a comment on issue #2, as checked against the Tinker API on 2026-11-20. Stage 1 is a LoRA fine-tune of Inkling 2 Small: Islamic (Sunni), English only, trained to be good company for a practising Muslim and not to issue rulings, with no system prompt in training. Both the base model and that checkpoint honour a system prompt on the OpenAI-compatible endpoint. A value-system prompt on top of the fine-tune is untested. A later stage 2 checkpoint is the one the Islam example is to declare. Its base model, context window and publication status were still being confirmed when this was written. There is no Roman Catholic checkpoint. | Reported, not re-checked here. |
 | Ansari | A hosted MCP server exists at `https://mcp.ansari.chat/mcp`. It needs no key. On 2026-11-20 it answered `initialize` (protocol version `2024-11-05`) and listed one tool, `answer_islamic_question`, which takes a `question` string. Its repository was last pushed in September 2025 and has no licence file. The separate Ansari skill (MIT, version 3.4.1, August 2026) calls a different HTTP endpoint with `curl`, so it needs a shell. | Checked by calling the server. |
 | Principled pluralism | Michael Graham, The Gospel Coalition, 21 May 2026. For basic, high-consensus questions the answer opens by saying it comes from the tradition's perspective, gives the body to that tradition alone, and closes by offering other or skeptical perspectives. Lower-consensus questions get a summary of each view within the tradition. Published as prose with one worked example. No prompt, skill or licence statement. Silent on comparative questions and on questions that name no tradition. | Checked. Matches the issue. |
 
@@ -231,8 +231,8 @@ rule. It does not truncate or repair the file. Part 11 gives the full list of va
 ### 4. The injected prompt (normative text)
 
 The standard fixes three texts. A host substitutes the placeholders and changes nothing else.
-The wording below is the draft for the spec gate. The final wording is fixed in `spec/`, and any
-change of meaning after the gate goes back to the architect.
+The owner accepted the wording below as the starting text on 2026-11-20. The final wording is
+fixed in `spec/`, and any change of meaning goes back to the architect.
 
 Rendering rules: every placeholder is replaced in a single pass, so a body that happens to
 contain the text `{name}` is left as it is. `{body}` and `{core}` are the trimmed texts from
@@ -292,11 +292,11 @@ to change.
 ### 5. Prompt fade and reinjection
 
 A host addresses prompt fade in one of two ways: it reinjects the core, or it runs a fine-tuned
-model the package declares. Every conforming host must be able to reinject, because it is the
+model the package declares (part 6). Every conforming host must be able to reinject, because it is the
 only way that works on a model the package has no fine-tune for.
 
 - **What is reinjected:** the reminder text with the core. Never the whole prompt, unless the
-  body is short enough to be its own core. Open question 4 puts this choice to the owner.
+  body is short enough to be its own core. The owner confirmed this on 2026-11-20.
 - **Where:** at the start of the next user message after the threshold is crossed, before the
   user's own text and separate from it: a separate content block where the API has them,
   otherwise the reminder, a blank line, and then the user's text. A host whose model accepts a
@@ -323,25 +323,63 @@ A `models` entry has four required fields:
   `base` values.
 - `adapter`: the provider's own reference to the fine-tuned weights, 1 to 500 characters, for
   example a Tinker `tinker://<run_id>/sampler_weights/<name>` path.
-- `access`: `public` if any account at the provider can load the weights, `restricted` if only
-  accounts the owner has authorised can. A package may declare a restricted model. Saying so
-  lets a host and a listing show the truth, which is that most people cannot use it.
+- `access`: `public` if anyone with access to the provider can load the weights, `restricted`
+  if only those the publisher has authorised can. A package may declare a restricted model.
+  Saying so lets a host and a listing show the truth, which is that most people cannot use it.
 
-Three are optional: `context-window`, a whole number of tokens from 1 to 100,000,000; a
-`description` of up to 500 characters saying what the model was trained to do and on what; and
-`trained-on`, the package version it was trained to embody.
+Four are optional:
 
-- **Matching.** An entry matches when the host is using that `provider` and the model it would
-  otherwise run is named by exactly the `base` string. There is no nearest-match and no
-  conversion. When nothing matches, the entries are ignored and the host reinjects.
-- A host is never required to use a matching model. It may use one only when the user or
-  operator has explicitly chosen to. It never switches models automatically.
+- `prompt`: how the model relates to the package's prompt. One of `required`, `optional` or
+  `omit`. Default `required`. See below.
+- `context-window`: a whole number of tokens from 1 to 100,000,000.
+- `description`: up to 500 characters saying what the model was trained to do and on what.
+- `trained-on`: the package version it was trained to embody.
+
+**Matching.** An entry matches when the host is using that `provider` and the model it would
+otherwise run is named by exactly the `base` string. There is no nearest-match and no
+conversion. When nothing matches, the entries are ignored and the host reinjects.
+
+**With or without the prompt.** A fine-tuned model can run with the package's prompt still
+injected, or stand on its own without it. Which of these a model supports is a fact about how
+it was trained and tested, so the package declares it, in `prompt`:
+
+| `prompt` | The package is saying | What a host may do |
+|---|---|---|
+| `required` | This model is meant to run with the wrapper and body in context. | Run it with the prompt. |
+| `optional` | This model works with the prompt and also on its own. | Run it either way. With the prompt unless the user or operator chooses otherwise. |
+| `omit` | This model is meant to stand on its own. Putting the prompt on top of it is untested or unwanted. | Run it without the prompt. |
+
+That gives a package three ways to be active, and a host must offer the first:
+
+| Mode | Model | Wrapper and body | Reinjection |
+|---|---|---|---|
+| A | The host's own | Injected | Yes |
+| B | A declared model | Injected | The host may skip it |
+| C | A declared model whose `prompt` is `optional` or `omit` | Not injected | None |
+
+**Who chooses.** The package says which modes a model supports. The user or operator chooses
+whether to use a declared model at all, and, where `prompt` is `optional`, whether to run it
+with the prompt. The host does neither on its own: it never switches models automatically and
+never drops the prompt unasked. A host is never required to offer modes B or C.
+
+**What the user is shown holds in every mode.** The host shows the name, the steward, the kind
+of claim and where the package came from, at install and for as long as the value system is
+active (part 9). In modes B and C it also shows that a fine-tuned model is in use and names it.
+In mode C the model has nothing in context that tells it what is installed, so the wrapper's
+rule that the model says so when asked cannot be relied on. The host's own display carries
+that duty, and the host shows that the prompt is not injected.
+
+**What mode C gives up.** Without the wrapper and body, none of the wrapper's rules are in
+context, nor are any instructions the body gives about tools. How the model behaves rests on
+its weights, which neither the host nor the user can read. A host says this when the user
+chooses mode C. Tools from `.mcp.json` stay connected in every mode.
+
+Other rules:
+
 - When a chosen model fails to load, for example because it is restricted, the host tells the
-  user and reinjects on its own model.
-- **A declared model replaces reinjection only.** A host running one may skip reinjection for
-  that package. It still injects the wrapper and body, because the fine-tune may be older than
-  the package, the host cannot inspect what the weights do, and the wrapper's rules on
-  disclosure and user choice must be in context either way. Nothing replaces the prompt.
+  user and goes back to mode A.
+- Mode C is available only when that package is the only active value system. With several
+  active, every package has its wrapper in context (part 10).
 
 ### 7. Tools, skills and conformance levels
 
@@ -416,8 +454,10 @@ Both are claims made by the package. The standard cannot verify them in v0.1. Fo
 the claim. What evidence a claim needs before a package is listed is for the collection that
 lists it to decide (issue #3). What a host must do is make the claim and its origin visible:
 show the steward, the kind of claim and the source at install, keep them available afterwards,
-and never tell the model to conceal the installed value system. The wrapper makes the model
-state the name and steward when asked. `authors` records who wrote the text when that differs
+and never tell the model to conceal the installed value system. This holds in every mode of
+part 6, including a fine-tuned model running without the prompt, where the host's display is
+the only thing that tells the user what is installed. When the wrapper is in context, it makes
+the model state the name and steward when asked. `authors` records who wrote the text when that differs
 from who vouches for it. Verifying a steward mechanically, for example through a well-known URL
 on the steward's domain or a signature, is left to a later version.
 
@@ -432,7 +472,9 @@ installed and choose between them. It may activate several at once, under these 
 - Each package has its own token count and its own interval. At a boundary, every package
   whose count is due gets its reminder, in activation order.
 - A fine-tuned model belongs to the package that declares it. Running it lets the host skip
-  reinjection for that package only. The others are reinjected as usual.
+  reinjection for that package only. The others are reinjected as usual. With several value
+  systems active, every package's wrapper is in context, so a model cannot run without its
+  prompt (part 6, mode C).
 - Value systems are never merged. A package cannot declare precedence over another. Only the
   user can.
 
@@ -483,7 +525,7 @@ from the same folders.
 
 A listing page has what it needs from the frontmatter: `name`, `description`, the steward with
 the kind of claim, `version`, `license`, `tradition`, `languages`, `tags`, the declared models
-with their `access`, and from `.mcp.json` the tools a package connects to.
+with their `access` and `prompt`, and from `.mcp.json` the tools a package connects to.
 
 Every valid package maps to a Claude Code marketplace entry with no information invented:
 
@@ -507,41 +549,68 @@ Code treats the marketplace entry as the manifest when the folder has none.
 
 ### 13. Example packages
 
+Four examples, laid out together as a collection, so they are also the seed content issue #3
+asks for.
+
 - **`example-islam`**: a folder package. `.mcp.json` declares the Ansari MCP server. The body
   tells the model to use it for rulings, verses and hadith. The Ansari skill is not bundled, so
-  that the model has one path to Ansari and the package works at Level 2. If the owner agrees
-  (open question 5), it declares the owner's checkpoint from issue #2 as two `restricted` model
-  entries, one per context window, so that the reference implementation can load a fine-tuned
-  model from the package with no private extension. If he does not, it declares no model.
+  that the model has one path to Ansari and the package works at Level 2. It declares the
+  project's stage 2 fine-tuned checkpoint, so that the reference implementation can load a
+  fine-tuned model from the package with no extension of its own. The entry, with two items
+  still to be confirmed:
+
+  ```yaml
+  models:
+    - provider: tinker
+      base: # to be confirmed
+      adapter: tinker://b1ced84d-f02a-5c16-8930-4f7f2e6636cd:train:0/sampler_weights/final
+      access: # to be confirmed
+  ```
+
+  The owner's decision is that the checkpoint is published and declared `access: public`. That
+  value is written only after the architect confirms publication, and nothing is pushed with
+  it before then. Until `base` and `access` are filled in, the entry is incomplete and the
+  example does not pass V3.
 - **`example-roman-catholic`**: a folder package built around bundled texts and a skill, so
-  that between them the two examples exercise every part of the layout. It declares no model,
+  that between them the examples exercise every part of the layout. It declares no model,
   because none exists and a placeholder would be a false claim. It declares an MCP server only
   if research during planning finds one with clear standing. Its bundled texts are limited to
   ones whose public-domain status can be shown. The candidates are the Douay-Rheims Bible in
   the Challoner revision, the Baltimore Catechism, and the Apostles' and Nicene creeds in an
   English translation old enough to be out of copyright. Where the status of a text cannot be
   shown, the package cites and links it and does not reproduce it.
-- **A minimal single-file example**, if the owner agrees (open question 11): the
-  `plain-speaking` file shown at the top of this spec, to show the smallest valid package and
-  that the format is not limited to faith. It is a valid fixture either way.
+- **`example-principled-pluralism`**: a minimal package, `VALUES.md` alone. It is a value
+  system about how to answer questions on religion, taken from Michael Graham's published
+  essay: answer a basic, high-consensus question about a religion from that religion's own
+  vantage point and say that you are doing so, offer other perspectives at the close, and
+  where the tradition is itself divided, summarise each view. Everything that is this value
+  system's own position is in the package's body. The package cites the essay as its source,
+  as any package cites its sources.
+- **`plain-speaking`**: the file shown at the top of this spec. A non-religious value system
+  in a single file, and the smallest valid package.
 
-Both tradition examples name the values.md project as steward with the claim `organization`,
-carry an "illustrative, not endorsed by any religious authority" notice in the description, the
-body and their README, and keep their own statements to high-consensus basics. The examples
-are laid out as a collection, so they are also the seed content issue #3 asks for.
+The three examples that describe someone else's tradition or work name the values.md project
+as steward with the claim `organization`, and each carries a notice that it is illustrative and
+not endorsed: by any religious authority for the two faith examples, and by its author for the
+principled pluralism example. The notice appears in the description, the body and the
+package's README. Their own statements are kept to high-consensus basics.
+
+No example is treated specially by the standard. The wrapper, the validity rules and the
+specification text are the same for all four and mention none of them outside the places where
+examples are listed.
 
 ### 14. Deliverables under `spec/`
 
 1. The specification text, in RFC 2119 language, covering parts 1 to 12 and including the
    security section described in part 8.
-2. The rationale document, which also carries part 16.
+2. The rationale document.
 3. A JSON Schema (draft 2020-12) for the frontmatter.
 4. The three normative prompt texts, each available as a standalone file a host can copy.
-5. The example packages, with the expected rendered wrapper and reminder for each.
+5. The four example packages, with the expected rendered wrapper and reminder for each.
 6. The compatibility note.
 7. The validity fixtures described in part 11.
-8. If the owner agrees (open question 3), a small self-test that applies the validity rules to
-   the fixtures and checks the renderings. See part 17.
+8. A checker, in its own directory under `spec/`, that applies the validity rules to the
+   fixtures and checks the renderings. See part 16.
 
 ### 15. Compatibility note: what it must say
 
@@ -567,57 +636,43 @@ are laid out as a collection, so they are also the seed content issue #3 asks fo
 - **A host that only understands AGENTS.md** gets nothing automatically. A user can paste the
   body in by hand and gets the prompt once, with no wrapper, reminder or tools.
 
-### 16. Where principled pluralism fits
-
-It is guidance in the wrapper, not a package and not a default. Its two structural rules are in
-the wrapper: answer from the tradition's own vantage point with the body given to that
-tradition (rule 1), and present each view where the tradition is divided (rule 2). Its closing
-offer of other perspectives becomes a standing right of the user (rule 5), since a user who
-installed a value system has already chosen the perspective and does not need the offer
-repeated on every answer. The rationale credits the article as the source of that structure.
-The standard publishes nothing under the name: no package and no mode. A package by that name,
-and its use as a host's default when nothing is installed, are recorded as future work that
-needs Michael Graham's agreement. What a host does when nothing is installed is outside the
-standard.
-
-### 17. How this project is verified without a host
+### 16. How this project is verified without a host
 
 This project ships a standard and no host, so its checks are of two kinds.
 
 - **Checked here.** Whether a fixture is valid, whether an example renders to the expected
   wrapper and reminder, and whether the field table, the schema and the quoted normative texts
-  agree. These need the validity and rendering rules applied mechanically. The recommended way
-  is a small self-test kept beside the fixtures in `spec/`. It is the standard testing itself.
-  It is not a loader, it talks to no model, and it is not the registry's checker, though issue
-  #3 may reuse it. Whether code of this kind may live in `spec/` is open question 3. The
-  alternative is a check by hand, recorded in the review, which nobody can re-run.
+  agree. A checker in its own directory under `spec/` applies the validity and rendering rules
+  mechanically, so that anyone can re-run the checks. It is the standard testing itself. It is
+  not a loader, it talks to no model, and it is not the registry's checker, though issue #3
+  may reuse it.
 - **Defined here, exercised by issue #2.** What a host does at run time: when it reinjects,
   what it does with a declared model, how it handles several value systems, what it asks
   consent for. The specification states each as a rule and shows it in a worked example.
   Running them needs a host, which is issue #2.
 
-Some checks need outside tools: `claude plugin validate` and a Claude Code install (present in
-this environment, version 2.1.329), `skills-ref validate` (not installed here, and to be
-installed from the Agent Skills repository), and a network call to the Ansari server. If one of
-them cannot be run, the criterion that depends on it is reported as not verified in the review
-and to the architect. It is never ticked on trust.
+Some checks need outside tools: `claude plugin validate` and a Claude Code install (present
+where this was written, version 2.1.329), `skills-ref validate` (to be installed from the
+Agent Skills repository), and a network call to the Ansari server. If one of them cannot be
+run, the criterion that depends on it is reported as not verified in the review and to the
+architect. It is never ticked on trust.
 
-### 18. Where the issue's eight questions are answered
+### 17. Where the issue's eight questions are answered
 
 | The issue asks | Answered in |
 |---|---|
 | 1. How a host with no skill or plugin loader uses declared tools | Part 7 |
 | 2. What is reinjected, where, and how "every N tokens" is counted | Parts 3 and 5 |
 | 3. How model declarations work across providers, and what a host does on a base model with no adapter | Part 6 |
-| 4. Whether a fine-tuned model replaces reinjection, the prompt, both or neither | Part 6 |
+| 4. Whether a fine-tuned model replaces reinjection, the prompt, both or neither | Part 6: it may always replace reinjection, and it replaces the prompt only where the package allows it and the user or operator chooses it |
 | 5. Provenance: who authored a package, who vouches for it, and how a user can tell | Part 9 |
 | 6. Whether more than one value system can be installed, and what happens when they conflict | Part 10 |
-| 7. Where principled pluralism fits | Part 16 |
+| 7. Where principled pluralism fits | Part 13: it is a value system like any other, and one of the examples |
 | 8. The literal file name and discovery rules | Part 8 |
 
 ## Success Criteria
 
-Criteria marked (tool) depend on an outside tool or service. Part 17 says what happens when one
+Criteria marked (tool) depend on an outside tool or service. Part 16 says what happens when one
 cannot be run.
 
 - [ ] `spec/` contains the deliverables listed in Desired State part 14. Nothing else in the
@@ -626,9 +681,8 @@ cannot be run.
 - [ ] The specification text opens with the smallest valid `VALUES.md` in full, of no more
       than 12 lines, and with the two lists of what a first-time author and a Level 1 host can
       ignore. That file is one of the valid fixtures.
-- [ ] The specification text answers each of the issue's eight questions, listed in part 18, in
-      an identifiable section, with the decisions recorded in parts 1 to 12. The rationale
-      carries part 16.
+- [ ] The specification text answers each of the issue's eight questions, listed in part 17, in
+      an identifiable section, with the decisions recorded in parts 1 to 13.
 - [ ] The specification text has a security section that makes the six points listed in part 8.
 - [ ] Every frontmatter field in the specification text is in the schema with the same
       requiredness and limits, and the schema has no field the text lacks. The schema allows
@@ -664,8 +718,8 @@ cannot be run.
       start of the user message.
 - [ ] (tool) `example-islam` declares the Ansari MCP server, and the review records the date on
       which that server answered `initialize` and listed its tool.
-- [ ] Each tradition example carries the illustrative notice in its description, body and
-      README, names the values.md project as steward, and has a name beginning `example-`.
+- [ ] Each of the three `example-` packages carries its "illustrative, not endorsed" notice in
+      its description, body and README, and names the values.md project as steward.
 - [ ] (tool) Each folder example, with only `.claude-plugin/plugin.json` added, passes
       `claude plugin validate` and loads in Claude Code with its skills and MCP servers
       available. The compatibility note states what Claude Code does not provide.
@@ -678,7 +732,18 @@ cannot be run.
       Every claim about another format links to its source and gives the date it was checked.
 - [ ] No bundled reference text is under third-party copyright. Each one states its source and
       the basis for its public-domain or licence status.
-- [ ] No package, mode or file is published under the name "principled pluralism".
+- [ ] `example-principled-pluralism` is a valid package that cites the published essay as its
+      source and carries the "illustrative, not endorsed by its author" notice. Outside that
+      package and the places where the examples are listed, nothing in `spec/` mentions
+      principled pluralism: not the wrapper, not the specification's rules, and not the
+      rationale's account of where the wrapper's rules come from.
+- [ ] The schema accepts `prompt` values `required`, `optional` and `omit` on a model entry and
+      refuses any other. The specification's part on fine-tuned models states the three modes,
+      who chooses, and what the user is shown in each.
+- [ ] `example-islam` declares the stage 2 checkpoint with a confirmed `base` and `access`. No
+      pushed commit says `access: public` before the architect has confirmed publication.
+- [ ] The checker lives in its own directory under `spec/`, runs with one documented command,
+      and needs no network access for the validity and rendering checks.
 - [ ] `spec/` contains no loader or chatbot code.
 
 ## Constraints
@@ -724,6 +789,43 @@ Added by the architect on 2026-11-20, relaying the owner. Also fixed.
     2026-11-20. Adding `plugin.json` gives Claude Code a package's tools and skills and not its
     prompt. This project describes the adapter in the compatibility note and does not build it.
 
+Decided by the owner on 2026-11-20 in answer to this spec's first open questions, copied from
+his comment on the issue. Also fixed.
+
+12. **The injected prompt.** The reading is right: the standard fixes which part of `VALUES.md`
+    is the prompt, the wrapper text and the reminder text. The draft wrapper wording is
+    accepted as the starting text.
+13. **Principled pluralism is a value system like any other**, a minimal one. Add it as an
+    example package alongside Islam, Roman Catholic and the plain-speaking example. Do not
+    treat it specially anywhere:
+    - Drop the separate "where principled pluralism fits" treatment and the plan to credit it
+      as the source of the wrapper's structure.
+    - The wrapper's rules stay only on their own merits, as what a host does for any installed
+      value system. Anything that is specifically principled pluralism's position belongs in
+      that package's body.
+    - The package cites the published essay as its source, as any package cites its sources,
+      and carries the same "illustrative, not endorsed by its author" notice as the other
+      examples.
+    - This replaces the earlier caution in this issue about publishing under that name.
+14. **Validators.** Code that checks the fixtures and renderings may live in a directory under
+    `spec/`.
+15. **Reinjection.** Core only, as drafted.
+16. **Models.** The fine-tuned checkpoints are to be made public. The Islam example declares
+    them with `access: public`. The architect will confirm when publishing is done; do not mark
+    them public in a pushed commit before that confirmation.
+17. **Fine-tuned model and the prompt.** Make it flexible. The standard must allow a fine-tuned
+    model to run with the prompt still injected and also to stand on its own without it, rather
+    than fixing "replaces reinjection only". Design how that is declared and who chooses. What
+    the user is shown about what is installed and who vouches for it must hold in both cases.
+18. **Accepted without objection:** the 7,500-character body limit, hyphenated keys, the
+    values.md project as steward of the examples with a "not endorsed" notice, a non-religious
+    single-file example, CC BY 4.0 for the spec text, and local MCP servers allowed with
+    consent.
+
+Relayed by the architect on 2026-11-20:
+
+19. The Islam example declares the stage 2 checkpoint, not stage 1.
+
 Further constraints:
 
 - Out of scope: the chatbot and any loader code (issue #2), the registry, its browser and its
@@ -732,8 +834,6 @@ Further constraints:
 - The registry's own questions stay with issue #3: what is accepted and who decides, what
   evidence a claim of authority needs, what review a declared tool gets, and name squatting.
   The standard supplies the fields and the validity rule those answers will use.
-- Anything published under the name "principled pluralism" needs Michael Graham's agreement
-  first.
 - Adoption cost decides reach. A Level 1 host should need no new dependency: read a file,
   substitute three placeholders, count tokens.
 - A host other than Claude Code must not have to understand Claude Code's formats beyond
@@ -754,7 +854,7 @@ Further constraints:
   documentation describes the file as "an `mcpServers` map" without showing it. Tested during
   implementation.
 - The Ansari MCP server stays available without a key. Its repository has been quiet since
-  September 2025. The owner is close to the Ansari project and can confirm its standing.
+  September 2025. Open question 6 asks the Ansari project to confirm its standing.
 - Hosts can place text next to a user message that is distinguishable from what the user typed.
   This holds for the chat APIs in common use.
 - Counting characters is an acceptable stand-in for counting tokens when setting limits and when
@@ -764,13 +864,13 @@ Further constraints:
   prompt fade only where a source can be found and checked.
 - Issue #2 builds the loader and the Claude Code hook adapter against this standard. Nothing
   here depends on that work being finished.
-- A fine-tuned model still honours a system prompt. This is confirmed for Inkling 2 Small and
-  the owner's checkpoint. How well the checkpoint behaves with a value-system prompt on top of
-  it is untested, and issue #2 tests it. The rule that a declared model never replaces the
-  prompt depends on this.
+- A fine-tuned model still honours a system prompt. This is reported for Inkling 2 Small and
+  the stage 1 checkpoint. How well a checkpoint behaves with a value-system prompt on top of it
+  is untested, and issue #2 tests it. The result decides which `prompt` value the example
+  declares.
 - The outside tools the checks need can be run: Claude Code is installed here, `skills-ref`
   is not and has to be installed from the Agent Skills repository, and the Ansari server has
-  to be reachable. Part 17 says what happens when one cannot be run.
+  to be reachable. Part 16 says what happens when one cannot be run.
 - The Claude Code hook cap is 10,000 characters for each hook's output, measured separately.
   This was read through a summary and is re-checked before the compatibility note states it.
 - Issue #3 writes its checker against the validity rules and fixtures delivered here. Where
@@ -842,9 +942,17 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 
 - Adopted: a short core, capped at 1,500 characters. At the default interval that adds roughly
   6 to 8 percent to the conversation. This departs from the owner's wording in decision 5 for
-  any body longer than the core limit. Open question 4 puts the choice to him with the costs.
+  any body longer than the core limit. He was shown the costs below and confirmed core only.
 - Rejected: the whole prompt. A 7,500-character body every 5,000 tokens would add about 38
-  percent.
+  percent. The figures, at four characters to a token and the default interval:
+
+  | What is reinjected | Tokens per reminder | Added to the conversation | Reminder tokens after 100,000 tokens of conversation, if every reminder is kept |
+  |---|---|---|---|
+  | A typical core of 1,000 characters | about 290 | about 6% | about 5,800 |
+  | The largest core, 1,500 characters | about 415 | about 8% | about 8,300 |
+  | A whole body of 4,000 characters | about 1,040 | about 21% | about 20,800 |
+  | The largest body, 7,500 characters | about 1,915 | about 38% | about 38,300 |
+
 - Rejected: a fixed one-line pointer with no content. It restates that a value system exists
   without restating what it says, which is the part that fades.
 
@@ -859,12 +967,20 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 
 **Whether a fine-tuned model replaces the prompt.**
 
-- Adopted: it replaces reinjection only. Reasons are in Desired State part 6.
-- Rejected: replacing the prompt as well. The value system would then live in weights nobody
-  can read, the user could not be told what is installed from anything in context, and a stale
-  fine-tune would silently override a newer package.
-- Rejected: replacing nothing. That would make the fine-tune pointless for prompt fade, against
-  decision 5.
+- Adopted: the package declares it for each model, in a `prompt` field with three values, and
+  the user or operator chooses within what is declared. Whether a model can stand alone
+  depends on how it was trained and tested, and only the people who made it know that. The
+  default is `required`, so that a model with no declaration keeps the prompt in context.
+- Rejected: a fixed rule that a model replaces reinjection only. This was the first draft. The
+  owner asked for a model to be able to stand on its own as well.
+- Rejected: leaving it to the host. A host cannot tell from outside whether a set of weights
+  was trained to carry the value system unaided.
+- Rejected: a yes-or-no field. It cannot tell "works either way" from "must not have the
+  prompt on top", and the second is a real case: a model trained with no system prompt, never
+  tested with one.
+- Rejected: a short fixed notice injected in place of the wrapper when the prompt is omitted,
+  so the model could still say what is installed. It would mean the model never truly stands
+  alone, which is what was asked for. The host's own display carries disclosure instead.
 
 **How a host without a skill loader uses tools.**
 
@@ -899,9 +1015,12 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 
 **Where principled pluralism fits.**
 
-- Adopted: guidance in the wrapper. Reasons are in Desired State part 16.
-- Rejected: a third example package. It would be published under the name and needs agreement
-  first. It remains a good candidate once that agreement exists.
+- Adopted, by the owner's decision: it is a value system like any other and one of the example
+  packages. Its positions are in that package's body. The wrapper's rules stand on their own
+  merits as what a host does for any installed value system.
+- Rejected: treating it as the source of the wrapper's structure, or as guidance built into
+  the wrapper. This was the first draft. It gave one value system a standing in the standard
+  that no other has.
 - Rejected: a default for hosts with nothing installed. A package format has no way to bind a
   host that has not installed a package.
 
@@ -941,8 +1060,8 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 
 **Whether a package may declare a model others cannot load.**
 
-- Adopted: yes, with a required `access` field. The owner's checkpoint is private today, and
-  the reference implementation needs to load it from a package.
+- Adopted: yes, with a required `access` field. A model can exist, and be useful to the people
+  who trained it, before it is published.
 - Rejected: public models only. It would force publishing a checkpoint before a package could
   mention it.
 - Rejected: allowing it without saying so. A listing would then advertise something most
@@ -950,90 +1069,46 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 
 ## Open Questions
 
-**Critical** (the owner's answer at the spec gate changes the deliverables)
+The owner answered the first round of questions on 2026-11-20. His answers are in Constraints,
+items 12 to 18, and the spec was revised to match. What remains:
 
-1. **Decision 3.** Is the reading correct that the standard fixes the prompt part, the exact
-   wrapper and the exact reminder? Is the draft wording in Desired State part 4 acceptable as
-   the starting text?
-2. **Principled pluralism.** May the rationale cite the article by name and credit it as the
-   source of the wrapper's structure, with no package or mode under that name? If any mention
-   needs Michael Graham's agreement first, the rationale describes the structure without the
-   name until that agreement exists.
-3. **A self-test in `spec/`.** Checking the fixtures and the renderings needs the validity and
-   rendering rules applied by a program. May a small self-test live beside the fixtures in
-   `spec/`? The issue puts "the chatbot and any loader code" out of scope, and issue #3 asks
-   separately where its checker should live. Recommended: yes. It is the standard testing its
-   own fixtures, it loads nothing into a model, and issue #3 stays free to reuse or replace it.
-   Without it, the checks are done by hand and recorded in the review, and nobody can re-run
-   them. The plan depends on this answer. See part 17.
-4. **Reinjecting a core, not the prompt.** The owner's decision 5 says the host "reinjects the
-   prompt". This spec reinjects only the core, a section of at most 1,500 characters. For a
-   package whose body is 1,500 characters or fewer, the core is the whole body, so the owner's
-   words hold exactly. For a longer body they do not, and the owner should choose. Costs, at
-   four characters to a token and the default interval of 5,000 tokens:
+**Critical** (the answer changes the deliverables)
 
-   | What is reinjected | Tokens per reminder | Added to the conversation | Reminder tokens after 100,000 tokens of conversation |
-   |---|---|---|---|
-   | A typical core of 1,000 characters | about 290 | about 6% | about 5,800 |
-   | The largest core, 1,500 characters | about 415 | about 8% | about 8,300 |
-   | A whole body of 4,000 characters | about 1,040 | about 21% | about 20,800 |
-   | The largest body, 7,500 characters | about 1,915 | about 38% | about 38,300 |
-
-   The last column assumes the host keeps every reminder in context. A host that keeps only
-   the newest one holds a single reminder at a time, and pays the full figure once per
-   interval on a provider that does not cache. The choices:
-
-   - **(a) Core only**, as drafted. Recommended. The cost is bounded and small, and the author
-     decides what must not fade.
-   - **(b) The whole body, always**, as the owner's words say. Simplest to state, with no core
-     section to define. To keep the cost tolerable the body limit would have to come down,
-     probably to about 2,000 characters, which pushes more into skills and references.
-   - **(c) The package chooses**: core by default, with a frontmatter switch to reinject the
-     whole body. Flexible, at the cost of one more field and a cost the host does not control.
-
-5. **The checkpoint in a public example.** May `example-islam` print the two `tinker://` paths
-   from the comment on issue #2, marked `restricted`? If not, the example declares no model and
-   the reference implementation needs its own package to show the fine-tuned path.
+1. **The design for running a fine-tuned model with or without the prompt.** The owner asked
+   for both to be possible and for a design of how it is declared and who chooses. Part 6
+   proposes a `prompt` field on each model entry (`required`, `optional` or `omit`, default
+   `required`), with the package declaring what a model supports and the user or operator
+   choosing within that. Is this the flexibility that was meant? Two points to confirm in
+   particular: the default is `required`, so a model with no declaration always runs with the
+   prompt, and running without the prompt is limited to the case where one value system is
+   active.
 
 **Important** (shapes the design, and has a recommended answer above)
 
-6. `steward` as a required field and as an object, with a required `claim` of `individual`,
+2. `steward` as a required field and as an object, with a required `claim` of `individual`,
    `organization` or `official`, where the issue's sketch had a string.
-7. The limits: body at most 7,500 characters, core at most 1,500, frontmatter at most 8,000.
-   The body limit keeps a rendered wrapper at 9,432 characters at most, under Claude Code's
-   10,000-character hook cap, and pushes depth into skills and references.
-8. Hyphenated keys (`every-tokens`), where the issue's sketch had `every_tokens`.
-9. Example names (`example-islam`, `example-roman-catholic`) and the values.md project as their
-   steward, with the claim `organization`. The owner may prefer to arrange a knowledgeable
-   reviewer for each before v0.1 is publicised.
-10. The `tradition` value for `example-islam`. The checkpoint is Sunni. Recommended:
-   `[Islam, Sunni]` if the owner confirms that also describes Ansari's answers, and `[Islam]`
-   otherwise.
-11. Whether to include the minimal non-religious single-file example, which the issue did not
-    list.
-12. The licence for `spec/`. Recommended: CC BY 4.0 for the text, and a permissive code licence
-    for the schema and examples. The repository has no licence file yet. The registry's own
-    licensing question (issue #3) will lean on this answer.
-13. Whether the Ansari MCP server is the endpoint the Ansari project wants a public example to
-    point at, given that its repository has been quiet since September 2025.
-14. Whether three kinds of claim are enough. The values come from issue #3. A fourth, for a
-    package that states plainly it has no standing at all, would suit the examples better than
-    `organization`, at the cost of a longer list.
-
-15. Local MCP servers. The draft allows a package to declare one, as a Claude Code plugin can,
-    and requires consent before a host starts it. The stricter choice is remote servers only in
-    v0.1, which removes the one way a package can cause code to run, at the cost of excluding
-    the many MCP servers that run as a local command. Recommended: allow, with consent, and let
-    a collection refuse them.
-16. `metadata` holds any JSON value, where Agent Skills allows strings only. This is what lets
-    a collection add structured fields of its own without a new version of the standard.
+3. Whether three kinds of claim are enough. The values come from issue #3. A fourth, for a
+   package that states plainly it has no standing at all, would suit the examples better than
+   `organization`, at the cost of a longer list.
+4. Which `prompt` value `example-islam` declares for the checkpoints. They were trained with no
+   system prompt, and running them with a value-system prompt on top is untested. Recommended:
+   `optional` if issue #2's test of that combination goes well, and `omit` if it does not.
+5. The `tradition` value for `example-islam`. The checkpoints are Sunni. Recommended:
+   `[Islam, Sunni]` if that also describes Ansari's answers, and `[Islam]` otherwise.
+6. Whether the Ansari MCP server is the endpoint the Ansari project wants a public example to
+   point at, given that its repository has been quiet since September 2025.
+7. The licence for everything in `spec/` that is not the specification text: the schema, the
+   fixtures, the examples and the checker. The text is CC BY 4.0 by the owner's decision.
+   Recommended for the rest: MIT.
+8. `metadata` holds any JSON value, where Agent Skills allows strings only. This is what lets
+   a collection add structured fields of its own without a new version of the standard.
 
 **Nice-to-know** (does not block v0.1)
 
-17. Translations of the wrapper for value systems written in other languages.
-18. A way to verify a steward: a well-known URL or a signature.
-19. How a single package is distributed outside a collection: an archive, a URL.
-20. Whether a Catholic source exists as an MCP server with clear standing, and which of the
+9. Translations of the wrapper for value systems written in other languages.
+10. A way to verify a steward: a well-known URL or a signature.
+11. How a single package is distributed outside a collection: an archive, a URL.
+12. Whether a Catholic source exists as an MCP server with clear standing, and which of the
     candidate texts in part 13 can be shown to be in the public domain. Both are researched
     during planning. The example cites and links whatever cannot be shown.
 
@@ -1067,37 +1142,41 @@ Validity, each against a fixture and with no network access:
 15. **`.mcp.json` branches.** Remote and local servers are valid. Both keys, neither key, an
     `http` address, `headers` and a bad server name are each invalid under V7.
 16. **Symbolic link.** A folder containing one is invalid under V9.
-17. **Name and folder.** In a collection, a package whose folder name differs from its `name`
+17. **Model entry.** `prompt: omit` is valid. `prompt: sometimes` and a model entry with an
+    unknown key are invalid under V3.
+18. **The four examples.** Each is valid, including `example-principled-pluralism`, which is
+    `VALUES.md` alone.
+19. **Name and folder.** In a collection, a package whose folder name differs from its `name`
     is invalid under V10, and so is a second package with a name already taken.
 
 Rendering and consistency:
 
-18. **Rendering.** For each example, substituting the placeholders gives exactly the expected
+20. **Rendering.** For each example, substituting the placeholders gives exactly the expected
     rendered wrapper and reminder. A body that contains the text `{name}` keeps it.
-19. **Size budget.** A rendering with the longest name, steward name and body is 9,432
+21. **Size budget.** A rendering with the longest name, steward name and body is 9,432
     characters.
-20. **Consistency.** The field table and the schema agree, and quoted normative text is
+22. **Consistency.** The field table and the schema agree, and quoted normative text is
     identical to the standalone files.
-21. **Marketplace mapping.** The entry generated for each example matches the table in part 12,
+23. **Marketplace mapping.** The entry generated for each example matches the table in part 12,
     with absent optional fields left out.
 
 With outside tools:
 
-22. **Claude Code plugin.** Each folder example with `plugin.json` added validates and loads,
+24. **Claude Code plugin.** Each folder example with `plugin.json` added validates and loads,
     with its skills and MCP servers available.
-23. **Marketplace.** The generated `marketplace.json` validates, and an example with no
+25. **Marketplace.** The generated `marketplace.json` validates, and an example with no
     `plugin.json` installs from it in Claude Code.
-24. **Skills.** Every bundled skill passes the Agent Skills validator.
-25. **Ansari.** The declared server answers `initialize` and lists its tool.
+26. **Skills.** Every bundled skill passes the Agent Skills validator.
+27. **Ansari.** The declared server answers `initialize` and lists its tool.
 
 Non-functional:
 
-26. **Implementable from the text.** An agent given only `spec/` produces the correct rendered
+28. **Implementable from the text.** An agent given only `spec/` produces the correct rendered
     prompt and reminder timing for an example.
-27. **Lightness.** The smallest valid file is no more than 12 lines, and the opening of the
+29. **Lightness.** The smallest valid file is no more than 12 lines, and the opening of the
     specification tells a first-time author what to ignore.
-28. **Honesty of the examples.** The illustrative notice appears in all three places, and no
-    bundled text is under third-party copyright.
+30. **Honesty of the examples.** Each `example-` package carries its notice in all three
+    places, and no bundled text is under third-party copyright.
 
 ### Defined here, exercised by a host (issue #2)
 
@@ -1105,20 +1184,28 @@ The specification states each of these as a rule and shows it in the worked exam
 them needs a host. They are conformance tests for hosts, and they are not pass or fail gates
 for this project.
 
-29. **Reminder timing.** The first reminder falls at the first user message after 5,000
+31. **Reminder timing.** The first reminder falls at the first user message after 5,000
     conversation tokens. A single large tool result produces one reminder, not several.
-30. **Fine-tuned model in use.** The host skips reinjection for that package and still injects
-    the wrapper.
-31. **Different base model.** A host on a model that matches no entry ignores `models` and
+32. **Fine-tuned model with the prompt.** The host may skip reinjection for that package and
+    still injects the wrapper. It shows that a fine-tuned model is in use.
+33. **Different base model.** A host on a model that matches no entry ignores `models` and
     reinjects.
-32. **Restricted model.** A host that cannot load a chosen `restricted` model tells the user
-    and reinjects.
-33. **Level 2 host with a Level 3 package.** `skills/` and `references/` are ignored, the MCP
+34. **Restricted model.** A host that cannot load a chosen `restricted` model tells the user
+    and goes back to its own model with the prompt and reinjection.
+35. **Level 2 host with a Level 3 package.** `skills/` and `references/` are ignored, the MCP
     tool works, and the prompt is complete without them.
-34. **Two value systems.** The preamble is present, each package has its own wrapper and its
+36. **Two value systems.** The preamble is present, each package has its own wrapper and its
     own count, and each core is reinjected when due. Two packages with one name are refused.
-35. **Consent.** The host asks before first connecting to a declared server and before
+37. **Consent.** The host asks before first connecting to a declared server and before
     starting a local command.
+38. **Fine-tuned model without the prompt.** With `prompt: optional` and the user choosing to
+    drop the prompt, or with `prompt: omit`, nothing from the package is injected. The host
+    still shows the name, steward, kind of claim and source, and shows that the prompt is not
+    injected.
+39. **Prompt not droppable.** With `prompt: required`, or with the field absent, the host does
+    not offer to run the model without the prompt.
+40. **Two value systems and a standalone model.** With two packages active, the host does not
+    run either one's model without its prompt.
 
 ## Risks and Mitigation
 
@@ -1130,15 +1217,15 @@ for this project.
 | Claude Code rejects or mishandles a folder with `VALUES.md` at its root. | Low | High | Test during implementation with `claude plugin validate` and a real load. Report to the architect at once if it fails. |
 | A package carries harmful or manipulative values. | Medium | High | The standard is neutral on content and says so. The wrapper cannot override the host's rules, installation is explicit and shows the steward, the model discloses on request, and hosts keep their own policies. A security section says this. |
 | A false steward claim. | Medium | Medium | The host shows where the package came from beside the claim. Verification is named as future work. |
-| A declared model is used to swap in untrustworthy weights. | Low | High | A host never switches automatically, and the prompt is still injected. |
+| A declared model is used to swap in untrustworthy weights, or runs without the prompt and behaves in ways nobody can inspect. | Low | High | A host never switches models or drops the prompt on its own. The user or operator chooses, the host says what running without the prompt gives up, and the host's display of what is installed holds in every mode. |
 | The Ansari MCP server changes or disappears. | Low | Medium | Record the check date. The example is marked illustrative, and the owner confirms the endpoint. |
 | External formats change after the rationale is written. | High | Low | Every claim carries a link and a check date. |
 | The 10,000-character hook cap is misread, since it was verified only from a summary. | Low | Low | The body limit stands on cost grounds without it. Re-check the page before the compatibility note cites the number. |
-| Mentioning principled pluralism is taken as publishing under the name. | Low | Medium | Open question 2 puts the choice to the owner before anything is written. |
+| The principled pluralism example misstates the essay it is drawn from. | Medium | Medium | The package cites the essay, keeps to what the essay says, carries the "not endorsed by its author" notice, and is treated like every other example. |
 | The standard's fields turn out not to fit what the registry needs once issue #3 is specified. | Medium | Medium | Part 12 is written against issue #3's stated needs. A collection may require optional fields and extend under `metadata` without a new version of the standard. A real gap is a finding for v0.2. |
 | A package states `official` falsely and a host shows it as fact. | Medium | High | The standard calls it a claim everywhere. A host shows it with the source and URL, and the registry decides what evidence it needs before listing. |
-| The fine-tuned checkpoint behaves badly with a value-system prompt on top of it. | Medium | Medium | Untested today. Issue #2 tests it. If it fails, the finding comes back to the standard before v0.1 is called final. |
-| Printing private checkpoint paths in a public example exposes something the owner did not intend. | Low | Medium | Open question 5. Nothing is printed until the owner agrees. This spec refers to the paths by pointing at the issue comment. |
+| A fine-tuned checkpoint behaves badly with a value-system prompt on top of it. | Medium | Medium | Untested today. Issue #2 tests it. The package then declares `prompt: omit` for that model, which the standard allows. |
+| The Islam example says a checkpoint is public before it has been published. | Low | Medium | `access` is left unfilled until the architect confirms publication, and a success criterion checks that no pushed commit says otherwise. |
 
 ## References
 

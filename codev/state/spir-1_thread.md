@@ -65,3 +65,28 @@
   "repository moved" warning. The move was my own commit ec0b8cb (checked in the reflog). Do
   not commit while consultations are in flight.
 - `skills-ref` is not installed in this environment. Claude Code 2.1.329 is.
+
+## 2026-11-20 — specify, after the owner's answers
+
+The owner answered the first round of open questions in a comment on issue #1. The gate is
+still pending. The spec was revised to match:
+
+- The reading of decision 3 is confirmed, and the draft wrapper wording is the starting text.
+- Principled pluralism is now an ordinary example package, `example-principled-pluralism`,
+  `VALUES.md` alone. The separate "where it fits" part is gone, and so is the plan to credit it
+  as the source of the wrapper's structure. The wrapper's rules stand on their own merits.
+- A checker for the fixtures and renderings lives in its own directory under `spec/`.
+- Core-only reinjection stands. The cost table moved from Open Questions into Solution
+  Approaches as the recorded reasoning.
+- Fine-tuned models: the fixed rule "replaces reinjection only" is replaced by a `prompt` field
+  on each model entry (`required`, `optional`, `omit`; default `required`). The package
+  declares what a model supports, and the user or operator chooses within that. What the user
+  is shown about what is installed holds in every mode, and when a model runs without the
+  prompt the host's own display carries it. This design is the one critical open question
+  left.
+- The Islam example declares the stage 2 checkpoint. Its `base` and `access` are still to be
+  confirmed, so the entry in the spec leaves both unfilled. Nothing is pushed saying
+  `access: public` until the architect confirms the checkpoint has been published.
+- The spec, this thread and the pull request are written for public readers.
+
+A pull request with the spec is open so that it can be shared before the gate is decided.
