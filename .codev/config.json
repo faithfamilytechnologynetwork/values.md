@@ -8,5 +8,15 @@
     "//": "Opt-in runnable worktree config. See CLAUDE.md > Runnable Worktrees for stack-specific recipes (pnpm, npm, yarn, bun, cargo, poetry/uv, go mod). Defaults shown below are no-ops; fill in to enable.",
     "symlinks": [],
     "postSpawn": []
+  },
+  "porch": {
+    "checks": {
+      "build": {
+        "command": "uv sync --project spec/checker --locked"
+      },
+      "tests": {
+        "command": "uv run --project spec/checker python -m values_checker fixtures && uv run --project spec/checker python -m values_checker selftest"
+      }
+    }
   }
 }
