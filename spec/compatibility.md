@@ -69,13 +69,19 @@ package's tools and skills and nothing of the value system itself.
   `VALUES.md`. **Documented:** the standard layout lists no such file, and "A `CLAUDE.md` at
   the plugin root isn't loaded as context". **Observed:** validation and loading passed
   `VALUES.md` over without comment.
-- **It does not reinject the core.** Nothing counts tokens on a package's behalf.
-- **It does not check the package.** `claude plugin validate` checks the plugin's own files.
-  It does not apply validity rules V1 to V10. Run the checker first
-  ([`README.md`](README.md)).
+- **It does not reinject the core.** This follows from the point above and was not checked
+  separately: the core and the interval are defined in `VALUES.md`, which no plugin component
+  reads.
+- **It does not check the package.** **Observed:** a copy of the fixture
+  [`fixtures/invalid/v2-duplicate-key`](fixtures/invalid/v2-duplicate-key), which breaks rule
+  V2, with a `plugin.json` added, passes `claude plugin validate`, and the output does not
+  mention `VALUES.md`. That command checks the plugin's own files. It does not apply validity
+  rules V1 to V10. Run the checker first ([`README.md`](README.md)).
 - **It does not show the steward or the kind of claim** as the standard asks of a host (part
   9). See [what the install screen shows](#what-the-install-screen-shows).
-- **It does not use `models`.** A declared fine-tuned model is not offered or loaded.
+- **It does not use `models`.** This also follows from the first point and was not checked
+  separately: `models` is a field of `VALUES.md`. **Documented:** the manifest's table
+  of top-level fields has none for a model.
 - **It has no component for a root `references/` directory.** **Documented:** the standard
   layout does not list one. The files are in the installed folder, and nothing tells the model
   they are there. A skill's own `references/` directory, inside the skill's folder, is part of
@@ -113,9 +119,25 @@ rendered reminder when it is due.
 
 - `SessionStart` can add context: `additionalContext` is a "String added to Claude's context
   at the start of the conversation, before the first prompt", and a hook that only adds
-  context can print it as plain text. The event fires when a session starts and again on
-  `resume`, `clear`, `compact` and `fork`. So the wrapper is emitted again after compaction,
-  when the earlier conversation has been replaced by a summary.
+  context can print it as plain text.
+- **The event fires more than once, and the hook is told why.** `SessionStart` hooks receive
+  `source`: "`"startup"` for new sessions, `"resume"` for resumed sessions, `"clear"` after
+  `/clear`, `"compact"` after compaction, or `"fork"` for a new session forked from an
+  existing one". Part 4 of the specification places the wrapper once, so an adapter must not
+  emit it on every firing. It has to look at `source`:
+
+  | `source` | What the adapter does |
+  |---|---|
+  | `startup` | Emits the wrapper. Nothing from the package is in context yet. |
+  | `clear` | Emits the wrapper. The conversation, and the wrapper in it, has been cleared. |
+  | `compact` | Emits the wrapper again and sets its count to zero. The earlier conversation, where a hook's wrapper sits, has been replaced by a summary. |
+  | `resume`, `fork` | Emits the wrapper only if the conversation being continued does not already hold it. |
+
+  The page does not say whether context that a hook added earlier is still in a conversation
+  after it is resumed, forked or compacted, and none of the three was tried. An adapter
+  therefore has to find out for itself, for example by looking for its own earlier output in
+  the transcript at `transcript_path`, and it should be tested on each of the five sources
+  before anyone relies on it.
 - `UserPromptSubmit` can add context too: `additionalContext` is a "String added to Claude's
   context alongside the submitted prompt". This is where the reminder goes.
 - **What a hook is given.** The page's table of common input fields lists `session_id`,
@@ -135,6 +157,10 @@ Where this departs from the specification:
 - **Placement.** Part 4 places the wrapper "in the system prompt, after the host's own
   instructions". A hook cannot do that. "Claude Code wraps the string in a system reminder and
   inserts it into the conversation at the point where the hook fired."
+- **Once.** Part 4 places the wrapper once. An adapter that emits it on a resume or a fork
+  whose conversation already holds it puts it in context twice, and one that holds back when
+  the conversation has lost it leaves the value system out. Getting this right depends on
+  behaviour the page does not describe, as said above.
 - **Exactness.** Part 4 has a host change nothing in the text. Claude Code adds its own
   framing around a hook's string, and if the string contains a `<system-reminder>` tag,
   "Claude receives the string with that tag's `<` replaced by `&lt;`". A body may contain that
@@ -247,7 +273,8 @@ uv run --project spec/checker python -m values_checker marketplace values/ --roo
 ```
 
 The `name` and `owner` are chosen by whoever publishes the marketplace. The ones here are
-examples.
+examples. The copy below is not checked automatically. It goes out of date when a package's
+frontmatter changes, so run the command again and do not copy the list from this page.
 
 ```json
 {

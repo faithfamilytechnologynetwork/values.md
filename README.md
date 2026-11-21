@@ -56,4 +56,5 @@ itself does not. [`spec/README.md`](spec/README.md) lists the other commands.
 The specification, the rationale and the compatibility note are licensed under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Everything else in the repository,
 including the schemas, the fixtures, the checker and the example packages, is under the MIT
-licence. See [`LICENSE`](LICENSE).
+licence. See [`LICENSE`](LICENSE). The one exception is a text bundled inside a package that
+is in the public domain. Each such text states its source and its status.
