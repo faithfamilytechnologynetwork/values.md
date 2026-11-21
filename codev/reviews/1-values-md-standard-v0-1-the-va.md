@@ -579,6 +579,26 @@ the files on disk.
   standard.
 - The reviewer read the four unreviewed commits and found nothing that needed another round.
 
+### Review Phase (Round 2)
+
+Both rebuttals from round 1 were given to the reviewers. No code changed in this round.
+
+#### Gemini
+- `CONSULT_ERROR`: lane skipped.
+
+#### Codex (APPROVE)
+- No concerns raised.
+
+#### Claude (APPROVE)
+- The reviewer checked both disputed points against the tree and agreed with each rebuttal.
+- **Concern**: a third way to handle a deeply nested `.mcp.json`: catch the reader's
+  recursion error and print a plain "could not judge" message with a non-zero exit, in place
+  of a traceback. It adds no rule and keeps today's outcome → **N/A** in this pull request:
+  offered as optional and not blocking, and making it now would add code no reviewer has
+  seen. It is listed under Follow-up Items as the third option for the owner.
+- **Concern**: the untracked records, the catechism and the `LICENSE` wording stay on the
+  merge checklist → **N/A**: all three are already listed for the owner.
+
 ## Lessons Learned
 
 ### What Went Well
@@ -674,9 +694,11 @@ For the owner or architect to decide:
 - Whether the root `LICENSE`, which holds the MIT text alone, should also name the three
   CC BY 4.0 documents and the bundled public-domain texts. A reviewer of the pull request
   asked for this before merge.
-- Whether the standard should set a depth limit for `.mcp.json`, or the checker should be
-  made to read any depth. Today a file nested many thousands of levels deep gets an error
-  and no verdict. A reviewer of the pull request asked for one or the other.
+- What to do about a `.mcp.json` nested many thousands of levels deep, which today gets an
+  error and no verdict. Three options came out of the pull request review: set a depth limit
+  in the standard; make the checker read any depth; or keep the outcome and replace the
+  traceback with a plain "could not judge" message, which is about three lines and adds no
+  rule.
 
 For the reference implementation (issue #2):
 
