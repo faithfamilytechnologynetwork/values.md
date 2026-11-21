@@ -13,6 +13,9 @@ exactly `---`.
 
 Nothing is read through a symbolic link. Rule V9 reports the link.
 
+The rule is about the folders under `skills/`. A package whose `skills` is a file, or holds
+only files, has no skill folders and passes.
+
 One known difference. The reference reads the frontmatter with a restricted YAML library that
 also refuses flow-style lists and mappings such as `[a, b]`. The Agent Skills specification
 does not ask for that, and this module does not copy it. Like the reference, it reads every
@@ -36,7 +39,7 @@ ALLOWED_FIELDS = {"name", "description", "license", "allowed-tools", "metadata",
 
 DETAIL_CODES = {
     "V8:no-skill-md": "the skill folder has no SKILL.md",
-    "V8:skill-frontmatter": "SKILL.md does not open with YAML frontmatter that is a mapping",
+    "V8:skill-frontmatter": "SKILL.md is not a file that opens with YAML frontmatter that is a mapping",
     "V8:skill-unexpected-field": "the frontmatter has a field Agent Skills does not define",
     "V8:skill-name-missing": "name is missing or is not a non-empty string",
     "V8:skill-name-format": f"name is over {NAME_LIMIT} characters or is not lowercase letters, digits and single hyphens",
@@ -50,6 +53,8 @@ DETAIL_CODES = {
 def _frontmatter(skill_md: Path) -> dict:
     """The frontmatter of a SKILL.md, found the way the reference finds it: the file starts
     with `---`, and the frontmatter runs to the next `---`."""
+    if not skill_md.is_file():  # a directory of that name, for one
+        raise Unreadable("V8:skill-frontmatter")
     try:
         text = skill_md.read_bytes().decode("utf-8")
     except UnicodeDecodeError:

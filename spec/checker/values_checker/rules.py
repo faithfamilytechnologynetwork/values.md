@@ -37,6 +37,7 @@ RULES = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10"]
 # a fixture for each one.
 DETAIL_CODES = {
     "V1:file-name": "the file is not named exactly VALUES.md",
+    "V1:not-a-file": "VALUES.md is not a file",
     "V1:not-utf8": "the file is not UTF-8",
     "V1:no-frontmatter": "the first line is not exactly ---",
     "V1:frontmatter-not-closed": "no later line is exactly ---",
@@ -233,6 +234,8 @@ def check_file(path: Path, schema: dict | None = None) -> Report:
     # V1. A failure ends the check: nothing else can be read.
     if path.name != FILE_NAME or path.name not in os.listdir(path.parent):
         return Report(INVALID, _failures(["V1:file-name"]))
+    if not path.is_file():  # a directory of that name, for one
+        return Report(INVALID, _failures(["V1:not-a-file"]))
     try:
         split = reading.split_file(path.read_bytes())
     except Unreadable as unreadable:
@@ -353,7 +356,8 @@ def check_collection(directory: Path, schemas: Schemas | None = None) -> dict[st
     unsupported version takes no part in it.
 
     A package folder that is itself a symbolic link breaks V9 and is not read, because what
-    it points at lies outside the collection.
+    it points at lies outside the collection. Anything in the collection that is not a
+    folder is ignored, a link to a file and a link to nothing included.
     """
     schemas = load_schemas() if schemas is None else schemas
     reports = {}

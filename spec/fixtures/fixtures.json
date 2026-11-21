@@ -2874,6 +2874,38 @@
         "VALUES.md": "source.md"
       },
       "note": "VALUES.md is itself a symbolic link, made when the fixture is run, to a file that has no name. It is not read, so no file rule is judged and only V9 is reported."
+    },
+    {
+      "path": "invalid/v1-values-directory",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:not-a-file"
+      ],
+      "note": "A directory named VALUES.md. The entry is present and is not a file."
+    },
+    {
+      "path": "invalid/v8-skill-md-directory",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-frontmatter"
+      ],
+      "note": "A directory named SKILL.md. The entry is present and is not a file."
+    },
+    {
+      "path": "valid/skills-is-a-file",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "V8 is about the folders under skills/. A file named skills is one more entry that is ignored."
     }
   ]
 }
