@@ -15,7 +15,8 @@ project builds what goes under `reference/`. It changes nothing under `spec/` or
 (`codev/specs/1-values-md-standard-v0-1-the-va.md`, on pull request #4 until that merges).
 "Part N" means part N of that spec's Desired State section. "V1" to "V10" are its validity
 rules, and "host test 31" to "host test 40" are the ten scenarios it lists under "Defined here,
-exercised by a host (issue #2)".
+exercised by a host (issue #2)". The specification text states the same ten as requirements
+H1 to H10, in the same order.
 
 Terms used here, beyond the standard's own (value system, package, host, steward, prompt fade,
 collection, modes A, B and C):
@@ -57,14 +58,16 @@ meant to prevent it.
 ## Current State
 
 - `reference/` does not exist. There is no host for the standard anywhere.
-- The standard is specified and partly built on pull request #4: the schema, the three
-  normative prompt texts, the fixtures, a checker, and the four example packages in `values/`.
-  The specification text, the rationale and the compatibility note are still to come.
+- The standard is specified and built on pull request #4, which has not merged: the
+  specification text, the rationale, the compatibility note, the schema, the three normative
+  prompt texts, the fixtures, a checker, and the four example packages in `values/`.
 - The checker decides validity and renders the wrapper and reminder. By design it is not a
   loader and talks to no model.
 - A package installed in Claude Code as a plugin gets its skills and MCP servers and not its
-  prompt. Claude Code does not read `VALUES.md`. The standard describes the adapter that
-  would supply the prompt and leaves building it to this project.
+  prompt. Claude Code does not read `VALUES.md`. The standard's compatibility note describes
+  an adapter that would supply the prompt through hooks, and leaves building it to this
+  project. The note also finds that a hook cannot place the text where the standard requires,
+  so an adapter of this kind does not make Claude Code a conforming host (part 11).
 
 What was checked for this spec, and what is only reported:
 
@@ -76,7 +79,7 @@ What was checked for this spec, and what is only reported:
 | The declared checkpoint | `example-islam` declares one model: provider `tinker`, base `thinkingmachines/Inkling-2-Small`, a 65,536-token window, `prompt: omit`. It was trained with no system prompt. Loading it from an account other than the one that trained it is untested. A copy of an earlier training stage exists at 256K. The declared one has no 256K copy. | From the package and the issue. |
 | Ansari | The MCP server at `https://mcp.ansari.chat/mcp` answered `initialize` (protocol `2024-11-05`, server "Ansari" 1.0.0) and listed one tool, `answer_islamic_question`, taking a `question` string, at 03:11 UTC on 2026-11-21. It needs no key, answers in plain JSON and issues no session identifier. | Checked by calling the server. |
 | The example packages | `example-islam` has a remote tool and a declared model. `example-roman-catholic` has no tool and no model: its depth is a skill and bundled texts, the largest about 88,000 characters. `example-principled-pluralism` and `plain-speaking` are `VALUES.md` alone. | Read on pull request #4. |
-| Claude Code hooks | `SessionStart` and `UserPromptSubmit` hooks can add context, as plain output or as `hookSpecificOutput.additionalContext`. `SessionStart` fires on start-up, resume, clear, compaction and fork. Each such string is capped at 10,000 characters, measured separately for each hook. Text over the cap is replaced by a file path and a preview, so the model would not have it. A hook receives the path of the transcript and no running token count, with one exception: `SessionStart` on resume or fork receives `context_tokens`. The documentation says text a hook supplies is saved in the transcript. Hooks can be declared in settings, in a plugin manifest, or inline in a marketplace entry for a plugin folder that has no manifest. | Documentation read on 2026-11-20. Part through a summary. To be confirmed by running it. |
+| Claude Code hooks | `SessionStart` and `UserPromptSubmit` hooks can add context, as plain output or as `hookSpecificOutput.additionalContext`. `SessionStart` fires on start-up, resume, clear, compaction and fork. Claude Code puts a hook's text into the conversation inside a system reminder, at the point where the hook fired, and not into the system prompt. Each such string is capped at 10,000 characters, measured separately for each hook. Text over the cap is replaced by a file path and a preview of its first 2,000 characters, so the model would not have it. A hook receives the path of the transcript and no running token count, with one exception: `SessionStart` on resume or fork receives `context_tokens`. The documentation says text a hook supplies is saved in the transcript. Hooks can be declared in settings, in a plugin manifest, or inline in a marketplace entry for a plugin folder that has no manifest. | Documentation read on 2026-11-20. Part through a summary. To be confirmed by running it. |
 
 ## Desired State
 
@@ -97,8 +100,8 @@ Under `reference/`, and nowhere else:
    through a browser page.
 2. **Scripts**: a format for a conversation written in advance, at least one long script that
    ships with the project, and a way to play a script without the browser.
-3. **The Claude Code prompt adapter**: what makes Claude Code inject a package's prompt and
-   reminder.
+3. **The Claude Code prompt adapter**: what gets a package's prompt and reminder into a
+   Claude Code session, as far as Claude Code's hooks allow.
 4. **A README** that says what is here, how to run it, what it needs and what level of the
    standard it claims.
 
@@ -174,9 +177,17 @@ Exactly what parts 3, 4, 5 and 10 of the standard say:
 - **Reinjection.** The host counts the tokens added to the conversation since the value
   system's text was last placed: the user's messages, the model's replies and reasoning, tool
   calls and tool results. The count starts at zero when the wrapper is placed and returns to
-  zero after each reminder. When it has reached the package's interval, the reminder is placed
-  at the start of the next user message, then a blank line, then the user's own text. A value
-  system gets at most one reminder at a boundary, however large its count.
+  zero after each reminder. The system prompt, the definitions of tools and a value system's
+  own reminder are not counted. When the count has reached the package's interval, the
+  reminder is placed at the start of the next user message, before the user's own text and
+  apart from it. A value system gets at most one reminder at a boundary, however large its
+  count.
+- **The form of the reminder.** The standard gives two: a content block of its own, first in
+  the message, where the API has content blocks, and otherwise one string made of the
+  reminder, a line feed and the user's text. Which of these the host uses depends on whether
+  the endpoint takes a list of text blocks for this model, which the first live check
+  settles. Until it has, the host is built on the single string, which every
+  OpenAI-compatible endpoint takes.
 - **Counting.** The host has no tokenizer for the model, so it uses the standard's estimate
   of one token for every four characters. This makes the placing of reminders the same on every
   run of the same text, and testable without a model.
@@ -331,37 +342,81 @@ over. So the conversation can be written down and played.
 
 ### 11. The Claude Code prompt adapter
 
-The adapter gives Claude Code the one thing a plugin does not: the prompt.
+A package loaded in Claude Code as a plugin has its tools and skills and nothing of its
+prompt. The adapter supplies the prompt and the reminder through Claude Code's hooks.
 
-- For a package the user has chosen to install, it supplies the rendered wrapper when a
-  session starts, and again whenever Claude Code rebuilds the context: after a resume, a
-  clear, a compaction or a fork.
-- It supplies the reminder with the user's next prompt once the conversation has grown by the
-  package's interval since that package's text was last placed. Claude Code gives a hook no
-  token count, so the adapter works the count out from the session's transcript, at one token
-  for every four characters.
-- It finds where a package's text was last placed by looking in the transcript for what it
-  emitted itself: the most recent wrapper or reminder carrying that package's name. It counts
-  what comes after that. It keeps no state of its own between runs, so two hooks running at
-  once, or a restart, cannot put it out of step. A session start of any kind places the
-  wrapper again, and the count runs from there.
+**It does not make Claude Code a conforming host**, and nothing this project writes says that
+it does. A hook cannot put text where part 4 of the standard requires. The standard's
+compatibility note (`spec/compatibility.md`, "Where this departs from the specification")
+sets the departures out, and the adapter's README repeats them:
+
+- **Placement.** The standard places the wrapper in the system prompt. Claude Code puts a
+  hook's text into the conversation, inside a system reminder, at the point where the hook
+  fired.
+- **Exactness.** The standard has a host change nothing in the text. Claude Code adds its own
+  framing around a hook's text, and rewrites a `<system-reminder>` tag if the text contains
+  one.
+- **Once.** The standard places the wrapper once. A session start fires for five reasons, and
+  whether text a hook added earlier is still in the conversation after some of them is not
+  documented.
+- **A reminder can be lost.** A hook that reaches its time limit has its output discarded,
+  and the prompt goes to the model without it.
+- **Not only the user.** The hook that carries the reminder also fires for some messages the
+  user did not type, where the standard's boundary is what the user sends.
+- **Order.** With several value systems the standard puts the preamble first and the
+  wrappers in activation order. The order in which several hooks' outputs arrive is not
+  documented.
+
+Whether the standard should allow this placement is with the owner. The answer changes what
+may be said of the adapter. It does not change what is built.
+
+What the adapter does:
+
+- **The wrapper.** At a session start it emits the rendered wrapper for a package the user
+  has chosen to install, according to why the session started:
+
+  | Kind of session start | What the adapter does |
+  |---|---|
+  | Start-up | Emits the wrapper. |
+  | Clear | Emits the wrapper. The conversation that held it is gone. |
+  | Compaction | Emits the wrapper. The conversation that held it has been replaced by a summary. |
+  | Resume, fork | Emits the wrapper only if the conversation being continued does not already hold it. |
+
+- **The reminder.** It emits the reminder with the user's next prompt once the conversation
+  has grown by the package's interval since that package's text was last placed. Claude Code
+  gives a hook no running token count, so the adapter works the count out from the session's
+  transcript, at one token for every four characters. The transcript can run a turn behind
+  the conversation, which the interval, being approximate, allows for.
+- **Where it last placed a package's text.** It looks in the transcript for what it emitted
+  itself: the most recent wrapper or reminder carrying that package's name. It counts what
+  comes after that. It keeps no state of its own between runs, so two hooks running at once,
+  or a restart, cannot put it out of step. The same look tells it, on a resume or a fork,
+  whether the wrapper is already there.
 - This rests on Claude Code writing hook-supplied text into the transcript, as its
   documentation says. It is the first thing checked against a real session. If it does not
   hold, the adapter instead keeps, for each session and package, the position in the
   transcript of its last placement and nothing else, and the plan says so before the adapter
   is built.
-- It uses the same reading, validity and rendering rules as the chatbot. A package that is
-  not valid is refused with an error naming the rule, and nothing is injected.
-- It refuses, with an error, to emit a text longer than Claude Code's 10,000-character cap. It
-  does not truncate.
-- With several packages it emits one output for each package and the preamble as an output of
-  its own.
-- It can print the hook configuration for a given list of packages, ready to put into Claude
-  Code's settings, a plugin manifest or a marketplace entry. Nothing is installed without
-  the user doing so. Putting that configuration in place is the explicit installation the
-  standard requires.
-- The README says what Claude Code still does not do with the adapter in place, including
-  what its install screen shows about the steward.
+- **Validity.** It uses the same reading, validity and rendering rules as the chatbot. A
+  package that is not valid is refused with an error naming the rule, and nothing is
+  emitted. This is the one place a package loaded in Claude Code is checked, since Claude
+  Code's own plugin validation does not apply the standard's rules.
+- **The size cap.** It refuses, with an error naming the package and the sizes, to emit a
+  text over Claude Code's cap of 10,000 characters. It does not truncate, and it does not
+  leave Claude Code to replace the text with a preview. Claude Code's documentation does not
+  say what it counts as a character, so the adapter counts the stricter way, in UTF-16 code
+  units.
+- **Several packages.** It emits one output for each package and the preamble as an output of
+  its own, because the cap is measured on each output alone.
+- **Installation.** It prints the hook configuration for a given list of packages, ready to
+  put into Claude Code's settings, a plugin manifest or a marketplace entry. Nothing is
+  installed without the user doing so. Putting that configuration in place is the explicit
+  installation the standard requires.
+
+The compatibility note was written from documentation, and marks several things as not
+tried. The adapter is where they are tried. The review reports what a real session showed for
+each of these: whether hook text is in the transcript, whether it survives a resume, a fork
+and a compaction, and the order in which several outputs arrive.
 
 ### 12. What this project finds out
 
@@ -383,7 +438,9 @@ either answered or reported as not verified, with the reason. None is ticked on 
    same probes early and late. The fine-tuned pane differs from the base pane in two ways, not
    one: its weights, and the package's tools, which stay connected in mode C with nothing in
    context telling the model to use them. The review says so when it reads that pane.
-7. Anything the host needed that the standard does not define, and anything in the standard
+7. What a real Claude Code session shows for the behaviours the compatibility note could
+   only take from documentation (part 11).
+8. Anything the host needed that the standard does not define, and anything in the standard
    that could not be implemented as written.
 
 Probe answers are judged by reading them, and the review says so. This is a demonstration
@@ -438,8 +495,9 @@ The prompt and reinjection
 - [ ] A pane with one value system sends a system prompt that is exactly the rendered
       wrapper. A pane with nothing installed sends no system prompt.
 - [ ] Host test 31: with the default interval, the first reminder is attached to the first
-      user message after 5,000 counted tokens, as the reminder text, a blank line and the
-      user's text. One very large tool result produces one reminder, not several.
+      user message after 5,000 counted tokens, in the form part 5 settles on, with the
+      reminder first and the user's text unchanged after it. Nothing is attached before that.
+      One very large tool result produces one reminder, not several.
 - [ ] A package's own `every-tokens` and `section` values are honoured.
 - [ ] Host test 36: with two value systems in a pane, the preamble comes first, each package
       has its wrapper in activation order and its own count, and each core is reinjected
@@ -530,24 +588,29 @@ The window, scripts and records
 
 The Claude Code adapter
 
-- [ ] For each valid fixture the adapter's session-start output carries exactly the expected
-      wrapper, for each of the five kinds of session start, and its reminder output carries
-      exactly the expected reminder once a transcript has grown by the interval since the
-      package's text was last placed, and nothing before that.
-- [ ] (live) A real Claude Code transcript shows whether text supplied by a hook is written
-      into it. The adapter finds its last placement the way that result allows, and the
-      review says which.
+- [ ] For each valid fixture, the adapter's output at a start-up, a clear and a compaction
+      is exactly the expected wrapper. At a resume and a fork it is the expected wrapper when
+      the transcript does not hold one for that package, and nothing when it does.
+- [ ] Its reminder output is exactly the expected reminder once a transcript has grown by
+      the interval since the package's text was last placed, and nothing before that.
 - [ ] It refuses an invalid package with the rule named, and refuses a rendered text over
-      10,000 characters, without truncating either.
+      10,000 UTF-16 code units, without truncating either.
 - [ ] It prints a hook configuration for one package and for several, with one output per
       package and the preamble on its own.
+- [ ] The README states that the adapter does not make Claude Code a conforming host, lists
+      the six departures of part 11, and points to the standard's compatibility note. Nothing
+      in `reference/` or the pull request claims otherwise.
 - [ ] (live) In a Claude Code session with `example-islam` installed as a plugin and the
       adapter's hooks in place, the model, asked what value system is installed, names it and
       its steward.
+- [ ] (live) The review reports, from real sessions, whether hook-supplied text is written
+      into the transcript, whether it is still in the conversation after a resume, a fork and
+      a compaction, and in what order several outputs arrive. The adapter finds its last
+      placement the way those results allow, and the review says which.
 
 Findings
 
-- [ ] The review answers each of the seven items of part 12, or reports it as not verified
+- [ ] The review answers each of the eight items of part 12, or reports it as not verified
       with the reason, and gives the date and the record for each one that was run.
 - [ ] The review recommends `omit` or `optional` for the `example-islam` model entry, with
       the evidence, or says the test could not be run.
@@ -593,6 +656,14 @@ From the architect's starting notes on the issue (2026-11-21). Also fixed.
   locally.
 - Ansari is reached through its hosted MCP server, as `example-islam` declares it.
 
+From the architect on 2026-11-21, relaying a finding of the standard's own project. Also
+fixed.
+
+- A Claude Code hook's text lands in the conversation inside a system reminder, not in the
+  system prompt, so a hook adapter cannot meet the standard's rules on placement, exactness
+  and placing the wrapper once. The adapter is not claimed to make Claude Code a conforming
+  host. This project says what it does and where it departs.
+
 Out of scope, from the issue:
 
 - Changes to the standard itself.
@@ -612,9 +683,9 @@ Further constraints:
 - Pull request #4 merges, or its branch is otherwise made available to this project's branch,
   before the implementation needs `spec/` and `values/` in the working tree. If it has not
   when implementation starts, the architect decides how this branch gets them.
-- The standard's remaining parts (the specification text and the compatibility note) will
-  agree with its approved spec. Where the specification text, once written, differs from what
-  is assumed here, the difference goes to the architect.
+- The specification text on pull request #4 is what the host is built to. It was read for
+  this spec on 2026-11-21 and agrees with what is written here. If it changes before it
+  merges, a change to a run-time rule goes to the architect.
 - A Tinker key is available for the live checks. Without one the project can still be built
   and tested against stand-ins, and every (live) criterion is reported as not verified.
 - Inkling 2 Small calls tools through the OpenAI-compatible endpoint well enough for the
@@ -753,8 +824,10 @@ Each of these was open. The first alternative listed is the one adopted in Desir
   the standard defines them.
 - Rejected: adding hook files to each package in `values/`. That changes the collection and
   copies the adapter into every package.
-- Rejected: a forced output style carrying the wrapped prompt. It cannot reinject, and it
-  replaces Claude Code's own instructions unless told otherwise.
+- Rejected: a forced output style carrying the wrapped prompt. It puts the text with Claude
+  Code's instructions, which is nearer to where the standard wants it than a hook gets. But
+  it cannot reinject, it carries one value system only, it overrides the style the user
+  chose, and it drops Claude Code's own coding instructions unless told to keep them.
 
 ## Open Questions
 
@@ -809,6 +882,13 @@ the plan is written.
    before the wrappers. Checked with a real session and reported.
 8. Whether Claude Code writes text supplied by a hook into the transcript, as its
    documentation says. Part 11 says what the adapter does in either case.
+9. Whether the endpoint takes a user message as a list of text blocks for this model, which
+   decides the form of the reminder (part 5).
+
+With the owner, through the architect, and not for this project to answer: whether the
+standard should allow a value system's text to be placed in the conversation, as a Claude
+Code hook places it. Part 11 is written so that either answer changes only what is said of
+the adapter.
 
 ## Test Scenarios
 
@@ -823,7 +903,8 @@ Without a network, against a stand-in model and a stand-in tool server:
 3. **Nothing installed.** No system prompt, no tools, no reminder.
 4. **Reminder timing.** Messages totalling just under the interval attach no reminder. The
    next user message after the interval is passed carries one, in the standard's form. The
-   count then starts again.
+   count then starts again. The system prompt, tool definitions and the reminder itself are
+   not counted.
 5. **One large tool result.** A result many times the interval produces one reminder.
 6. **Custom interval and section.** A package with its own `every-tokens` and `section` is
    reinjected at that interval with that section.
@@ -879,14 +960,16 @@ Without a network, against a stand-in model and a stand-in tool server:
     package and server named, it prints the address and connects.
 29. **Changing a pane.** After the first message, changing a pane's configuration starts a
     new conversation in every pane.
-30. **Adapter, session start.** The output carries the expected wrapper for a fixture, for
-    each of the five kinds of session start: start-up, resume, clear, compaction and fork.
+30. **Adapter, session start.** For a fixture, the output is the expected wrapper at a
+    start-up, a clear and a compaction. At a resume and a fork it is the expected wrapper
+    when the transcript holds none for that package, and nothing when it holds one.
 31. **Adapter, reminder.** With a transcript shorter than the interval there is no output.
     Past the interval the output carries the expected reminder, and not again until the
     interval passes once more, counted from the reminder found in the transcript. A session
     start in between starts the count again.
-32. **Adapter, refusals.** An invalid package and an over-long rendering are each refused
-    with an error.
+32. **Adapter, refusals.** An invalid package is refused with the rule named. A rendering
+    over the cap is refused, including one that is under 10,000 code points and over 10,000
+    UTF-16 code units.
 33. **Adapter, configuration.** The printed configuration for one package and for two is
     well formed, with the preamble separate.
 
@@ -902,7 +985,9 @@ With the real provider and tool (live):
 39. **The wrapper's rules.** One probe or more for each of the seven.
 40. **Prompt on top of the checkpoint.** The temporary copy, in mode B.
 41. **Claude Code.** A session with the adapter in place names the installed value system
-    when asked, and its transcript shows whether the wrapper was written into it.
+    when asked, and its transcript shows whether the wrapper was written into it. Further
+    sessions show what a resume, a fork and a compaction leave in the conversation, and the
+    order of two packages' outputs.
 
 Non-functional:
 
@@ -926,6 +1011,8 @@ Non-functional:
 | A tool result or a package body tries to instruct the model or the page. | Medium | Medium | Tool results go only where tool results go. Everything from a package, model or tool is displayed as text. The standard already treats this content as untrusted. |
 | Pull request #4 changes after this spec is approved. | Medium | Medium | The host takes the rules from the checker and the texts from `spec/` and holds no copy, so most changes arrive without work here. A change to a run-time rule goes through the architect. |
 | Claude Code's hook behaviour differs from its documentation, or changes. | Medium | Low | The adapter is checked against a real session, and the README records the version it was checked with. |
+| The adapter is taken to make Claude Code a conforming host. | Medium | Medium | The README says it does not and lists the departures, in the compatibility note's own terms. A success criterion checks that nothing claims otherwise. |
+| The owner decides the standard should not allow placement in the conversation, and the adapter is left as a non-conforming aid. | Medium | Low | The adapter is useful either way: it is the only thing that gets the prompt into Claude Code at all, and it is where the note's untested points are tried. What is said of it follows the decision. |
 | The estimate of four characters to a token is far off for this model. | Low | Low | The provider's reported counts are in every record, so the review can say how far off it was. A large gap is a finding. |
 | The provider limits or refuses requests when four panes call it at once through a long script. | Medium | Low | A refused request is shown in its pane and that pane stops. The host does not retry on its own. A run from the command line says which pane stopped and at which turn, and the run is made again. If it keeps happening, the panes are run one after another, which the script makes possible because every pane carries the same turns. |
 | A committed record carries something private. | Low | Medium | Only scripted runs made for the findings are committed. A record holds no key, header, machine path or user name, a test checks that, and each one is read before it is committed. |
@@ -937,8 +1024,10 @@ Non-functional:
   starting notes in its second. Issue #1 (the standard) and issue #3 (the collection).
 - The standard's approved spec: `codev/specs/1-values-md-standard-v0-1-the-va.md`, on pull
   request #4. Parts 3 to 11, and host tests 31 to 40.
-- The standard's files on pull request #4: `spec/schema/`, `spec/prompts/`, `spec/fixtures/`,
-  `spec/checker/`, and the example packages in `values/`.
+- The standard's files on pull request #4: `spec/specification.md` (parts 4 to 7, 10, 14 and
+  15), `spec/compatibility.md` (the sections on hooks and on the hook size cap),
+  `spec/schema/`, `spec/prompts/`, `spec/fixtures/`, `spec/checker/`, and the example packages
+  in `values/`.
 - Tinker, OpenAI-compatible inference: https://tinker-docs.thinkingmachines.ai/inference/openai/overview/
   and https://tinker-docs.thinkingmachines.ai/inference/openai/chat-completions/ (read on
   2026-11-20).

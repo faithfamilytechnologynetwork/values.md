@@ -68,3 +68,26 @@ under 64K, the live link as a local directory, Level 2 (the Roman Catholic pane 
 open its catechism), and replies written in advance in the long script. Two practical
 matters for the architect: provider access, and getting `spec/` and `values/` onto this
 branch before implementation.
+
+## 2026-11-21 — spec revised at the gate: the adapter is not a conforming host
+
+The architect relayed a finding from project 1's compatibility note (`spec/compatibility.md`,
+"Where this departs from the specification"). A Claude Code hook's text goes into the
+conversation inside a system reminder, not into the system prompt, so a hook adapter cannot
+meet the standard's rules on placement, exactness and placing the wrapper once. Whether the
+standard should allow that placement is with the owner.
+
+Part 11 was rewritten to say what the adapter does and where it departs, in the note's own
+six points, and that it does not make Claude Code a conforming host. Session starts now
+follow the note's table: emit at start-up, clear and compaction; at a resume or a fork only
+if the conversation does not already hold the wrapper. The cap is measured in UTF-16 code
+units, the stricter reading, since Claude Code does not say what it counts. The live checks
+now include the things the note marks as not tried.
+
+Also read `spec/specification.md` on the same branch, now that all five phases of project 1
+are built. Two things taken from it: the system prompt, tool definitions and a package's own
+reminder are not counted toward its interval; and the reminder is a content block of its own
+where the API has content blocks, otherwise one string. Which form the Tinker endpoint takes
+for this model is for the first live check. The requirements are numbered H1 to H10 there.
+
+The spec is still at the spec-approval gate.
