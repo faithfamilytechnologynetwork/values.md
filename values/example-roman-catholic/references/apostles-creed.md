@@ -12,9 +12,10 @@ of sins, the resurrection of the body, and the life everlasting. Amen.
 
 **Source.** The answer to question 12 of the Baltimore Catechism No. 2 (A Catechism of
 Christian Doctrine, No. 2, approved in 1885), taken on 2026-11-21 (UTC) from a public-domain
-transcription that follows a printing of 1977. Only the line breaks differ. The same words
-stand in the transcriptions of the two companion volumes of that catechism, with small
-differences in punctuation. The catechism itself is not bundled with this package.
+transcription that follows a printing of 1977. Only the line breaks differ. The
+transcriptions of the two companion volumes of that catechism give the same wording, apart
+from punctuation, capital letters and, in one of them, the word "and" before "sitteth". The
+catechism itself is not bundled with this package.
 
 **Status.** Public domain. This English wording was published in the United States in 1885,
 and its copyright there has long expired.
