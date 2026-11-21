@@ -5,10 +5,10 @@ phase: implement
 plan_phases:
   - id: phase_1
     title: 'File-level validity: schema, normative prompt texts, checker and file fixtures'
-    status: in_progress
+    status: complete
   - id: phase_2
     title: Folder and collection validity, rendering and the marketplace mapping
-    status: pending
+    status: in_progress
   - id: phase_3
     title: The four example packages in values/
     status: pending
@@ -18,7 +18,7 @@ plan_phases:
   - id: phase_5
     title: Rationale, compatibility note and root README
     status: pending
-current_plan_phase: phase_1
+current_plan_phase: phase_2
 gates:
   spec-approval:
     status: approved
@@ -32,8 +32,8 @@ gates:
     status: pending
   verify-approval:
     status: pending
-iteration: 3
-build_complete: true
+iteration: 1
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_1
@@ -68,7 +68,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/values.md/.builders/spir-1/codev/projects/1-values-md-standard-v0-1-the-va/1-phase_1-iter2-claude.txt
 started_at: '2026-11-20T19:27:27.204Z'
-updated_at: '2026-11-21T02:11:21.696Z'
+updated_at: '2026-11-21T02:16:34.823Z'
 pr_history:
   - phase: specify
     pr_number: 4
@@ -78,3 +78,5 @@ context_refreshes:
   - boundary: enter:plan
     at: '2026-11-20T22:53:19.598Z'
     acknowledged_at: '2026-11-20T22:54:23.472Z'
+  - boundary: plan-phase:phase_2
+    at: '2026-11-21T02:16:34.823Z'
