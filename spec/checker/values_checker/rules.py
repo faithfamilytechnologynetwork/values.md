@@ -340,10 +340,18 @@ def check_collection(directory: Path, schemas: Schemas | None = None) -> dict[st
 
     V10 is judged when the package's `name` could be read as a string. A package of an
     unsupported version takes no part in it.
+
+    A package folder that is itself a symbolic link breaks V9 and is not read, because what
+    it points at lies outside the collection.
     """
     schemas = load_schemas() if schemas is None else schemas
-    folders = sorted(child for child in directory.iterdir() if child.is_dir())
-    reports = {folder.name: check_folder(folder, schemas) for folder in folders}
+    reports = {}
+    for folder in sorted(child for child in directory.iterdir() if child.is_dir()):
+        if folder.is_symlink():
+            linked = Failure("V9:symbolic-link", "the package folder is itself a symbolic link, so it was not read")
+            reports[folder.name] = _invalid([linked], None)
+        else:
+            reports[folder.name] = check_folder(folder, schemas)
 
     names = {}
     for folder_name, report in reports.items():

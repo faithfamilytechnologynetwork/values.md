@@ -35,3 +35,9 @@ def wrapper(name: str, steward: str, body: str) -> str:
 
 def reminder(name: str, core: str) -> str:
     return substitute(template("reminder"), {"name": name, "core": core})
+
+
+def preamble(names: list[str]) -> str:
+    """The text placed before the wrappers when several value systems are active. `names` are
+    in the order the user activated them."""
+    return substitute(template("preamble"), {"names": ", ".join(names)})

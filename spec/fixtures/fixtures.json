@@ -1,5 +1,5 @@
 {
-  "description": "Fixtures for the values.md standard, version 0.1. Each entry names a path under this directory, the scope it is checked at (file, folder or collection), and the outcome a conforming checker must give: valid, invalid or unsupported-version. An invalid entry lists the rules that fail. Its details say why, in the reference checker's own codes: a short word, or for V3 and V7 the path of the constraint that rejects the input in values.schema.json or mcp.schema.json. A valid entry gives the number of characters in the body and in the core, and its directory holds expected/wrapper.txt and expected/reminder.txt, the exact texts it renders to. An entry with symlinks is built when it is run: copy the folder, then make each named link point at its target. A collection entry gives the outcome for each package folder in it.",
+  "description": "Fixtures for the values.md standard, version 0.1. Each entry names a path under this directory, the scope it is checked at (file, folder or collection), and the outcome a conforming checker must give: valid, invalid or unsupported-version. An invalid entry lists the rules that fail. Its details say why, in the reference checker's own codes: a short word, or for V3 and V7 the path of the constraint that rejects the input in values.schema.json or mcp.schema.json. A valid entry gives the number of characters in the body and in the core, and its directory holds expected/wrapper.txt and expected/reminder.txt, the exact texts it renders to. An entry with symlinks is built when it is run: copy the fixture's directory, then make each named link, a path inside that directory, point at its target. A collection entry gives the outcome for each package folder in it. Where all of them are valid, expected/marketplace.json beside the collection holds their Claude Code marketplace entries, for a marketplace file whose root is the fixture's directory, or the directory marketplace-root names inside it. Where there are two or more, expected/preamble.txt holds the preamble for activating them in order of folder name.",
   "fixtures": [
     {
       "path": "valid/smallest/VALUES.md",
@@ -2785,6 +2785,51 @@
         }
       },
       "note": "V10 is judged whenever name could be read as a string. second-sample has a malformed name, which still is not its folder's name. third-sample has a duplicate key, so its name could not be read and V10 is not judged."
+    },
+    {
+      "path": "valid/skill-name-not-ascii",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "An Agent Skill's name may hold letters of any script, as that format's reference validator allows."
+    },
+    {
+      "path": "collections/linked-package/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "linked-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V9"
+          ],
+          "details": [
+            "V9:symbolic-link"
+          ]
+        }
+      },
+      "symlinks": {
+        "values/linked-sample": "../elsewhere/linked-sample"
+      },
+      "note": "A package folder that is itself a symbolic link, made when the fixture is run: values/linked-sample is a link to ../elsewhere/linked-sample. It breaks V9 and is not read, because what it points at lies outside the collection."
+    },
+    {
+      "path": "collections/marketplace-root-is-collection/values",
+      "scope": "collection",
+      "packages": {
+        "only-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        }
+      },
+      "marketplace-root": "values",
+      "note": "The marketplace file's root is the collection directory itself, so a source is ./ followed by the folder name."
     }
   ]
 }

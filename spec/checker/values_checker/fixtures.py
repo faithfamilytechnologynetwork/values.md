@@ -144,26 +144,28 @@ def _renderings(label: str, report: rules.Report, expected_dir: Path, entry: dic
 
 
 @contextlib.contextmanager
-def _built(path: Path, entry: dict):
-    """The fixture as it is checked. One that needs symbolic links is copied to a temporary
-    directory and the links are made there, because a link committed to git does not survive
-    every checkout."""
+def _built(fixtures_dir: Path, entry: dict):
+    """The path to check. A fixture that needs symbolic links has its directory copied to a
+    temporary place and the links made there, because a link committed to git does not
+    survive every checkout. Each link is named by its path inside the fixture's directory."""
+    path = fixtures_dir / entry["path"]
     if "symlinks" not in entry:
         yield path
         return
+    fixture = fixtures_dir / fixture_directory(entry)
     with tempfile.TemporaryDirectory() as scratch:
-        copy = Path(scratch) / path.name
-        shutil.copytree(path, copy)
+        copy = Path(scratch) / fixture.name
+        shutil.copytree(fixture, copy)
         for link, target in entry["symlinks"].items():
             os.symlink(target, copy / link)
-        yield copy
+        yield copy / path.relative_to(fixture)
 
 
 def _run_package(fixtures_dir: Path, entry: dict, schemas: rules.Schemas, coverage: _Coverage) -> list[str]:
     name = entry["path"]
     path = fixtures_dir / name
     is_file = entry["scope"] == "file"
-    with _built(path, entry) as built:
+    with _built(fixtures_dir, entry) as built:
         report = rules.check_file(built, schemas.frontmatter) if is_file else rules.check_folder(built, schemas)
     problems = _compare(name, report, entry, coverage)
     if report.outcome == rules.VALID == entry["outcome"]:
@@ -177,19 +179,30 @@ def _run_package(fixtures_dir: Path, entry: dict, schemas: rules.Schemas, covera
 
 def _run_collection(fixtures_dir: Path, entry: dict, schemas: rules.Schemas, coverage: _Coverage) -> list[str]:
     name = entry["path"]
-    path = fixtures_dir / name
-    reports = rules.check_collection(path, schemas)
+    with _built(fixtures_dir, entry) as built:
+        reports = rules.check_collection(built, schemas)
     if sorted(reports) != sorted(entry["packages"]):
         return [f"{name}: the packages are {sorted(reports)}, expected {sorted(entry['packages'])}"]
     problems = []
     for package, expected in entry["packages"].items():
         problems += _compare(f"{name}/{package}", reports[package], expected, coverage)
-    if all(expected["outcome"] == rules.VALID for expected in entry["packages"].values()) and not problems:
-        expected_file = path.parent / EXPECTED / "marketplace.json"
+    if problems or any(expected["outcome"] != rules.VALID for expected in entry["packages"].values()):
+        return problems
+
+    # A collection whose packages are all valid has an expected marketplace listing and, when
+    # it has more than one package, the preamble for activating them in order of folder name.
+    fixture = fixtures_dir / fixture_directory(entry)
+    made = {"marketplace.json": marketplace.entries(reports, fixtures_dir / name, fixture / entry.get("marketplace-root", ""))}
+    if len(reports) > 1:
+        made["preamble.txt"] = render.preamble([reports[folder].frontmatter["name"] for folder in sorted(reports)])
+    for file_name, value in made.items():
+        expected_file = fixture / EXPECTED / file_name
         if not expected_file.is_file():
-            problems.append(f"{name}: every package is valid, but there is no {EXPECTED}/marketplace.json")
-        elif marketplace.entries(reports, f"./{path.name}") != json.loads(expected_file.read_text(encoding="utf-8")):
-            problems.append(f"{name}: the marketplace entries differ from {EXPECTED}/marketplace.json")
+            problems.append(f"{name}: every package is valid, but there is no {EXPECTED}/{file_name}")
+            continue
+        expected_text = expected_file.read_text(encoding="utf-8")
+        if value != (json.loads(expected_text) if file_name.endswith(".json") else expected_text):
+            problems.append(f"{name}: what the checker makes differs from {EXPECTED}/{file_name}")
     return problems
 
 

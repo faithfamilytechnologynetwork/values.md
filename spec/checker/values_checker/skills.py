@@ -5,6 +5,9 @@ commit 83021e2be457a9b6679148719c1f6074f0ad975e of https://github.com/agentskill
 (`skills-ref/src/skills_ref/validator.py` and `parser.py`, Apache-2.0). They are written out
 here, not imported, so that the check runs offline with nothing fetched from a git repository.
 
+A name may hold letters and digits of any script, as the reference allows and its own tests
+show. It is not limited to `a` to `z`.
+
 One known difference. The reference reads the frontmatter with a restricted YAML library that
 also refuses flow-style lists and mappings such as `[a, b]`. The Agent Skills specification
 does not ask for that, and this module does not copy it. Like the reference, it reads every

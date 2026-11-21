@@ -118,7 +118,7 @@ CASES: list[tuple[str, Callable[[Path], None] | None, str]] = [
     ),
     ("an expected wrapper changed by one character", _change_expected_wrapper, "rendered wrapper differs"),
     ("a valid fixture with its expected renderings removed", _remove_expected_renderings, "has no expected rendering"),
-    ("an expected marketplace entry with its tags in another order", _change_expected_marketplace, "marketplace entries differ"),
+    ("an expected marketplace entry with its tags in another order", _change_expected_marketplace, "differs from expected/marketplace.json"),
     ("the fence rule switched off in the reading code", None, "fence"),
 ]
 

@@ -144,12 +144,11 @@ def marketplace(
                 _show(str(collection / folder), report)
         typer.echo("no entries were made, because not every package is valid", err=True)
         raise typer.Exit(_exit_code(list(reports.values())))
-    root = collection.resolve().parent if root is None else root.resolve()
+    root = collection.resolve().parent if root is None else root
     try:
-        from_root = collection.resolve().relative_to(root).as_posix()
+        listing = marketplace_module.entries(reports, collection, root)
     except ValueError:
         raise typer.BadParameter(f"{collection} is not inside {root}") from None
-    listing = marketplace_module.entries(reports, f"./{from_root}")
     typer.echo(json.dumps(listing, indent=2, ensure_ascii=False))
 
 

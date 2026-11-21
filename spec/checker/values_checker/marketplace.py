@@ -6,6 +6,9 @@ never written as null or as an empty value.
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 
 def entry(frontmatter: dict, source: str) -> dict:
     """The marketplace entry for one package.
@@ -39,10 +42,16 @@ def entry(frontmatter: dict, source: str) -> dict:
     return made
 
 
-def entries(reports: dict, collection: str) -> list[dict]:
+def entries(reports: dict, collection: Path, root: Path) -> list[dict]:
     """The entries for a collection whose packages are all valid, in order of folder name.
 
-    `reports` holds the check report for each package folder, by folder name. `collection` is
-    the path from the marketplace file's root to the collection directory, beginning `./`.
+    `reports` holds the check report for each package folder, by folder name. `root` is the
+    directory the marketplace file resolves paths from. It is the collection or a directory
+    above it. Anything else raises ValueError.
     """
-    return [entry(reports[folder].frontmatter, f"{collection}/{folder}") for folder in sorted(reports)]
+    root = Path(os.path.abspath(root))
+    listing = []
+    for folder in sorted(reports):
+        from_root = Path(os.path.abspath(collection / folder)).relative_to(root).as_posix()
+        listing.append(entry(reports[folder].frontmatter, f"./{from_root}"))
+    return listing
