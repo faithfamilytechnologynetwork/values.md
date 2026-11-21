@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/faithfamilytechnologynetwork/values.md/main/spec/schema/mcp.schema.json",
+  "title": ".mcp.json in a VALUES.md package, values.md standard version 0.1",
+  "description": "The shape of the .mcp.json file a package folder may carry. Each server is either remote (it has url) or local (it has command), never both and never neither. The rules for a remote server apply only when url is present, and those for a local server only when command is present. headers is refused. Every other key, at the top level and inside a server, is ignored. Patterns are ECMA-262 regular expressions. Lengths are counted in Unicode code points.",
+  "type": "object",
+  "required": [
+    "mcpServers"
+  ],
+  "properties": {
+    "mcpServers": {
+      "description": "One entry per server. Each key is the server's name: 1 to 64 letters, digits, hyphens and underscores.",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "maxLength": 64
+      },
+      "additionalProperties": {
+        "type": "object",
+        "oneOf": [
+          {
+            "required": [
+              "url"
+            ]
+          },
+          {
+            "required": [
+              "command"
+            ]
+          }
+        ],
+        "not": {
+          "description": "A server that needs a credential gets it from the host, not from a published package.",
+          "required": [
+            "headers"
+          ]
+        },
+        "dependentSchemas": {
+          "url": {
+            "description": "A remote server.",
+            "properties": {
+              "url": {
+                "description": "An address beginning https://. An http:// address is refused, loopback included.",
+                "type": "string",
+                "pattern": "^https://"
+              },
+              "type": {
+                "enum": [
+                  "http",
+                  "sse"
+                ]
+              }
+            }
+          },
+          "command": {
+            "description": "A local server. A host starts it only with consent, shown with the full command.",
+            "properties": {
+              "command": {
+                "type": "string",
+                "minLength": 1
+              },
+              "args": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "env": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

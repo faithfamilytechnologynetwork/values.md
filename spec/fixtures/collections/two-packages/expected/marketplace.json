@@ -1,0 +1,30 @@
+[
+  {
+    "name": "first-sample",
+    "source": "./values/first-sample",
+    "description": "The first of two sample value systems in a collection. Vouched for by The Sample Society (organization).",
+    "version": "2.1.0",
+    "author": {
+      "name": "The Sample Society",
+      "url": "https://example.org/about"
+    },
+    "license": "MIT",
+    "category": "Sample Tradition",
+    "tags": [
+      "Sample Tradition",
+      "Northern School",
+      "en",
+      "ar",
+      "example",
+      "northern-school"
+    ]
+  },
+  {
+    "name": "second-sample",
+    "source": "./values/second-sample",
+    "description": "The second sample value system, with no optional field. Vouched for by A. Writer (individual).",
+    "author": {
+      "name": "A. Writer"
+    }
+  }
+]

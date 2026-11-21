@@ -1,0 +1,5 @@
+<value-system-reminder name="{name}">
+The value system "{name}" is still installed for this conversation and still applies. Its core:
+
+{core}
+</value-system-reminder>

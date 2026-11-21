@@ -1,0 +1,23 @@
+{
+  "$comment": "Other tools read this file too.",
+  "inputs": [],
+  "mcpServers": {
+    "sample-texts": {
+      "url": "https://mcp.example.org/mcp",
+      "description": "Looks up the sample texts.",
+      "timeout": 30
+    },
+    "local-texts": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@example/texts-server",
+        "--offline"
+      ],
+      "env": {
+        "TEXTS_LANGUAGE": "en"
+      },
+      "cwd": "."
+    }
+  }
+}

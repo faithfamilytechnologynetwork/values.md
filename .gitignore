@@ -5,7 +5,9 @@ codev/.update-hashes.json
 .builders/
 .architect-role.md
 codev/state/*.md
-!codev/state/*_thread.md
+# Consultation records (reviews, rebuttals, context) and builder thread files stay off the
+# branch. Porch's status.yaml, in the same folder as the records, is tracked.
+codev/projects/*/*-iter[0-9]*
 
 # Dependencies
 node_modules/

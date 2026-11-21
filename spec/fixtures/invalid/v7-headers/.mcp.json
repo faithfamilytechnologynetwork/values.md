@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "sample-texts": {
+      "url": "https://mcp.example.org/mcp",
+      "headers": {
+        "X-Example": "value"
+      }
+    }
+  }
+}

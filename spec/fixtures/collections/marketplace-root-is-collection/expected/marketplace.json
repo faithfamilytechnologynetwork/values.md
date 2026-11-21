@@ -1,0 +1,10 @@
+[
+  {
+    "name": "only-sample",
+    "source": "./only-sample",
+    "description": "A sample value system used to test checkers. Vouched for by Sample Steward (individual).",
+    "author": {
+      "name": "Sample Steward"
+    }
+  }
+]

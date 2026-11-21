@@ -1,0 +1,2911 @@
+{
+  "description": "Fixtures for the values.md standard, version 0.1. Each entry names a path under this directory, the scope it is checked at (file, folder or collection), and the outcome a conforming checker must give: valid, invalid or unsupported-version. An invalid entry lists the rules that fail. Its details say why, in the reference checker's own codes: a short word, or for V3 and V7 the path of the constraint that rejects the input in values.schema.json or mcp.schema.json. A valid entry gives the number of characters in the body and in the core, and its directory holds expected/wrapper.txt and expected/reminder.txt, the exact texts it renders to. An entry with symlinks is built when it is run: copy the fixture's directory, then make each named link, a path inside that directory, point at its target. A collection entry gives the outcome for each package folder in it. Where all of them are valid, expected/marketplace.json beside the collection holds their Claude Code marketplace entries, for a marketplace file whose root is the fixture's directory, or the directory marketplace-root names inside it. Where there are two or more, expected/preamble.txt holds the preamble for activating them in order of folder name.",
+  "fixtures": [
+    {
+      "path": "valid/smallest/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Only the three required fields and a short body. With no core section and a body of 1,500 characters or fewer, the whole body is the core. A steward whose claim is individual needs no url."
+    },
+    {
+      "path": "valid/every-field/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1673,
+      "core-chars": 56,
+      "note": "Every field the standard defines, with a custom core section name."
+    },
+    {
+      "path": "valid/spec-version-given/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "spec-version is given as the string \"0.1\"."
+    },
+    {
+      "path": "valid/long-body-with-core/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1667,
+      "core-chars": 56,
+      "note": "A body over 1,500 characters with a ## Core section. The core is the text after the heading line."
+    },
+    {
+      "path": "valid/short-body-with-core/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 50,
+      "core-chars": 10,
+      "note": "A short body that has a core section. The section is the core, not the whole body."
+    },
+    {
+      "path": "valid/custom-core-heading/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1747,
+      "core-chars": 56,
+      "note": "persistence.reinject.section names the core section. The heading matches without regard to the case of A to Z, and a ## Core section is then an ordinary section."
+    },
+    {
+      "path": "valid/core-closing-hashes/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1670,
+      "core-chars": 56,
+      "note": "A closing run of # characters is removed from heading text, so ## Core ## matches."
+    },
+    {
+      "path": "valid/core-heading-extra-spaces/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1671,
+      "core-chars": 56,
+      "note": "Spaces around heading text are trimmed."
+    },
+    {
+      "path": "valid/core-ended-by-h1/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1687,
+      "core-chars": 56,
+      "note": "A first-level heading ends the core. Without that the core would be far over its limit."
+    },
+    {
+      "path": "valid/core-ended-by-h2/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1685,
+      "core-chars": 56,
+      "note": "A second-level heading ends the core."
+    },
+    {
+      "path": "valid/core-keeps-h3/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1648,
+      "core-chars": 37,
+      "note": "A line starting with ### is not a heading under the standard and does not end the core."
+    },
+    {
+      "path": "valid/fence-backtick/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1743,
+      "core-chars": 56,
+      "note": "A ## Core line inside a backtick fence is not a heading. The closing fence may have trailing spaces."
+    },
+    {
+      "path": "valid/fence-tilde/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1734,
+      "core-chars": 56,
+      "note": "A tilde fence, which a line of backticks does not close."
+    },
+    {
+      "path": "valid/fence-four-markers/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1745,
+      "core-chars": 56,
+      "note": "A fence opened with four backticks closes only on four or more."
+    },
+    {
+      "path": "valid/fence-indented-three/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1729,
+      "core-chars": 56,
+      "note": "A fence may be indented by up to three spaces."
+    },
+    {
+      "path": "valid/fence-unclosed/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1757,
+      "core-chars": 56,
+      "note": "A fence that is never closed runs to the end of the body, so the headings inside it do not count."
+    },
+    {
+      "path": "valid/inline-code-is-not-a-fence/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1767,
+      "core-chars": 56,
+      "note": "A line that starts with backticks and holds more backticks later does not open a fence."
+    },
+    {
+      "path": "valid/bom/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A leading byte-order mark is dropped before the first line is read."
+    },
+    {
+      "path": "valid/body-trimmed/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 15,
+      "core-chars": 15,
+      "note": "Spaces, tabs and line feeds are trimmed from both ends of the body before it is counted."
+    },
+    {
+      "path": "valid/nbsp-is-not-trimmed/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 16,
+      "core-chars": 16,
+      "note": "Only space, tab and line feed are trimmed. A no-break space at the end of the body stays and is counted."
+    },
+    {
+      "path": "valid/crlf/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 7500,
+      "core-chars": 56,
+      "note": "CRLF line endings throughout. The body is exactly 7,500 characters once they are normalised, and over the limit if the carriage returns are counted."
+    },
+    {
+      "path": "valid/lone-cr/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 7500,
+      "core-chars": 56,
+      "note": "Lone CR line endings throughout, normalised to LF in the same way."
+    },
+    {
+      "path": "valid/limits-in-code-points/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 7500,
+      "core-chars": 1500,
+      "note": "A body of exactly 7,500 characters and a core of exactly 1,500, mostly characters outside the Basic Multilingual Plane. Counting bytes or UTF-16 units would put both over."
+    },
+    {
+      "path": "valid/frontmatter-exactly-8000/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Frontmatter of exactly 8,000 characters, counted between the two --- lines."
+    },
+    {
+      "path": "valid/unknown-top-level-key/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Unknown keys at the top level are allowed and ignored."
+    },
+    {
+      "path": "valid/metadata-any-json/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "metadata takes any JSON values."
+    },
+    {
+      "path": "valid/core-schema-strings/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "YAML 1.2 core schema: a date-like value and the words no, Yes, Off and on are strings. Under YAML 1.1 rules they would be a date and booleans, and the file would fail."
+    },
+    {
+      "path": "valid/quoted-ampersand-and-asterisk/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "The characters & and * inside a quoted string are text, not an anchor or an alias."
+    },
+    {
+      "path": "valid/description-on-two-lines/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A description may run over more than one line."
+    },
+    {
+      "path": "valid/claim-official-with-url/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A steward whose claim is official, with the url that claim requires."
+    },
+    {
+      "path": "valid/model-prompt-omit/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A model entry meant to run without the prompt."
+    },
+    {
+      "path": "valid/body-contains-placeholder/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 95,
+      "core-chars": 95,
+      "note": "A body may contain text that looks like a placeholder. Rendering substitutes in a single pass and leaves it alone."
+    },
+    {
+      "path": "valid/not-reserved-text/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 122,
+      "core-chars": 122,
+      "note": "Near misses for the reserved text: the words without an angle bracket, and a different tag."
+    },
+    {
+      "path": "valid/bounds-minimum/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Every field that has a lower bound, exactly at it."
+    },
+    {
+      "path": "valid/bounds-maximum-lengths/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Every field that has an upper bound on its length or value, exactly at it."
+    },
+    {
+      "path": "valid/bounds-maximum-items/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Every list exactly at its largest size."
+    },
+    {
+      "path": "invalid/v1-file-name/values.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:file-name"
+      ],
+      "note": "The file is named values.md. The name is exactly VALUES.md."
+    },
+    {
+      "path": "invalid/v1-not-utf8/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:not-utf8"
+      ],
+      "note": "The body holds a byte that is not UTF-8 (Latin-1 e-acute)."
+    },
+    {
+      "path": "invalid/v1-empty-file/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:no-frontmatter"
+      ],
+      "note": "An empty file."
+    },
+    {
+      "path": "invalid/v1-no-frontmatter/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:no-frontmatter"
+      ],
+      "note": "A Markdown file with no frontmatter."
+    },
+    {
+      "path": "invalid/v1-blank-line-first/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:no-frontmatter"
+      ],
+      "note": "A blank line before the opening delimiter."
+    },
+    {
+      "path": "invalid/v1-opening-delimiter-trailing-space/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:no-frontmatter"
+      ],
+      "note": "The opening line is --- followed by a space. It must be exactly ---."
+    },
+    {
+      "path": "invalid/v1-frontmatter-not-closed/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:frontmatter-not-closed"
+      ],
+      "note": "No closing delimiter."
+    },
+    {
+      "path": "invalid/v1-closing-delimiter-trailing-space/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:frontmatter-not-closed"
+      ],
+      "note": "The closing line is --- followed by a space, so the frontmatter never closes."
+    },
+    {
+      "path": "invalid/v1-frontmatter-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:frontmatter-too-long"
+      ],
+      "note": "Frontmatter of 8,001 characters."
+    },
+    {
+      "path": "invalid/v2-not-yaml/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:not-yaml"
+      ],
+      "note": "The frontmatter is not parseable YAML."
+    },
+    {
+      "path": "invalid/v2-two-documents/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:not-yaml"
+      ],
+      "note": "The frontmatter holds two YAML documents."
+    },
+    {
+      "path": "invalid/v2-empty-frontmatter/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:not-a-mapping"
+      ],
+      "note": "Nothing between the delimiters."
+    },
+    {
+      "path": "invalid/v2-list/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:not-a-mapping"
+      ],
+      "note": "The frontmatter is a list."
+    },
+    {
+      "path": "invalid/v2-duplicate-key/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:duplicate-key"
+      ],
+      "note": "name appears twice."
+    },
+    {
+      "path": "invalid/v2-anchor-and-alias/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:alias",
+        "V2:anchor"
+      ],
+      "note": "An anchor and an alias that refers to it."
+    },
+    {
+      "path": "invalid/v2-anchor-only/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:anchor"
+      ],
+      "note": "An anchor that nothing refers to is still refused."
+    },
+    {
+      "path": "invalid/v2-explicit-tag/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:explicit-tag"
+      ],
+      "note": "An explicit YAML tag."
+    },
+    {
+      "path": "invalid/v2-key-not-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:key-not-string"
+      ],
+      "note": "A mapping key that is a number."
+    },
+    {
+      "path": "invalid/v2-non-finite-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2"
+      ],
+      "details": [
+        "V2:non-finite-number"
+      ],
+      "note": "Infinity is not a JSON value."
+    },
+    {
+      "path": "invalid/v3-missing-name/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:required/name"
+      ],
+      "note": "No name."
+    },
+    {
+      "path": "invalid/v3-missing-description/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:required/description"
+      ],
+      "note": "No description."
+    },
+    {
+      "path": "invalid/v3-missing-steward/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:required/steward"
+      ],
+      "note": "No steward."
+    },
+    {
+      "path": "invalid/v3-name-uppercase/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/name/pattern"
+      ],
+      "note": "A capital letter in name."
+    },
+    {
+      "path": "invalid/v3-name-doubled-hyphen/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/name/pattern"
+      ],
+      "note": "A doubled hyphen in name."
+    },
+    {
+      "path": "invalid/v3-name-trailing-line-feed/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/name/pattern"
+      ],
+      "note": "A block scalar leaves a line feed at the end of name. The pattern's $ matches only at the very end."
+    },
+    {
+      "path": "invalid/v3-name-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/name/maxLength"
+      ],
+      "note": "A name of 65 characters."
+    },
+    {
+      "path": "invalid/v3-description-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/description/minLength"
+      ],
+      "note": "An empty description."
+    },
+    {
+      "path": "invalid/v3-description-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/description/maxLength"
+      ],
+      "note": "A description of 1,025 characters."
+    },
+    {
+      "path": "invalid/v3-steward-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/type"
+      ],
+      "note": "steward as a plain string. It is an object."
+    },
+    {
+      "path": "invalid/v3-steward-missing-name/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/required/name"
+      ],
+      "note": "steward without name."
+    },
+    {
+      "path": "invalid/v3-steward-missing-claim/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/required/claim"
+      ],
+      "note": "steward without claim."
+    },
+    {
+      "path": "invalid/v3-steward-unknown-key/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/additionalProperties"
+      ],
+      "note": "A misspelled key inside steward."
+    },
+    {
+      "path": "invalid/v3-steward-name-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/name/minLength"
+      ],
+      "note": "An empty steward name."
+    },
+    {
+      "path": "invalid/v3-steward-name-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/name/maxLength"
+      ],
+      "note": "A steward name of 101 characters."
+    },
+    {
+      "path": "invalid/v3-steward-name-angle-bracket/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/name/pattern"
+      ],
+      "note": "A steward name containing < and >."
+    },
+    {
+      "path": "invalid/v3-steward-name-double-quote/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/name/pattern"
+      ],
+      "note": "A steward name containing a double quote."
+    },
+    {
+      "path": "invalid/v3-steward-name-two-lines/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/name/pattern"
+      ],
+      "note": "A steward name on two lines."
+    },
+    {
+      "path": "invalid/v3-claim-unknown/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/claim/enum"
+      ],
+      "note": "A claim that is not one of the three."
+    },
+    {
+      "path": "invalid/v3-organization-no-url/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/then/required/url"
+      ],
+      "note": "claim organization with no url."
+    },
+    {
+      "path": "invalid/v3-official-no-url/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/then/required/url"
+      ],
+      "note": "claim official with no url."
+    },
+    {
+      "path": "invalid/v3-url-http/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/pattern"
+      ],
+      "note": "A steward url that is not https."
+    },
+    {
+      "path": "invalid/v3-url-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/maxLength"
+      ],
+      "note": "A steward url of 501 characters."
+    },
+    {
+      "path": "invalid/v3-version-not-semver/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/version/pattern"
+      ],
+      "note": "A version that is not Semantic Versioning."
+    },
+    {
+      "path": "invalid/v3-version-unquoted/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/version/type"
+      ],
+      "note": "version: 1.0 without quotes is a number."
+    },
+    {
+      "path": "invalid/v3-spec-version-unquoted/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/spec-version/type"
+      ],
+      "note": "spec-version: 0.2 without quotes is a number, so this is a malformed field and not an unsupported version."
+    },
+    {
+      "path": "invalid/v3-spec-version-malformed/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/spec-version/pattern"
+      ],
+      "note": "A spec-version that is not two numbers joined by a dot."
+    },
+    {
+      "path": "invalid/v3-license-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/license/minLength"
+      ],
+      "note": "An empty license."
+    },
+    {
+      "path": "invalid/v3-license-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/license/maxLength"
+      ],
+      "note": "A license of 101 characters."
+    },
+    {
+      "path": "invalid/v3-authors-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/authors/minItems"
+      ],
+      "note": "An empty authors list."
+    },
+    {
+      "path": "invalid/v3-authors-too-many/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/authors/maxItems"
+      ],
+      "note": "21 authors."
+    },
+    {
+      "path": "invalid/v3-author-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/authors/items/minLength"
+      ],
+      "note": "An empty author."
+    },
+    {
+      "path": "invalid/v3-author-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/authors/items/maxLength"
+      ],
+      "note": "An author of 101 characters."
+    },
+    {
+      "path": "invalid/v3-tradition-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tradition/minItems"
+      ],
+      "note": "An empty tradition list."
+    },
+    {
+      "path": "invalid/v3-tradition-too-many/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tradition/maxItems"
+      ],
+      "note": "Five tradition entries."
+    },
+    {
+      "path": "invalid/v3-tradition-entry-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tradition/items/minLength"
+      ],
+      "note": "An empty tradition entry."
+    },
+    {
+      "path": "invalid/v3-tradition-entry-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tradition/items/maxLength"
+      ],
+      "note": "A tradition entry of 65 characters."
+    },
+    {
+      "path": "invalid/v3-languages-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/minItems"
+      ],
+      "note": "An empty languages list."
+    },
+    {
+      "path": "invalid/v3-languages-too-many/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/maxItems"
+      ],
+      "note": "21 languages."
+    },
+    {
+      "path": "invalid/v3-language-malformed/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/items/pattern"
+      ],
+      "note": "A language given as a word with an underscore."
+    },
+    {
+      "path": "invalid/v3-tags-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tags/minItems"
+      ],
+      "note": "An empty tags list."
+    },
+    {
+      "path": "invalid/v3-tags-too-many/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tags/maxItems"
+      ],
+      "note": "21 tags."
+    },
+    {
+      "path": "invalid/v3-tag-malformed/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tags/items/pattern"
+      ],
+      "note": "A tag with a space and capitals."
+    },
+    {
+      "path": "invalid/v3-tag-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tags/items/maxLength"
+      ],
+      "note": "A tag of 65 characters."
+    },
+    {
+      "path": "invalid/v3-persistence-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/type"
+      ],
+      "note": "persistence as a string."
+    },
+    {
+      "path": "invalid/v3-persistence-unknown-key/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/additionalProperties"
+      ],
+      "note": "An unknown key inside persistence."
+    },
+    {
+      "path": "invalid/v3-reinject-unknown-key/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/additionalProperties"
+      ],
+      "note": "A misspelled key inside persistence.reinject."
+    },
+    {
+      "path": "invalid/v3-every-tokens-too-small/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/every-tokens/minimum"
+      ],
+      "note": "every-tokens of 999."
+    },
+    {
+      "path": "invalid/v3-every-tokens-too-large/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/every-tokens/maximum"
+      ],
+      "note": "every-tokens of 1,000,001."
+    },
+    {
+      "path": "invalid/v3-section-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/section/minLength"
+      ],
+      "note": "An empty section name. V5 is not evaluated, because the section name could not be read."
+    },
+    {
+      "path": "invalid/v3-section-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/section/maxLength"
+      ],
+      "note": "A section name of 101 characters."
+    },
+    {
+      "path": "invalid/v3-section-two-lines/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/section/pattern"
+      ],
+      "note": "A section name on two lines."
+    },
+    {
+      "path": "invalid/v3-models-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/minItems"
+      ],
+      "note": "An empty models list."
+    },
+    {
+      "path": "invalid/v3-models-too-many/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/maxItems"
+      ],
+      "note": "21 models."
+    },
+    {
+      "path": "invalid/v3-model-missing-provider/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/required/provider"
+      ],
+      "note": "A model entry without provider."
+    },
+    {
+      "path": "invalid/v3-model-missing-base/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/required/base"
+      ],
+      "note": "A model entry without base."
+    },
+    {
+      "path": "invalid/v3-model-missing-adapter/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/required/adapter"
+      ],
+      "note": "A model entry without adapter."
+    },
+    {
+      "path": "invalid/v3-model-unknown-key/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/additionalProperties"
+      ],
+      "note": "An unknown key inside a model entry. There is no access field."
+    },
+    {
+      "path": "invalid/v3-model-provider-malformed/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/provider/pattern"
+      ],
+      "note": "A provider that is not in the form of a name."
+    },
+    {
+      "path": "invalid/v3-model-provider-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/provider/maxLength"
+      ],
+      "note": "A provider of 65 characters."
+    },
+    {
+      "path": "invalid/v3-model-base-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/base/minLength"
+      ],
+      "note": "An empty base."
+    },
+    {
+      "path": "invalid/v3-model-base-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/base/maxLength"
+      ],
+      "note": "A base of 201 characters."
+    },
+    {
+      "path": "invalid/v3-model-adapter-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/adapter/minLength"
+      ],
+      "note": "An empty adapter."
+    },
+    {
+      "path": "invalid/v3-model-adapter-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/adapter/maxLength"
+      ],
+      "note": "An adapter of 501 characters."
+    },
+    {
+      "path": "invalid/v3-model-prompt-unknown/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/prompt/enum"
+      ],
+      "note": "A prompt value that is not one of the three."
+    },
+    {
+      "path": "invalid/v3-model-context-window-zero/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/context-window/minimum"
+      ],
+      "note": "A context-window of 0."
+    },
+    {
+      "path": "invalid/v3-model-context-window-too-large/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/context-window/maximum"
+      ],
+      "note": "A context-window of 100,000,001."
+    },
+    {
+      "path": "invalid/v3-model-description-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/description/maxLength"
+      ],
+      "note": "A model description of 501 characters."
+    },
+    {
+      "path": "invalid/v3-model-trained-on-not-semver/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/trained-on/pattern"
+      ],
+      "note": "trained-on that is not a version."
+    },
+    {
+      "path": "invalid/v3-merge-key-is-a-plain-key/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/additionalProperties",
+        "V3:properties/steward/required/claim",
+        "V3:properties/steward/required/name"
+      ],
+      "note": "Under the YAML 1.2 core schema << is an ordinary key. It is not merged, so steward has an unknown key and lacks its two required fields."
+    },
+    {
+      "path": "invalid/v4-empty-body/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V4"
+      ],
+      "details": [
+        "V4:empty-body"
+      ],
+      "note": "Nothing after the frontmatter."
+    },
+    {
+      "path": "invalid/v4-whitespace-only-body/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V4"
+      ],
+      "details": [
+        "V4:empty-body"
+      ],
+      "note": "A body of spaces, tabs and blank lines is empty once trimmed."
+    },
+    {
+      "path": "invalid/v4-body-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V4"
+      ],
+      "details": [
+        "V4:body-too-long"
+      ],
+      "note": "A body of 7,501 characters. It has a valid core section, so only V4 fails."
+    },
+    {
+      "path": "invalid/v5-no-core-section/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:no-core-section"
+      ],
+      "note": "A body of 1,501 characters with no core section."
+    },
+    {
+      "path": "invalid/v5-two-core-sections/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:two-core-sections"
+      ],
+      "note": "Two headings match, one of them in different case."
+    },
+    {
+      "path": "invalid/v5-core-too-long/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:core-too-long"
+      ],
+      "note": "A core of 1,501 characters."
+    },
+    {
+      "path": "invalid/v5-empty-core/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:empty-core"
+      ],
+      "note": "A core section with no text before the next heading. A matching heading makes that section the core, even in a short body."
+    },
+    {
+      "path": "invalid/v5-core-only-in-fence/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:no-core-section"
+      ],
+      "note": "The only ## Core line is inside a fence, in a long body."
+    },
+    {
+      "path": "invalid/v5-setext-core/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:no-core-section"
+      ],
+      "note": "A Setext heading (underlined) is not recognised."
+    },
+    {
+      "path": "invalid/v5-bold-core/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:no-core-section"
+      ],
+      "note": "Inline formatting is not stripped, so the heading text is **Core** and does not match."
+    },
+    {
+      "path": "invalid/v5-no-space-after-hashes/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:no-core-section"
+      ],
+      "note": "##Core has no space after the # characters, so it is not a heading."
+    },
+    {
+      "path": "invalid/v5-h1-core/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:no-core-section"
+      ],
+      "note": "The core section is a second-level heading. # Core does not match."
+    },
+    {
+      "path": "invalid/v5-h3-core/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:no-core-section"
+      ],
+      "note": "### Core is not a second-level heading."
+    },
+    {
+      "path": "invalid/v5-indented-heading/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:no-core-section"
+      ],
+      "note": "A heading starts at the first column. An indented ## Core line does not match."
+    },
+    {
+      "path": "invalid/v5-four-spaces-is-not-a-fence/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V5"
+      ],
+      "details": [
+        "V5:two-core-sections"
+      ],
+      "note": "A line of backticks indented by four spaces does not open a fence, so both ## Core lines count."
+    },
+    {
+      "path": "invalid/v6-closing-values/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V6"
+      ],
+      "details": [
+        "V6:reserved-text"
+      ],
+      "note": "The body contains </values>."
+    },
+    {
+      "path": "invalid/v6-uppercase-with-space/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V6"
+      ],
+      "details": [
+        "V6:reserved-text"
+      ],
+      "note": "Case is ignored: </VALUES >."
+    },
+    {
+      "path": "invalid/v6-spaces-inside/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V6"
+      ],
+      "details": [
+        "V6:reserved-text"
+      ],
+      "note": "Whitespace is allowed after < and after /."
+    },
+    {
+      "path": "invalid/v6-split-across-lines/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V6"
+      ],
+      "details": [
+        "V6:reserved-text"
+      ],
+      "note": "The whitespace may be a line feed."
+    },
+    {
+      "path": "invalid/v6-opening-values/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V6"
+      ],
+      "details": [
+        "V6:reserved-text"
+      ],
+      "note": "An opening tag is reserved too."
+    },
+    {
+      "path": "invalid/v6-reminder-tag/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V6"
+      ],
+      "details": [
+        "V6:reserved-text"
+      ],
+      "note": "An opening reminder tag."
+    },
+    {
+      "path": "invalid/v6-inside-code-fence/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V6"
+      ],
+      "details": [
+        "V6:reserved-text"
+      ],
+      "note": "The rule applies to the whole body, a fenced code block included."
+    },
+    {
+      "path": "invalid/several-rules/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3",
+        "V5",
+        "V6"
+      ],
+      "details": [
+        "V3:required/name",
+        "V5:no-core-section",
+        "V6:reserved-text"
+      ],
+      "note": "Every rule that fails is reported: no name (V3), a long body with no core section (V5) and reserved text (V6)."
+    },
+    {
+      "path": "invalid/v2-then-body-rules/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V2",
+        "V6"
+      ],
+      "details": [
+        "V2:duplicate-key",
+        "V6:reserved-text"
+      ],
+      "note": "When V2 fails, V3 and V5 are not evaluated. V4 and V6 need only the body and still are."
+    },
+    {
+      "path": "unsupported/later-minor-version/VALUES.md",
+      "scope": "file",
+      "outcome": "unsupported-version",
+      "note": "spec-version \"0.2\" is well formed and names a later version."
+    },
+    {
+      "path": "unsupported/later-major-version/VALUES.md",
+      "scope": "file",
+      "outcome": "unsupported-version",
+      "note": "spec-version \"1.0\"."
+    },
+    {
+      "path": "unsupported/later-version-with-other-failures/VALUES.md",
+      "scope": "file",
+      "outcome": "unsupported-version",
+      "note": "A later version with no name and reserved text in the body. The outcome is still unsupported version: a v0.1 checker does not judge it."
+    },
+    {
+      "path": "valid/language-tags-well-formed/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Language tags of every form RFC 5646 allows: script, region, variant, extension, private use, and an irregular grandfathered tag in either case."
+    },
+    {
+      "path": "invalid/v3-language-single-letter/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/items/pattern"
+      ],
+      "note": "A one-letter primary subtag that is not a registered grandfathered tag."
+    },
+    {
+      "path": "invalid/v3-language-empty-extension/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/items/pattern"
+      ],
+      "note": "An extension singleton with no subtag after it."
+    },
+    {
+      "path": "invalid/v3-language-too-long-subtag/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/items/pattern"
+      ],
+      "note": "A primary subtag of nine letters."
+    },
+    {
+      "path": "valid/url-with-port-path-query/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A steward url with a port, a path, a query and a fragment."
+    },
+    {
+      "path": "invalid/v3-url-no-host/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/pattern"
+      ],
+      "note": "https:// followed by no host."
+    },
+    {
+      "path": "invalid/v3-url-with-credentials/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/pattern"
+      ],
+      "note": "A user name and password in the url."
+    },
+    {
+      "path": "invalid/v3-url-with-space/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/pattern"
+      ],
+      "note": "A space in the url."
+    },
+    {
+      "path": "valid/persistence-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "persistence and persistence.reinject may be empty. Every key in them is optional and takes its default."
+    },
+    {
+      "path": "valid/persistence-without-reinject/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "persistence with no reinject key."
+    },
+    {
+      "path": "valid/metadata-deeply-nested/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "metadata nested 1,100 levels deep. A checker reads it like any other value and does not fail on depth."
+    },
+    {
+      "path": "invalid/v3-section-trailing-line-feed/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/section/pattern"
+      ],
+      "note": "A block scalar leaves a line feed at the end of the section name, so it is not on one line. V5 is not evaluated."
+    },
+    {
+      "path": "invalid/v3-name-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/name/type"
+      ],
+      "note": "name as a number."
+    },
+    {
+      "path": "invalid/v3-description-list/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/description/type"
+      ],
+      "note": "description as a list."
+    },
+    {
+      "path": "invalid/v3-steward-name-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/name/type"
+      ],
+      "note": "steward.name as a number."
+    },
+    {
+      "path": "invalid/v3-url-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/type"
+      ],
+      "note": "steward.url as a number."
+    },
+    {
+      "path": "invalid/v3-license-boolean/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/license/type"
+      ],
+      "note": "license as a boolean."
+    },
+    {
+      "path": "invalid/v3-authors-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/authors/type"
+      ],
+      "note": "authors as one string. It is a list."
+    },
+    {
+      "path": "invalid/v3-author-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/authors/items/type"
+      ],
+      "note": "An author that is a number."
+    },
+    {
+      "path": "invalid/v3-tradition-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tradition/type"
+      ],
+      "note": "tradition as one string. It is a list."
+    },
+    {
+      "path": "invalid/v3-tradition-entry-null/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tradition/items/type"
+      ],
+      "note": "A tradition entry that is null."
+    },
+    {
+      "path": "invalid/v3-languages-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/type"
+      ],
+      "note": "languages as one string. It is a list."
+    },
+    {
+      "path": "invalid/v3-language-boolean/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/items/type"
+      ],
+      "note": "A language that is a boolean."
+    },
+    {
+      "path": "invalid/v3-tags-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tags/type"
+      ],
+      "note": "tags as one string. It is a list."
+    },
+    {
+      "path": "invalid/v3-tag-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tags/items/type"
+      ],
+      "note": "A tag that is a number."
+    },
+    {
+      "path": "invalid/v3-reinject-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/type"
+      ],
+      "note": "persistence.reinject as a number."
+    },
+    {
+      "path": "invalid/v3-every-tokens-fraction/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/every-tokens/type"
+      ],
+      "note": "every-tokens that is not a whole number."
+    },
+    {
+      "path": "invalid/v3-section-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/section/type"
+      ],
+      "note": "A section name that is a number. V5 is not evaluated."
+    },
+    {
+      "path": "invalid/v3-models-mapping/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/type"
+      ],
+      "note": "models as a single mapping. It is a list."
+    },
+    {
+      "path": "invalid/v3-model-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/type"
+      ],
+      "note": "A model entry that is a string."
+    },
+    {
+      "path": "invalid/v3-model-provider-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/provider/type"
+      ],
+      "note": "A provider that is a number."
+    },
+    {
+      "path": "invalid/v3-model-base-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/base/type"
+      ],
+      "note": "A base that is a number."
+    },
+    {
+      "path": "invalid/v3-model-adapter-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/adapter/type"
+      ],
+      "note": "An adapter that is a number."
+    },
+    {
+      "path": "invalid/v3-model-context-window-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/context-window/type"
+      ],
+      "note": "A context-window given as a quoted string."
+    },
+    {
+      "path": "invalid/v3-model-description-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/description/type"
+      ],
+      "note": "A model description that is a number."
+    },
+    {
+      "path": "invalid/v3-model-trained-on-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/trained-on/type"
+      ],
+      "note": "trained-on: 1.0 without quotes is a number."
+    },
+    {
+      "path": "invalid/v3-metadata-list/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/metadata/type"
+      ],
+      "note": "metadata as a list. It is an object."
+    },
+    {
+      "path": "valid/core-closing-hashes-no-space/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1668,
+      "core-chars": 56,
+      "note": "Any closing run of # characters is removed from heading text, with or without a space before it, so ## Core# matches."
+    },
+    {
+      "path": "valid/reserved-text-ascii-case-only/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 66,
+      "core-chars": 66,
+      "note": "The reserved text is matched ignoring the case of A to Z only. A long s (U+017F) is a different character."
+    },
+    {
+      "path": "valid/size-budget/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 7500,
+      "core-chars": 56,
+      "wrapper-chars": 9432,
+      "note": "The longest name (64 characters), the longest steward name (100) and the longest body (7,500). The rendered wrapper is 9,432 characters, the most a wrapper can be."
+    },
+    {
+      "path": "valid/remote-server",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 264,
+      "core-chars": 56,
+      "note": "A package with one remote MCP server. The specification's worked example uses this fixture."
+    },
+    {
+      "path": "valid/remote-server-sse",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A remote server with type sse."
+    },
+    {
+      "path": "valid/remote-server-no-type",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A remote server needs only url. type is optional."
+    },
+    {
+      "path": "valid/local-server",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A local server with args and env. The underscore in its name is allowed."
+    },
+    {
+      "path": "valid/local-server-type-stdio",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "The rule on type belongs to a remote server. On a local server type is one more key that is ignored, so the common \"type\": \"stdio\" is valid."
+    },
+    {
+      "path": "valid/mcp-unknown-keys",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Unknown keys at the top level and inside a server are ignored. Two servers, one remote and one local."
+    },
+    {
+      "path": "valid/mcp-bounds",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A server name of exactly 64 characters and a command of exactly one character."
+    },
+    {
+      "path": "valid/mcp-no-servers",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "An empty mcpServers object declares no servers."
+    },
+    {
+      "path": "valid/skill-and-references",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A package with a skill and a bundled text."
+    },
+    {
+      "path": "valid/other-entries-ignored",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "The standard defines nothing else in the folder. Entries made for one product, and any other file, are ignored."
+    },
+    {
+      "path": "invalid/v7-not-json",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:not-json"
+      ],
+      "note": "The file is cut off, so it is not JSON."
+    },
+    {
+      "path": "invalid/v7-not-a-number-literal",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:not-json"
+      ],
+      "note": "NaN is not a JSON value, though some parsers accept it."
+    },
+    {
+      "path": "invalid/v7-not-utf8",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:not-json"
+      ],
+      "note": "The file holds a byte that is not UTF-8."
+    },
+    {
+      "path": "invalid/v7-not-an-object",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:type"
+      ],
+      "note": "The file is a JSON list."
+    },
+    {
+      "path": "invalid/v7-no-mcpservers",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:required/mcpServers"
+      ],
+      "note": "No mcpServers key."
+    },
+    {
+      "path": "invalid/v7-mcpservers-list",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/type"
+      ],
+      "note": "mcpServers as a list. It is an object."
+    },
+    {
+      "path": "invalid/v7-server-name-space",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/propertyNames/pattern"
+      ],
+      "note": "A server name with a space."
+    },
+    {
+      "path": "invalid/v7-server-name-empty",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/propertyNames/pattern"
+      ],
+      "note": "An empty server name."
+    },
+    {
+      "path": "invalid/v7-server-name-too-long",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/propertyNames/maxLength"
+      ],
+      "note": "A server name of 65 characters."
+    },
+    {
+      "path": "invalid/v7-server-string",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/type"
+      ],
+      "note": "A server given as a string. It is an object. A value of the wrong type is reported once, for its type."
+    },
+    {
+      "path": "invalid/v7-url-and-command",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/oneOf"
+      ],
+      "note": "Both url and command. A server is one or the other."
+    },
+    {
+      "path": "invalid/v7-neither-url-nor-command",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/oneOf"
+      ],
+      "note": "Neither url nor command."
+    },
+    {
+      "path": "invalid/v7-http-address",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/url/properties/url/pattern"
+      ],
+      "note": "An http:// address."
+    },
+    {
+      "path": "invalid/v7-http-loopback",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/url/properties/url/pattern"
+      ],
+      "note": "An http:// address is refused on loopback too."
+    },
+    {
+      "path": "invalid/v7-url-number",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/url/properties/url/type"
+      ],
+      "note": "A url that is a number."
+    },
+    {
+      "path": "invalid/v7-type-unknown",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/url/properties/type/enum"
+      ],
+      "note": "A type that is neither http nor sse on a remote server."
+    },
+    {
+      "path": "invalid/v7-command-empty",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/command/minLength"
+      ],
+      "note": "An empty command."
+    },
+    {
+      "path": "invalid/v7-command-list",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/command/type"
+      ],
+      "note": "A command given as a list. It is one string, and its arguments go in args."
+    },
+    {
+      "path": "invalid/v7-args-string",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/args/type"
+      ],
+      "note": "args as one string. It is a list."
+    },
+    {
+      "path": "invalid/v7-args-number",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/args/items/type"
+      ],
+      "note": "args holding a number."
+    },
+    {
+      "path": "invalid/v7-env-list",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/env/type"
+      ],
+      "note": "env as a list. It is an object."
+    },
+    {
+      "path": "invalid/v7-env-number",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/env/additionalProperties/type"
+      ],
+      "note": "An env value that is a number."
+    },
+    {
+      "path": "invalid/v7-headers",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/not"
+      ],
+      "note": "headers is not allowed. A server that needs a credential gets it from the host."
+    },
+    {
+      "path": "invalid/v7-second-server-invalid",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/not"
+      ],
+      "note": "Every server is checked. The first is valid and the second has headers."
+    },
+    {
+      "path": "invalid/v8-no-skill-md",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:no-skill-md"
+      ],
+      "note": "A folder under skills/ with no SKILL.md."
+    },
+    {
+      "path": "invalid/v8-no-frontmatter",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-frontmatter"
+      ],
+      "note": "A SKILL.md with no frontmatter."
+    },
+    {
+      "path": "invalid/v8-unexpected-field",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-unexpected-field"
+      ],
+      "note": "A field Agent Skills does not define. New fields cannot live in SKILL.md."
+    },
+    {
+      "path": "invalid/v8-missing-name",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-name-missing"
+      ],
+      "note": "No name."
+    },
+    {
+      "path": "invalid/v8-name-capital",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-name-format"
+      ],
+      "note": "A name with capital letters. The folder has the same name, so only the form of the name is wrong."
+    },
+    {
+      "path": "invalid/v8-name-not-folder",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-name-folder"
+      ],
+      "note": "A name that is not the folder's name."
+    },
+    {
+      "path": "invalid/v8-missing-description",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-description-missing"
+      ],
+      "note": "No description."
+    },
+    {
+      "path": "invalid/v8-description-too-long",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-description-too-long"
+      ],
+      "note": "A description of 1,025 characters."
+    },
+    {
+      "path": "invalid/v8-compatibility-too-long",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-compatibility"
+      ],
+      "note": "A compatibility field of 501 characters."
+    },
+    {
+      "path": "invalid/v8-second-skill-invalid",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:no-skill-md"
+      ],
+      "note": "Every folder under skills/ is checked. One is a valid skill and the other has no SKILL.md."
+    },
+    {
+      "path": "invalid/v9-link-to-file",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V9"
+      ],
+      "details": [
+        "V9:symbolic-link"
+      ],
+      "symlinks": {
+        "references/latest.md": "charter.md"
+      },
+      "note": "A symbolic link to a file. The link is made when the fixture is run, because a link committed to git does not survive every checkout: copy the folder, then make references/latest.md a link to charter.md."
+    },
+    {
+      "path": "invalid/v9-link-to-directory",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V9"
+      ],
+      "details": [
+        "V9:symbolic-link"
+      ],
+      "symlinks": {
+        "texts": "references"
+      },
+      "note": "A symbolic link to a directory, made when the fixture is run: texts is a link to references."
+    },
+    {
+      "path": "invalid/folder-several-rules",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V3",
+        "V7",
+        "V8"
+      ],
+      "details": [
+        "V3:required/name",
+        "V7:properties/mcpServers/additionalProperties/not",
+        "V8:no-skill-md"
+      ],
+      "note": "The folder rules are each judged on their own, whatever the file rules found: no name (V3), headers in .mcp.json (V7) and a skill folder with no SKILL.md (V8)."
+    },
+    {
+      "path": "invalid/v1-folder-without-values-file",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V1",
+        "V7"
+      ],
+      "details": [
+        "V1:no-file",
+        "V7:not-json"
+      ],
+      "note": "A folder with no VALUES.md is not a package. Checked as one, it fails V1, and the folder rules are still judged."
+    },
+    {
+      "path": "unsupported/folder-later-version",
+      "scope": "folder",
+      "outcome": "unsupported-version",
+      "note": "A later version in a folder whose .mcp.json and skill would fail V7 and V8. No rule is judged at any scope."
+    },
+    {
+      "path": "collections/two-packages/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "second-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        }
+      },
+      "note": "A collection of two valid packages. expected/marketplace.json holds their Claude Code marketplace entries, for a marketplace file whose root is the directory that holds values/."
+    },
+    {
+      "path": "collections/folder-name-differs/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "renamed-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V10"
+          ],
+          "details": [
+            "V10:folder-name"
+          ]
+        }
+      },
+      "note": "The folder renamed-sample holds a package named original-sample."
+    },
+    {
+      "path": "collections/duplicate-name/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V10"
+          ],
+          "details": [
+            "V10:duplicate-name"
+          ]
+        },
+        "first-sample-copy": {
+          "outcome": "invalid",
+          "rules": [
+            "V10"
+          ],
+          "details": [
+            "V10:duplicate-name",
+            "V10:folder-name"
+          ]
+        }
+      },
+      "note": "Two packages are named first-sample. Both break V10: each has a name another package has, and one is also in a folder not named for it."
+    },
+    {
+      "path": "collections/unsupported-beside-valid/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "later-sample": {
+          "outcome": "unsupported-version"
+        }
+      },
+      "note": "A package of a later version beside a valid one. It is not judged, and it takes no part in V10: it claims the name first-sample, and first-sample is still valid."
+    },
+    {
+      "path": "collections/v10-with-other-failures/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "second-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V3",
+            "V10"
+          ],
+          "details": [
+            "V10:folder-name",
+            "V3:properties/name/pattern"
+          ]
+        },
+        "third-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V2"
+          ],
+          "details": [
+            "V2:duplicate-key"
+          ]
+        }
+      },
+      "note": "V10 is judged whenever name could be read as a string. second-sample has a malformed name, which still is not its folder's name. third-sample has a duplicate key, so its name could not be read and V10 is not judged."
+    },
+    {
+      "path": "valid/skill-name-not-ascii",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "An Agent Skill's name may hold letters of any script, as that format's reference validator allows."
+    },
+    {
+      "path": "collections/linked-package/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "linked-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V9"
+          ],
+          "details": [
+            "V9:symbolic-link"
+          ]
+        }
+      },
+      "symlinks": {
+        "values/linked-sample": "../elsewhere/linked-sample"
+      },
+      "note": "A package folder that is itself a symbolic link, made when the fixture is run: values/linked-sample is a link to ../elsewhere/linked-sample. It breaks V9 and is not read, because what it points at lies outside the collection."
+    },
+    {
+      "path": "collections/marketplace-root-is-collection/values",
+      "scope": "collection",
+      "packages": {
+        "only-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        }
+      },
+      "marketplace-root": "values",
+      "note": "The marketplace file's root is the collection directory itself, so a source is ./ followed by the folder name."
+    },
+    {
+      "path": "invalid/v7-directory",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:not-json"
+      ],
+      "note": "A directory named .mcp.json. The entry is present and is not a JSON document."
+    },
+    {
+      "path": "invalid/v9-links-are-not-read",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V9"
+      ],
+      "details": [
+        "V9:symbolic-link"
+      ],
+      "symlinks": {
+        ".mcp.json": "drafts/servers.txt",
+        "skills/prayer-guide": "../drafts",
+        "skills/daily-reflection/SKILL.md": "../../drafts/notes.md"
+      },
+      "note": "Nothing is read through a symbolic link. The links are made when the fixture is run: .mcp.json points at a file that is not JSON, skills/prayer-guide at a folder with no SKILL.md, and skills/daily-reflection/SKILL.md at a file with no frontmatter. Read through, they would fail V7 and V8. Only V9 is reported."
+    },
+    {
+      "path": "invalid/v9-linked-values-file",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V9"
+      ],
+      "details": [
+        "V9:symbolic-link"
+      ],
+      "symlinks": {
+        "VALUES.md": "source.md"
+      },
+      "note": "VALUES.md is itself a symbolic link, made when the fixture is run, to a file that has no name. It is not read, so no file rule is judged and only V9 is reported."
+    },
+    {
+      "path": "invalid/v1-values-directory",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V1"
+      ],
+      "details": [
+        "V1:not-a-file"
+      ],
+      "note": "A directory named VALUES.md. The entry is present and is not a file."
+    },
+    {
+      "path": "invalid/v8-skill-md-directory",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-frontmatter"
+      ],
+      "note": "A directory named SKILL.md. The entry is present and is not a file."
+    },
+    {
+      "path": "valid/skills-is-a-file",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "V8 is about the folders under skills/. A file named skills is one more entry that is ignored."
+    }
+  ]
+}

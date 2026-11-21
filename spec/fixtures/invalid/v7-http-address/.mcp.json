@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "sample-texts": {
+      "url": "http://mcp.example.org/mcp"
+    }
+  }
+}

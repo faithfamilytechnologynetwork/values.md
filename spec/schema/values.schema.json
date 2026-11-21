@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/faithfamilytechnologynetwork/values.md/main/spec/schema/values.schema.json",
+  "title": "VALUES.md frontmatter, values.md standard version 0.1",
+  "description": "The frontmatter of a VALUES.md file after it has been read as YAML 1.2 with the core schema. Patterns are ECMA-262 regular expressions, in which $ matches only at the end of the string. Lengths are counted in Unicode code points. Unknown keys are allowed at the top level and refused inside steward, persistence, persistence.reinject and each models entry.",
+  "type": "object",
+  "required": [
+    "name",
+    "description",
+    "steward"
+  ],
+  "properties": {
+    "name": {
+      "description": "Identifier. Lowercase letters a to z, digits and hyphens, with no leading, trailing or doubled hyphen.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "description": {
+      "description": "What the value system is and who it is for.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "steward": {
+      "description": "Who vouches for the package and what kind of authority they claim.",
+      "type": "object",
+      "required": [
+        "name",
+        "claim"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "On one line, without <, > or a double quote.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\"\\r\\n]*$"
+        },
+        "claim": {
+          "enum": [
+            "individual",
+            "organization",
+            "official"
+          ]
+        },
+        "url": {
+          "description": "An https URL: a host name, an optional port, and an optional path, query and fragment. No user name or password.",
+          "type": "string",
+          "pattern": "^https://[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*(:[0-9]{1,5})?([/?#][A-Za-z0-9._~:/?#\\[\\]@!\\$&'()*+,;=%-]*)?$",
+          "maxLength": 500
+        }
+      },
+      "if": {
+        "required": [
+          "claim"
+        ],
+        "properties": {
+          "claim": {
+            "enum": [
+              "organization",
+              "official"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "url"
+        ]
+      }
+    },
+    "version": {
+      "description": "Version of the package, as Semantic Versioning 2.0.0 defines it.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(\\+([0-9a-zA-Z-]+(\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "spec-version": {
+      "description": "Version of this standard the file targets. Default \"0.1\".",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "license": {
+      "description": "Licence of the package's content. An SPDX identifier where one exists.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "authors": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      }
+    },
+    "tradition": {
+      "description": "Broadest first.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      }
+    },
+    "languages": {
+      "description": "BCP 47 language tags. The pattern is the grammar of RFC 5646, section 2.1: a tag must be well formed. Whether its subtags are registered, and whether a variant or extension is repeated, is not checked.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "pattern": "^(([A-Za-z]{2,3}(-[A-Za-z]{3}){0,3}|[A-Za-z]{4,8})(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*(-[0-9A-WY-Za-wy-z](-[A-Za-z0-9]{2,8})+)*(-[xX](-[A-Za-z0-9]{1,8})+)?|[xX](-[A-Za-z0-9]{1,8})+|[eE][nN]-[gG][bB]-[oO][eE][dD]|[iI]-[aA][mM][iI]|[iI]-[bB][nN][nN]|[iI]-[dD][eE][fF][aA][uU][lL][tT]|[iI]-[eE][nN][oO][cC][hH][iI][aA][nN]|[iI]-[hH][aA][kK]|[iI]-[kK][lL][iI][nN][gG][oO][nN]|[iI]-[lL][uU][xX]|[iI]-[mM][iI][nN][gG][oO]|[iI]-[nN][aA][vV][aA][jJ][oO]|[iI]-[pP][wW][nN]|[iI]-[tT][aA][oO]|[iI]-[tT][aA][yY]|[iI]-[tT][sS][uU]|[sS][gG][nN]-[bB][eE]-[fF][rR]|[sS][gG][nN]-[bB][eE]-[nN][lL]|[sS][gG][nN]-[cC][hH]-[dD][eE])$"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+        "maxLength": 64
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reinject": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "every-tokens": {
+              "description": "Default 5000.",
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 1000000
+            },
+            "section": {
+              "description": "Heading text of the core section, on one line. Default \"Core\".",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[^\\r\\n]*$"
+            }
+          }
+        }
+      },
+      "description": "Tunes reinjection. Every key is optional, and an absent key takes its default."
+    },
+    "models": {
+      "description": "Fine-tuned models. Only a model that anyone with access to the provider can load may be declared.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": [
+          "provider",
+          "base",
+          "adapter"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "provider": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "maxLength": 64
+          },
+          "base": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "adapter": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "prompt": {
+            "description": "Default \"required\".",
+            "enum": [
+              "required",
+              "optional",
+              "omit"
+            ]
+          },
+          "context-window": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "trained-on": {
+            "description": "The package version the model was trained to embody, as a Semantic Versioning 2.0.0 string.",
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(\\+([0-9a-zA-Z-]+(\\.[0-9a-zA-Z-]+)*))?$"
+          }
+        }
+      }
+    },
+    "metadata": {
+      "description": "Extension space. Any JSON values. The standard gives it no meaning.",
+      "type": "object"
+    }
+  }
+}

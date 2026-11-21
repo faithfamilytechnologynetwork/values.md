@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "sample-texts": {
+      "command": "npx",
+      "env": {
+        "PORT": 8080
+      }
+    }
+  }
+}

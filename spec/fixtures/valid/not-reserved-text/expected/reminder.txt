@@ -1,0 +1,5 @@
+<value-system-reminder name="sample">
+The value system "sample" is still installed for this conversation and still applies. Its core:
+
+Our values matter. A value-system is a set of commitments. In HTML, <value> is an ordinary tag, and a < b is a comparison.
+</value-system-reminder>

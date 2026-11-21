@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sample-texts": {
+      "url": "https://mcp.example.org/mcp",
+      "command": "npx"
+    }
+  }
+}

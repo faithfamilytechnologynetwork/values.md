@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sample-texts": {
+      "command": "npx",
+      "args": [
+        "--port",
+        8080
+      ]
+    }
+  }
+}

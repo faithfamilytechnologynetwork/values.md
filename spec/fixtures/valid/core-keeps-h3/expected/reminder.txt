@@ -1,0 +1,9 @@
+<value-system-reminder name="sample">
+The value system "sample" is still installed for this conversation and still applies. Its core:
+
+First part.
+
+### Detail
+
+Second part.
+</value-system-reminder>

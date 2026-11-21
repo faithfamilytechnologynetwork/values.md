@@ -1,0 +1,28 @@
+# Runs the standard's own checks on every pull request and on every push to main.
+# The same four commands are listed in spec/README.md.
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.4.0
+      - name: Install the checker's environment
+        run: uv sync --project spec/checker --locked
+      - name: fixtures
+        run: uv run --project spec/checker python -m values_checker fixtures
+      - name: selftest
+        run: uv run --project spec/checker python -m values_checker selftest
+      - name: consistency
+        run: uv run --project spec/checker python -m values_checker consistency
+      - name: check values/
+        run: uv run --project spec/checker python -m values_checker check values/
