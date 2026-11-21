@@ -11,6 +11,7 @@ and the program that checks both. It holds no assistant, no loader and no model 
   `spec/README.md` is the index and the command reference.
 - `values/` is the collection: one folder per value system, each with `VALUES.md` at its root.
 - `codev/` holds the development records. `.codev/config.json` holds the porch checks.
+  Consultation records and builder thread files are ignored by git and stay off the branch.
 - A reference implementation is planned under `reference/` and is a separate project. Nothing
   in `spec/` or `values/` depends on it.
 
@@ -44,7 +45,10 @@ Each normative thing lives in one place, and every other mention is a checked co
 - Nothing is read through a symbolic link. V9 reports the link, and a rule that would need the
   link's content is not judged.
 - Exit codes are the checker's and not the standard's: 0 valid, 1 invalid, 3 unsupported
-  version. An unexpected exception surfaces as a traceback and a non-zero exit, on purpose.
+  version, and 2 when no verdict could be reached (`could not judge`, for a `.mcp.json`
+  nested too deep to read). Any other unexpected exception surfaces as a traceback and a
+  non-zero exit, on purpose.
+- The checker runs from a checkout. It finds the schemas, prompt files and fixtures by path.
 
 ## Fixtures and audits
 
@@ -96,12 +100,15 @@ specification.
 
 `.codev/config.json` points porch's build check at `uv sync` for the checker and its tests
 check at four commands in sequence: `fixtures`, `selftest`, `consistency`, `check values/`.
-The repository has no `npm` scripts.
+The repository has no `npm` scripts. `.github/workflows/checks.yml` runs the same four
+commands on every pull request and on pushes to `main`.
 
 ## Licences
 
 `specification.md`, `rationale.md` and `compatibility.md` are CC BY 4.0. Everything else is
-MIT under the root `LICENSE`, except a public-domain text bundled inside a package.
+MIT under the root `LICENSE`, which holds the MIT text and nothing else, except a
+public-domain text bundled inside a package. `spec/LICENSE.md` says which licence covers
+which file.
 
 ## Verified-Wrong Assumptions
 

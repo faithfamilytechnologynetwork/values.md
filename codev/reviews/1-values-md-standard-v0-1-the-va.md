@@ -18,8 +18,10 @@ final tree for this review. Results from earlier phases give the phase.
 
 - [x] **Deliverables present under `spec/` and `values/`; nothing else changes except Codev
   files and a root licence.** `git diff --name-only origin/main...HEAD` touches only `spec/`,
-  `values/`, `codev/`, `.codev/config.json`, `LICENSE` and `README.md`. The root README was
-  added at the owner's request at the plan gate. (Phase 5)
+  `values/`, `codev/`, `.codev/config.json`, `LICENSE`, `README.md`, `.gitignore` and
+  `.github/workflows/checks.yml`. The root README was added at the owner's request at the
+  plan gate. The workflow and the ignore rule were added at the architect's instruction after
+  the integration review. (Phase 5 and review)
 - [x] **The four examples exist once, in `values/`; `spec/` holds no copy and refers by
   path.** The one copy is the smallest file at the top of the specification, which
   `consistency` compares with `values/plain-speaking/VALUES.md`. (Phases 3 and 4)
@@ -177,7 +179,8 @@ before the commit. The agents were not run again afterwards.
 
 ### Errata against the approved spec
 
-Sent to the architect. The spec file was left as approved.
+Both were sent to the architect and, at the architect's instruction after the integration
+review, applied to the spec file, so it agrees with the published documents.
 
 - **Reminder cost table.** The rationale has about 420 tokens and 8,400 where the spec's
   Solution Approaches has 415 and 8,300. The rationale counts the reminder's 149 fixed
@@ -204,7 +207,9 @@ is a change to make before or after merge.
 
 ### Commits no reviewer saw
 
-Each was made after the last review round of its phase.
+Each was made after the last review round of its phase. The first pull request review read
+the code the first four touched and found nothing. The last three were made after both pull
+request rounds, in answer to the architect's integration review.
 
 | Commit | Phase | What it changed |
 |---|---|---|
@@ -212,6 +217,9 @@ Each was made after the last review round of its phase.
 | `9544811` | 3 | The round 1 comments on the example packages. |
 | `4d15b33` | 4 | Part 10 states that an `omit` model is not used while a second value system is active; `consistency` reports an unknown schema keyword in a sentence. |
 | `ecc2776` | 5 | Two wording edits in the compatibility note. |
+| `7ac0d12` | review | A folder with no `VALUES.md` is reported as such (`V1:no-file`); a `.mcp.json` nested too deep gives a plain "could not judge" message and exit code 2. |
+| `78e3a58` | review | `spec/LICENSE.md`; a sentence in part 10 and a case in H6; the two errata in the spec file. |
+| `bc501a5` | review | The GitHub workflow that runs the four checks; the ignore rule. |
 
 ## Deviations from Plan
 
@@ -239,8 +247,9 @@ Each was made after the last review round of its phase.
   V9 are judged even when a file rule failed; when two packages share a name, both break V10.
 - Added beyond the plan's wording, from review: nothing is read through a symbolic link, and
   a package folder that is itself a link breaks V9 at collection scope.
-- Known limit, left alone: a `.mcp.json` nested many thousands of levels deep ends the run
-  with an error and no verdict. The exit code is not zero. The standard sets no depth limit.
+- Known limit: a `.mcp.json` nested many thousands of levels deep is more than the checker
+  can read. The standard sets no depth limit. Until the review phase the run ended with a
+  traceback. It now prints "could not judge", names the file and exits with 2.
 
 ### Phase 3
 
@@ -599,6 +608,37 @@ Both rebuttals from round 1 were given to the reviewers. No code changed in this
 - **Concern**: the untracked records, the catechism and the `LICENSE` wording stay on the
   merge checklist → **N/A**: all three are already listed for the owner.
 
+### Architect's integration review
+
+Posted on the pull request after round 2. It rested on two more independent reviews of the
+whole branch and the architect's own run of the checks. Seven fixes were asked for, and an
+ignore rule. All are made.
+
+- **Concern**: nothing runs the four checks on GitHub → **Addressed**:
+  `.github/workflows/checks.yml` runs them on every pull request and on pushes to `main`.
+  Its first run, on `bc501a5`, passed all four on a Linux runner.
+- **Concern**: `LICENSE` is MIT alone while the documents name three CC BY 4.0 files →
+  **Addressed**: `LICENSE` stays the plain MIT text, and `spec/LICENSE.md` says which licence
+  covers which file. Both READMEs point to it.
+- **Concern**: part 10 does not say whether the packages due at one boundary are decided
+  before any reminder is placed → **Addressed**: decided once, from the counts before any
+  reminder is placed there. H6 has the case.
+- **Concern**: a folder with no `VALUES.md` is reported as a misnamed file → **Addressed**:
+  a new detail, `V1:no-file`, with its own message. The existing fixture for that folder now
+  records it, so the audit requires it.
+- **Concern**: a `.mcp.json` nested too deep ends in a traceback → **Addressed**: a plain
+  "could not judge" message and exit code 2, with no new rule. Tried by hand on a file
+  100,000 levels deep, through `check` on a folder and on a collection, `render` and
+  `marketplace`. There is no fixture for it, since it is not one of the three outcomes.
+- **Concern**: the checker works only from a checkout → **Addressed**: `spec/README.md` says
+  so.
+- **Concern**: the two errata → **Addressed**: applied to the spec file.
+- **Concern**: the review records and the thread file could be committed by accident →
+  **Addressed**: an ignore rule. It covers every builder's thread file and every
+  consultation record, not only this project's.
+- Considered by the architect and not asked for: refusing duplicate keys in `.mcp.json`, and
+  extending `consistency` to the two hand-kept copies.
+
 ## Lessons Learned
 
 ### What Went Well
@@ -656,8 +696,8 @@ The four governance files were starters. They now hold real content.
 
 - Routed: cold — `codev/resources/arch.md` — written from scratch: repository layout, single
   sources of truth, the checker, fixtures and audits, document consistency, the collection,
-  the checks porch runs, licences, and verified-wrong assumptions about Claude Code, the YAML
-  library and the Agent Skills validator.
+  the checks porch and GitHub run, licences, and verified-wrong assumptions about Claude
+  Code, the YAML library and the Agent Skills validator.
 - Routed: hot — `codev/resources/arch-critical.md` — ten one-line facts (single sources for
   the injected texts, the schema and field table, and the packages; fixtures as the test
   suite with exact bytes; no network or model code in the checker; no reading through links;
@@ -687,18 +727,10 @@ For the owner or architect to decide:
 - The catechism finding: keep the 1977-printing text with three answers left out, replace
   the source, or drop the bundled text.
 - The steward name "The values.md project".
-- Whether the two errata are applied to the approved spec file.
 - Whether the review records and the builder's thread file, kept off the branch at the
-  owner's request, are added back before merge. If they stay off, an ignore rule would keep
-  them from being committed by accident.
-- Whether the root `LICENSE`, which holds the MIT text alone, should also name the three
-  CC BY 4.0 documents and the bundled public-domain texts. A reviewer of the pull request
-  asked for this before merge.
-- What to do about a `.mcp.json` nested many thousands of levels deep, which today gets an
-  error and no verdict. Three options came out of the pull request review: set a depth limit
-  in the standard; make the checker read any depth; or keep the outcome and replace the
-  traceback with a plain "could not judge" message, which is about three lines and adds no
-  rule.
+  owner's request, are added back before merge. An ignore rule now keeps them from being
+  committed by accident.
+- Where the prompt is placed, which the architect said the owner will answer.
 
 For the reference implementation (issue #2):
 
@@ -709,7 +741,9 @@ For the reference implementation (issue #2):
   look at the install screen.
 - Use the example skill and the Ansari tool in a model session.
 - Try the stage 2 checkpoint with a prompt on top. `example-islam` changes from
-  `prompt: omit` to `optional` once that works.
+  `prompt: omit` to `optional` once that works. Until then, in the mode its own model
+  declares, the instruction to use the Ansari tool is not in context, so the prompt with
+  reinjection is the mode that shows what the package is for.
 - Load the checkpoint from a second account.
 
 Smaller items:
@@ -720,6 +754,10 @@ Smaller items:
   entry.
 - Add the network guard to the `check` command, which two review rounds asked for. It is one
   line, and the plan did not ask for it.
+- Whether a later version sets a depth limit for `.mcp.json`. Today a file too deep to read
+  gets "could not judge" and no verdict.
+- Whether the checker refuses duplicate keys in `.mcp.json`. The architect considered it and
+  did not ask for it.
 - If `values/` changes, regenerate the worked marketplace file in `spec/compatibility.md`.
   An automatic check for it, and for the root README's copy of the smallest file, is not in
   place.

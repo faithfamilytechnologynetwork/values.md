@@ -13,7 +13,7 @@ and keeps the map in sync with arch.md's top-level sections. -->
 - Fixture files are exact bytes (`spec/fixtures/.gitattributes`); never let a tool normalise their line endings or encoding.
 - The checker makes no network call and loads no model; loader and chatbot code do not belong under `spec/`.
 - The checker reads nothing through a symbolic link, and a crash is a bug to surface, not an "invalid" verdict.
-- Tests are four commands in `.codev/config.json` (`fixtures`, `selftest`, `consistency`, `check values/`); there is no `npm`.
+- Tests are four commands (`fixtures`, `selftest`, `consistency`, `check values/`), in `.codev/config.json` for porch and in the GitHub workflow; there is no `npm`.
 - `spec/`, `values/` and the root README are public-facing: no issue numbers, account details or private remarks.
 - Three documents are CC BY 4.0, the rest is MIT, and a bundled public-domain text states its own source.
 
@@ -24,6 +24,6 @@ and keeps the map in sync with arch.md's top-level sections. -->
 - Fixtures and audits — consult when adding, changing or regenerating a fixture.
 - Document consistency — consult when editing a document under `spec/` or adding a marker.
 - The collection in values/ — consult when adding or editing a package.
-- Checks porch runs — consult when a porch build or test check fails or a command is added.
+- Checks porch runs — consult when a porch or GitHub check fails or a command is added.
 - Licences — consult when adding a file, a bundled text or a licence statement.
 - Verified-Wrong Assumptions — consult when relying on how Claude Code, YAML or Agent Skills behave.
