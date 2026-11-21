@@ -76,7 +76,7 @@ What was checked for this spec, and what is only reported:
 | The declared checkpoint | `example-islam` declares one model: provider `tinker`, base `thinkingmachines/Inkling-2-Small`, a 65,536-token window, `prompt: omit`. It was trained with no system prompt. Loading it from an account other than the one that trained it is untested. A copy of an earlier training stage exists at 256K. The declared one has no 256K copy. | From the package and the issue. |
 | Ansari | The MCP server at `https://mcp.ansari.chat/mcp` answered `initialize` (protocol `2024-11-05`, server "Ansari" 1.0.0) and listed one tool, `answer_islamic_question`, taking a `question` string, at 03:11 UTC on 2026-11-21. It needs no key, answers in plain JSON and issues no session identifier. | Checked by calling the server. |
 | The example packages | `example-islam` has a remote tool and a declared model. `example-roman-catholic` has no tool and no model: its depth is a skill and bundled texts, the largest about 88,000 characters. `example-principled-pluralism` and `plain-speaking` are `VALUES.md` alone. | Read on pull request #4. |
-| Claude Code hooks | `SessionStart` and `UserPromptSubmit` hooks can add context, as plain output or as `hookSpecificOutput.additionalContext`. `SessionStart` fires on start-up, resume, clear, compaction and fork. Each such string is capped at 10,000 characters, measured separately for each hook. Text over the cap is replaced by a file path and a preview, so the model would not have it. A hook receives the path of the transcript and no running token count. Hooks can be declared in settings, in a plugin manifest, or inline in a marketplace entry for a plugin folder that has no manifest. | Documentation read on 2026-11-20. Part through a summary. To be confirmed by running it. |
+| Claude Code hooks | `SessionStart` and `UserPromptSubmit` hooks can add context, as plain output or as `hookSpecificOutput.additionalContext`. `SessionStart` fires on start-up, resume, clear, compaction and fork. Each such string is capped at 10,000 characters, measured separately for each hook. Text over the cap is replaced by a file path and a preview, so the model would not have it. A hook receives the path of the transcript and no running token count, with one exception: `SessionStart` on resume or fork receives `context_tokens`. The documentation says text a hook supplies is saved in the transcript. Hooks can be declared in settings, in a plugin manifest, or inline in a marketplace entry for a plugin folder that has no manifest. | Documentation read on 2026-11-20. Part through a summary. To be confirmed by running it. |
 
 ## Desired State
 
@@ -115,6 +115,10 @@ And in the project's review document: the findings in part 12.
 - It adds no instructions of its own to the conversation. A pane with nothing installed has no
   system prompt, and a pane with a value system has exactly the text the standard puts there.
   What differs between two panes is then only what the standard does.
+- Every pane uses the same generation settings. The limit on a reply is 8,192 tokens, which
+  covers the model's reasoning and its answer. Any other setting is left at the provider's
+  default unless it is set for all panes at once. A model request that has not finished in
+  300 seconds has failed. These figures are settings, and these are their defaults.
 - It implements nothing the standard does not define. Where the host needs a rule the standard
   lacks, the gap is written down as a finding (part 12) and the simplest behaviour is chosen
   and stated.
@@ -151,6 +155,9 @@ And in the project's review document: the findings in part 12.
 
 - The user can also set each pane by hand: any valid package in the collection, several
   packages together, or none, and any way of running that part 6 allows.
+- A pane's configuration is fixed once the first message of a conversation has been sent.
+  Changing any pane starts a new conversation in every pane, so that the panes are always
+  being compared on the same messages.
 - Panes 1 and 2 of the prompt fade arrangement are controls. A conforming host always
   reinjects, and a package cannot turn reinjection off. Pane 2 leaves it out on purpose, at
   the user's choice, to show what reinjection changes. Each is labelled as a control, and the
@@ -195,8 +202,9 @@ The host follows part 6 of the standard.
 - **Modes.** The host offers mode A always, mode B for an entry whose `prompt` is `required`
   or `optional`, and mode C for an entry whose `prompt` is `optional` or `omit`. It does not
   offer mode C for `required` or for an entry with no `prompt` value, and does not offer mode
-  B for `omit`. In mode B it does not reinject. Mode C is offered only when that package is
-  the only one active in the pane.
+  B for `omit`. In mode B it does not reinject the package that declares the model. Any other
+  package active in the same pane is reinjected as usual. Mode C is offered only when that
+  package is the only one active in the pane.
 - **Who chooses.** The user. The host never moves a pane to a declared model, and never drops
   the prompt, without the user having chosen that for that pane. Choosing the prompt fade
   arrangement is such a choice, and the arrangement says what its fourth pane will run before
@@ -208,27 +216,46 @@ The host follows part 6 of the standard.
   the host's own model, with the prompt and reinjection. It does not go on in mode C without
   the model and does not try another entry.
 - **The context window.** A pane's window is the entry's `context-window` for a declared
-  model and a setting for the host's own model. The host tracks the size of each conversation
-  from the token counts the provider reports. When the next message would not fit, the pane
-  stops and says so. It does not drop or shorten earlier turns to make room.
+  model and a setting for the host's own model, 65,536 by default. Before each request the
+  host works out the size of everything it is about to send, at one token for every four
+  characters: the system prompt, every message, reasoning, tool calls and results, and
+  replies written in advance (part 9). If that size plus the limit on a reply is more than the
+  window, the pane stops and says so. It does not drop or shorten earlier turns to make room.
+  If the provider refuses a request as too long all the same, the pane shows the refusal and
+  stops. The token counts the provider reports are shown in the pane and kept in the record.
+  They are not what the host decides by.
 
 ### 7. Tools
 
 - When a package with an `.mcp.json` is activated, the host connects each remote server it
   declares and offers that server's tools to the model. What a tool returns goes back to the
   model as a tool result and nowhere else. It is never added to the system prompt.
+- Both kinds of remote server the standard allows are supported: `http`, which is also what a
+  server with no `type` is taken to be, and `sse`. The host uses an existing MCP client
+  library and writes no transport of its own. It offers a server no capabilities, so anything
+  a server asks of the host is declined.
+- The host connects only to the address the user consented to. It does not follow a redirect
+  to another address. A server that answers with one is treated as not connected.
 - **Consent.** Before the host first connects to a server, it asks the user, naming the
   package and the server and showing the address, and saying that the user's questions will be
   sent there. Consent is given for one package and one server. It is held in memory and is
   asked for again after the host restarts. If the user declines, the package is still
   activated, without that server's tools, and the pane shows that the tool is not connected.
+- A run from the command line (part 9) has nobody to ask. Consent is then given in the
+  command itself, by naming the package and the server, and the run prints each address it
+  connects to before it starts. A server not named there is not connected, and the record
+  says so.
 - **Local servers.** The host starts none, as the standard allows. A package that declares
   one is still activated, and the pane shows that the server was not started.
 - A server that cannot be reached is shown in the pane as not connected. The conversation goes
   on without its tools.
 - The pane shows each tool call and what came back.
-- There is a fixed limit on the number of tool calls in one turn. A turn that reaches it stops
-  with a message saying so.
+- A turn may make at most eight tool calls. When the model asks for several at once they are
+  made in the order given, and each one counts. A turn that reaches the limit stops with a
+  message saying so.
+- A tool call that has not answered in 120 seconds has failed. A failed call is reported to
+  the model as failed, so that it can say it could not reach its source, and is shown in the
+  pane. Both figures are settings, and these are their defaults.
 - Tools stay connected in every mode, mode C included. A pane with nothing installed has no
   tools.
 
@@ -260,28 +287,47 @@ run or treated as markup by the browser.
 Prompt fade shows only in a long conversation, and nobody can type one by hand several times
 over. So the conversation can be written down and played.
 
-- A script is a list of turns in order. A turn is a user message. A turn may carry a reply
-  written in advance, which is then used in every pane in place of calling the model. A turn
-  may be marked as a probe: a question whose answers are the ones worth comparing.
+- A script is a list of turns in order. A turn is a user message, and is one of two kinds.
+  An ordinary turn carries a reply written in advance, which is used in every pane in place of
+  calling the model. A probe carries none: it is a question whose answers are the ones worth
+  comparing.
 - A reply written in advance lets a long stretch of conversation be the same in every pane and
   costs no model call. Such a reply is always shown as written in advance and not as that
   pane's own answer. It counts toward the reinjection interval like any other text, so
   reminders fall where they would have fallen in a live conversation.
+- A probe is always answered by the model. The question and the answer are shown in the pane
+  and kept in the record, and then left out of what the pane carries forward. Every pane
+  therefore goes on from the same conversation, whatever it answered, and an early answer
+  given from inside a value system cannot prop up a later one.
+- A probe is sent with whatever any user message would carry at that point, including a
+  reminder if one is due. Because the probe is not carried forward, it does not return the
+  count to zero. The reminder is attached again to the next message that is carried forward.
+- A conversation typed into the window has no probes. Every reply in it comes from the model
+  and everything in it is carried forward.
 - The window can play a script into its panes. A script can also be played from the command
   line with no browser, against the same arrangements.
 - One long script ships with the project. It is long enough to pass the reinjection interval
-  at least five times, fits the 65,536-token window with room for the replies, and has probes
-  before the first interval and near the end. Any text in it that the project did not write is
-  in the public domain and says where it came from.
+  at least five times, comes to no more than 50,000 tokens by the host's own count, so that it
+  fits the 65,536-token window with room for a reply, and has probes before the first interval
+  and near the end. Any text in it that the project did not write is in the public domain and
+  says where it came from.
 
 ### 10. Records
 
 - Any run, typed or scripted, can be saved as a record: for each pane, its configuration, the
-  model addressed, and every message sent and received in order, with reminders, tool calls,
-  tool results, the token counts the provider reported and the times.
-- A record holds no key and no request headers.
-- Records are what the findings in part 12 are drawn from. The project keeps the records
-  behind its findings where a reader can check them.
+  model addressed, the generation settings, and every message sent and received in order,
+  with reminders, tool calls, tool results, the token counts the provider reported and the
+  times.
+- A record holds no key and no request headers. It names a package by its folder within the
+  collection, not by a path on the machine, and holds no user name or other detail of the
+  machine it was made on.
+- Records are what the findings in part 12 are drawn from. The records behind the findings
+  are kept in the repository, in a place of their own under `reference/`. Only records of
+  scripted runs made for the findings are kept there, and each is read through before it is
+  committed, because the repository is public.
+- A record quotes what was sent, so it contains rendered prompt text. That is output. The
+  rule that `reference/` keeps no copy of a package or a normative text is about what the
+  host reads, and the host reads nothing from a record.
 
 ### 11. The Claude Code prompt adapter
 
@@ -294,6 +340,16 @@ The adapter gives Claude Code the one thing a plugin does not: the prompt.
   package's interval since that package's text was last placed. Claude Code gives a hook no
   token count, so the adapter works the count out from the session's transcript, at one token
   for every four characters.
+- It finds where a package's text was last placed by looking in the transcript for what it
+  emitted itself: the most recent wrapper or reminder carrying that package's name. It counts
+  what comes after that. It keeps no state of its own between runs, so two hooks running at
+  once, or a restart, cannot put it out of step. A session start of any kind places the
+  wrapper again, and the count runs from there.
+- This rests on Claude Code writing hook-supplied text into the transcript, as its
+  documentation says. It is the first thing checked against a real session. If it does not
+  hold, the adapter instead keeps, for each session and package, the position in the
+  transcript of its last placement and nothing else, and the plan says so before the adapter
+  is built.
 - It uses the same reading, validity and rendering rules as the chatbot. A package that is
   not valid is refused with an error naming the rule, and nothing is injected.
 - It refuses, with an error, to emit a text longer than Claude Code's 10,000-character cap. It
@@ -324,7 +380,9 @@ either answered or reported as not verified, with the reason. None is ticked on 
    run against a temporary copy of the package, outside the collection, with the value changed
    to `optional`. The result is a recommendation to keep `omit` or change to `optional`.
 6. What the prompt fade arrangement shows on the long script: how the four panes answer the
-   same probes early and late.
+   same probes early and late. The fine-tuned pane differs from the base pane in two ways, not
+   one: its weights, and the package's tools, which stay connected in mode C with nothing in
+   context telling the model to use them. The review says so when it reads that pane.
 7. Anything the host needed that the standard does not define, and anything in the standard
    that could not be implemented as written.
 
@@ -342,6 +400,9 @@ review. This project does not change `spec/` or `values/` to act on them.
 - Without a key the host does not start, and says what is missing.
 - The host listens on the local machine only. It has no accounts and no sign-in, because it
   is not a hosted service.
+- A page open in the same browser must not be able to use the host. The host answers a
+  request only if it is addressed to the local machine by name or loopback address, and
+  accepts a request that sends a message or changes anything only from its own page.
 - The project's tests run with no network and no key, against a stand-in for the model and a
   stand-in for a tool server. Checks that need the real provider or the real tool are
   separate, and are run and reported with their dates.
@@ -354,8 +415,9 @@ as not verified in the review and to the architect.
 Scope and layout
 
 - [ ] Everything this project adds is under `reference/`, apart from Codev artifacts. Nothing
-      under `spec/` or `values/` is changed, and `reference/` holds no copy of a package, the
-      schema or a normative prompt text.
+      under `spec/` or `values/` is changed. `reference/` holds no copy of a package, the
+      schema or a normative prompt text for the host to read. Saved records, which quote what
+      was sent, are kept apart and are not read by the host.
 - [ ] One documented command starts the host, and the README states the level claimed, what
       is needed to run it, and which panes are controls.
 
@@ -382,6 +444,8 @@ The prompt and reinjection
 - [ ] Host test 36: with two value systems in a pane, the preamble comes first, each package
       has its wrapper in activation order and its own count, and each core is reinjected
       when due. A second package with the same name is refused.
+- [ ] With two value systems in a pane and one of them on its declared model in mode B, that
+      package gets no reminder and the other is reinjected when due.
 - [ ] The pane marks the turns that carried a reminder, and the view of what the model was
       sent shows the full text of each one.
 
@@ -403,7 +467,9 @@ Declared models
       failed and continues in mode A.
 - [ ] No pane runs a declared model, or runs without the prompt, unless the user chose that
       for that pane.
-- [ ] A pane whose next message would not fit its context window stops and says so.
+- [ ] A pane whose next request, by the host's count, would not fit its context window with
+      room for a reply stops and says so before anything is sent. A pane the provider refuses
+      as too long shows the refusal and stops.
 
 Tools
 
@@ -416,6 +482,13 @@ Tools
       ignored, its prompt complete and any remote tool working.
 - [ ] A tool result reaches the model only as a tool result. Tool calls and results are
       visible in the pane.
+- [ ] A turn stops with a message at its ninth tool call. A tool call with no answer in 120
+      seconds is reported to the model as failed. A model request with no answer in 300
+      seconds fails in its own pane while the other panes complete.
+- [ ] A declared server of type `http` and one of type `sse` can each be connected. A server
+      that redirects to another address is not connected.
+- [ ] From the command line, a declared server is connected only when the command names its
+      package and server, and the address is printed first.
 - [ ] (live) In a pane with `example-islam` on the host's model, a question asking for a
       ruling or a verse leads to a call to `answer_islamic_question`, and the answer is built
       on what came back.
@@ -427,6 +500,8 @@ Disclosure
       pane shows the name, steward, kind of claim, source, the model in use, whether the
       prompt is injected and whether the core is reinjected.
 - [ ] Text from a package, a model or a tool that contains markup is displayed as text.
+- [ ] A request whose `Host` is not the local machine is refused. A request to send a message
+      or change anything, whose `Origin` is not the host's own page, is refused.
 
 The window, scripts and records
 
@@ -437,19 +512,31 @@ The window, scripts and records
       declares a matching model, and with three, and the reason, for one that does not.
 - [ ] Playing a script sends the same user turns to every pane. A reply written in advance is
       used in every pane, is shown as written in advance, and counts toward the interval.
+- [ ] A probe is answered by the model, shown and recorded, and absent from every later
+      request. After a script with probes, the turns each pane carries forward are the same
+      in every pane. A reminder attached to a probe is attached again to the next turn that is
+      carried forward.
 - [ ] The long script that ships with the project passes the default interval at least five
-      times and fits a 65,536-token window with its replies.
+      times and comes to no more than 50,000 tokens by the host's count.
 - [ ] A script can be played from the command line, and a run can be saved as a record that
-      holds each pane's configuration and every message sent and received. No record or log
-      contains the key.
+      holds each pane's configuration, the generation settings and every message sent and
+      received. Every pane in a run has the same generation settings.
+- [ ] No record or log contains the key, a request header, a path outside the collection or
+      a user name.
+- [ ] Once a conversation has started, changing a pane's configuration starts a new
+      conversation in every pane.
 - [ ] (live) The prompt fade arrangement completes the long script for `example-islam` in
       all four panes, and the record is kept.
 
 The Claude Code adapter
 
 - [ ] For each valid fixture the adapter's session-start output carries exactly the expected
-      wrapper, and its reminder output carries exactly the expected reminder once a transcript
-      has grown by the interval, and nothing before that.
+      wrapper, for each of the five kinds of session start, and its reminder output carries
+      exactly the expected reminder once a transcript has grown by the interval since the
+      package's text was last placed, and nothing before that.
+- [ ] (live) A real Claude Code transcript shows whether text supplied by a hook is written
+      into it. The adapter finds its last placement the way that result allows, and the
+      review says which.
 - [ ] It refuses an invalid package with the rule named, and refuses a rendered text over
       10,000 characters, without truncating either.
 - [ ] It prints a hook configuration for one package and for several, with one output per
@@ -613,15 +700,22 @@ Each of these was open. The first alternative listed is the one adopted in Desir
   tested with no model.
 - Rejected: the provider's reported token counts. They are exact, but they arrive only after
   a call, they include overhead the provider adds, and a reply written in advance has none.
-  The reported counts are still used for the one thing that needs them, the context window.
+  The same holds for the context window, where the host has to know whether a request fits
+  before it sends it. The reported counts are shown and recorded, so the review can say how
+  far the estimate was from them.
 - Rejected: loading the model's tokenizer. It adds a dependency and a download for an
   interval the owner describes as approximate.
 
 **Where the long conversation comes from.**
 
-- Adopted: a script, in which a turn may carry a reply written in advance. The same long
-  stretch is then identical in every pane, a run costs a handful of model calls and takes
-  minutes, and the result can be repeated.
+- Adopted: a script whose ordinary turns carry replies written in advance and whose probes
+  are answered by the model and then left out of what is carried forward. The conversation
+  is then identical in every pane from start to finish, a run costs a handful of model calls
+  and takes minutes, and the result can be repeated.
+- Rejected: keeping each pane's probe answers in its conversation. The panes would drift
+  apart from the first probe, and a pane that answered an early probe from inside its value
+  system would have that answer in context as an example, which would hide the fade the
+  arrangement is there to show.
 - Rejected: typing it live. Nobody can type tens of thousands of tokens four times over.
 - Rejected: a script of user turns only, with every reply generated. Each pane's history
   would then differ, so two panes would be compared on different conversations, and one run
@@ -666,13 +760,22 @@ Each of these was open. The first alternative listed is the one adopted in Desir
 
 **Critical** (blocks progress)
 
-None for writing the plan. One practical matter blocks the live checks: this project had no
-Tinker access when the spec was written, and the owner has been asked for it. Live
-verification is the plan's first step. Access through the account that trained the checkpoint
-would not settle finding 3 of part 12, which needs a second account. Unless one is provided,
-that finding is reported as not verified.
+None for writing the plan. Two practical matters block later steps, and the architect is
+asked to settle both at the gate:
 
-**Important** (shapes the design; each has a recommended answer above, and the owner decides)
+- **Provider access.** This project had no Tinker access when the spec was written, and the
+  owner has been asked for it. Live verification is the plan's first step. Access through the
+  account that trained the checkpoint would not settle finding 3 of part 12, which needs a
+  second account. Unless one is provided, that finding is reported as not verified.
+- **The standard's files.** This project's branch has no `spec/` and no `values/`, because
+  pull request #4 has not merged. The plan can be written without them. The implementation
+  cannot start without them, since its first tests run against the fixtures.
+
+**Important** (shapes the design, and the owner decides)
+
+Desired State is written on the recommended answer to each of these, so that the spec states
+one design. If the owner decides otherwise at the gate, the spec is revised to match before
+the plan is written.
 
 1. **The length of the prompt fade demonstration.** The declared checkpoint has a
    65,536-token window and no larger copy. Recommended: keep the demonstration under 64K for
@@ -704,6 +807,8 @@ that finding is reported as not verified.
    available in the view of what the model was sent.
 7. Whether Claude Code keeps the order of several hook outputs, so that the preamble comes
    before the wrappers. Checked with a real session and reported.
+8. Whether Claude Code writes text supplied by a hook into the transcript, as its
+   documentation says. Part 11 says what the adapter does in either case.
 
 ## Test Scenarios
 
@@ -727,7 +832,8 @@ Without a network, against a stand-in model and a stand-in tool server:
 8. **Prompt only.** The control attaches no reminder however long the conversation, and is
    labelled a control.
 9. **Two value systems.** Preamble, two wrappers in order, separate counts, each reminder
-   when due. The same name twice is refused.
+   when due. The same name twice is refused. With one of the two on its declared model in
+   mode B, only the other is reinjected.
 10. **Model matching.** An entry whose `base` equals the host's model is offered. With the
     host's model set to any other name, including the same model at another context length,
     it is not.
@@ -744,51 +850,65 @@ Without a network, against a stand-in model and a stand-in tool server:
     declining, the package is active with no tool and the pane says so. After consenting, the
     tool is offered. Consent for one package's server does not cover another's.
 16. **Local server.** Not started, and shown as such.
-17. **Server unreachable.** Shown as not connected, and the conversation continues.
+17. **Server unreachable.** Shown as not connected, and the conversation continues. The same
+    for a server that redirects to another address.
 18. **Tool round trip.** The model's call reaches the stand-in server, the result returns as
-    a tool result, and both are shown in the pane. A turn that reaches the limit on tool
-    calls stops with a message.
+    a tool result, and both are shown in the pane, for a server of each type. A turn stops
+    with a message at its ninth tool call. A call that does not answer in time is reported to
+    the model as failed.
 19. **Level 3 package on this host.** `example-roman-catholic` activates, its skill and texts
     are not offered, and its prompt is complete.
-20. **Context window.** A conversation at its window stops with a message. Nothing earlier is
-    dropped.
-21. **One pane fails.** The stand-in fails for one pane. That pane shows the error and the
-    others finish.
+20. **Context window.** A request that would not fit, by the host's count and with room for a
+    reply, is not sent, and the pane stops with a message. Nothing earlier is dropped. A
+    refusal from the stand-in as too long is shown and the pane stops.
+21. **One pane fails.** The stand-in fails for one pane, and in another run does not answer in
+    time. That pane shows the error and the others finish.
 22. **Markup.** A package body, a model reply and a tool result that contain markup are shown
     as text.
 23. **Script.** User turns go to every pane. A reply written in advance appears in every pane,
     marked as such, and counts toward the interval. Probes are marked in the record.
-24. **Record.** A saved record holds each pane's configuration and messages, and contains no
-    key.
-25. **No key.** The host refuses to start and says what is missing.
-26. **Adapter, session start.** The output carries the expected wrapper for a fixture, and
-    does so again for each kind of session start.
-27. **Adapter, reminder.** With a transcript shorter than the interval there is no output.
+24. **Probes.** With stand-in answers of different lengths in different panes, every later
+    request carries the same turns in every pane and no probe. A reminder due at a probe is
+    sent with the probe and again with the next turn that is carried forward.
+25. **Record.** A saved record holds each pane's configuration, settings and messages, and
+    contains no key, header, machine path or user name.
+26. **No key.** The host refuses to start and says what is missing.
+27. **Requests from elsewhere.** A request with another `Host`, and a request to send a
+    message with another `Origin`, are refused.
+28. **Command-line consent.** A script run with no server named connects to none. With the
+    package and server named, it prints the address and connects.
+29. **Changing a pane.** After the first message, changing a pane's configuration starts a
+    new conversation in every pane.
+30. **Adapter, session start.** The output carries the expected wrapper for a fixture, for
+    each of the five kinds of session start: start-up, resume, clear, compaction and fork.
+31. **Adapter, reminder.** With a transcript shorter than the interval there is no output.
     Past the interval the output carries the expected reminder, and not again until the
-    interval passes once more.
-28. **Adapter, refusals.** An invalid package and an over-long rendering are each refused
+    interval passes once more, counted from the reminder found in the transcript. A session
+    start in between starts the count again.
+32. **Adapter, refusals.** An invalid package and an over-long rendering are each refused
     with an error.
-29. **Adapter, configuration.** The printed configuration for one package and for two is
+33. **Adapter, configuration.** The printed configuration for one package and for two is
     well formed, with the preamble separate.
 
 With the real provider and tool (live):
 
-30. **The endpoint.** Inkling 2 Small answers with a system prompt, and calls a tool.
-31. **Ansari.** The Islam pane calls `answer_islamic_question` for a ruling and reports what
+34. **The endpoint.** Inkling 2 Small answers with a system prompt, and calls a tool.
+35. **Ansari.** The Islam pane calls `answer_islamic_question` for a ruling and reports what
     came back.
-32. **The checkpoint.** The declared model loads from `base` and `adapter`, in mode C.
-33. **Three value systems.** One question, three panes, three answers each from its own
+36. **The checkpoint.** The declared model loads from `base` and `adapter`, in mode C.
+37. **Three value systems.** One question, three panes, three answers each from its own
     value system.
-34. **Prompt fade.** The long script runs in all four panes for `example-islam`.
-35. **The wrapper's rules.** One probe or more for each of the seven.
-36. **Prompt on top of the checkpoint.** The temporary copy, in mode B.
-37. **Claude Code.** A session with the adapter in place names the installed value system
-    when asked.
+38. **Prompt fade.** The long script runs in all four panes for `example-islam`.
+39. **The wrapper's rules.** One probe or more for each of the seven.
+40. **Prompt on top of the checkpoint.** The temporary copy, in mode B.
+41. **Claude Code.** A session with the adapter in place names the installed value system
+    when asked, and its transcript shows whether the wrapper was written into it.
 
 Non-functional:
 
-38. **No copies.** `reference/` contains no package, schema or normative text.
-39. **Honesty of the display.** A control is never shown without its label, and a reply
+42. **No copies.** Apart from saved records, `reference/` contains no package, schema or
+    normative text, and the host reads nothing from a record.
+43. **Honesty of the display.** A control is never shown without its label, and a reply
     written in advance is never shown as a pane's own.
 
 ## Risks and Mitigation
@@ -807,6 +927,8 @@ Non-functional:
 | Pull request #4 changes after this spec is approved. | Medium | Medium | The host takes the rules from the checker and the texts from `spec/` and holds no copy, so most changes arrive without work here. A change to a run-time rule goes through the architect. |
 | Claude Code's hook behaviour differs from its documentation, or changes. | Medium | Low | The adapter is checked against a real session, and the README records the version it was checked with. |
 | The estimate of four characters to a token is far off for this model. | Low | Low | The provider's reported counts are in every record, so the review can say how far off it was. A large gap is a finding. |
+| The provider limits or refuses requests when four panes call it at once through a long script. | Medium | Low | A refused request is shown in its pane and that pane stops. The host does not retry on its own. A run from the command line says which pane stopped and at which turn, and the run is made again. If it keeps happening, the panes are run one after another, which the script makes possible because every pane carries the same turns. |
+| A committed record carries something private. | Low | Medium | Only scripted runs made for the findings are committed. A record holds no key, header, machine path or user name, a test checks that, and each one is read before it is committed. |
 | The project grows: a host, a script player and an adapter in one piece of work. | Medium | Medium | The plan orders the work so that the chatbot is complete before the adapter starts. If something must be left out, the architect decides what. |
 
 ## References
