@@ -91,3 +91,64 @@ where the API has content blocks, otherwise one string. Which form the Tinker en
 for this model is for the first live check. The requirements are numbered H1 to H10 there.
 
 The spec is still at the spec-approval gate.
+
+## 2026-11-21 — spec not approved; rewritten for a public service
+
+The owner did not approve the spec. He wants the chatbot runnable on the internet, with no
+local operation required. Hosting and public deployment are now in scope, and the issue body
+says so. The spec was rewritten around a service at a public address. It is back at the
+spec-approval gate.
+
+What changed:
+
+- **Who pays.** The service holds the operator's key. Visitors bring nothing. Spending is
+  limited in money, worked out from the provider's reported token counts and its published
+  prices: by default $0.50 a day for one visitor and $5.00 a day for all visitors, checked
+  before every model request. The daily totals survive a restart. The provider offers no
+  spending cap of its own that could be found, so the operator's guide recommends an account
+  paid for in advance.
+- **Abuse.** Limits on message length, turns per visitor, model requests at once, and calls a
+  day to any one tool server. An off switch for live chat. No package, script, key or request
+  of a visitor's own making is accepted.
+- **Privacy.** Conversations live in the service's memory for the visit and are written
+  nowhere. Logs hold counts and no text. A visitor can save their own record to their own
+  machine.
+- **Consent.** Per visitor, per visit, per package and server, in the browser.
+- **The link to the collection.** The service is deployed again whenever `main` changes and
+  reads `values/` from the commit it was built from. Fetching from GitHub while running was
+  rejected: the packages and the standard would come from different commits.
+- **Recordings.** The committed records behind the findings can be opened on the service,
+  marked as recordings. They need no model, so the page still shows something when a limit is
+  reached or live chat is off.
+- **No second catalogue.** The service lists what is needed to pick panes, plus what the
+  standard requires a host to show before activation, and links to the collection's browser
+  (issue #3) for the rest.
+- **Where it runs.** One small instance that stays up. Railway is recommended, at about $5 to
+  $20 a month. Four other platforms are compared. The owner decides, and the first public
+  deployment waits for his say-so.
+- **The adapter** (part 11) now allows for the expected change to the standard that lets an
+  outside adapter place the wrapper at the start of the conversation if it says so. The other
+  five departures stand.
+
+Live checks, 2026-11-21 05:20 UTC, all against the real endpoint: Inkling 2 Small follows a
+system prompt, calls a tool and answers from the result, takes a user message as two text
+blocks and a system message mid-conversation, and reports cached tokens. The declared
+checkpoint loads from `base` and `adapter` alone, returns no reasoning, and follows a system
+prompt. A checkpoint path that does not exist gives HTTP 404, which is the load-failure
+signal the host needs. Two consequences in the spec: the reminder is a content block of its
+own, as the standard prefers, and a declared model is addressed as `base;adapter`. One
+surprise: the endpoint refuses a request sent under a programming library's default client
+name (HTTP 403), so the host sends a named client. Loading the checkpoint from a second
+account is still not verified.
+
+The owner's four earlier recommendations: demo under 64K, Level 2 and replies written in
+advance are unchanged. The live link changed as above.
+
+For the owner at the gate, each with a recommendation in the spec's Open Questions: where it
+runs; the limit figures; whether the host should offer web search now that the Roman
+Catholic example is to take its detail from it (recommended: no, in this project); declared
+models on the public service; no moderation of the host's own; and confirming with the
+Ansari project that a public demonstration may call its server.
+
+The revised spec has not been through a second review round. Porch is holding at the gate
+and has not asked for one.
