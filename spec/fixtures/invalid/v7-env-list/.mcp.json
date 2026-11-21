@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "sample-texts": {
+      "command": "npx",
+      "env": [
+        "TEXTS_LANGUAGE=en"
+      ]
+    }
+  }
+}

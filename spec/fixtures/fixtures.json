@@ -1,5 +1,5 @@
 {
-  "description": "Fixtures for the values.md standard, version 0.1. Each entry names a path under this directory, the scope it is checked at, and the outcome a conforming checker must give: valid, invalid or unsupported-version. An invalid entry lists the rules that fail. Its details say why, in the reference checker's own codes: a short word for V1, V2, V4, V5 and V6, and for V3 the path of the schema constraint that rejects the file. A valid entry gives the number of characters in the body and in the core.",
+  "description": "Fixtures for the values.md standard, version 0.1. Each entry names a path under this directory, the scope it is checked at (file, folder or collection), and the outcome a conforming checker must give: valid, invalid or unsupported-version. An invalid entry lists the rules that fail. Its details say why, in the reference checker's own codes: a short word, or for V3 and V7 the path of the constraint that rejects the input in values.schema.json or mcp.schema.json. A valid entry gives the number of characters in the body and in the core, and its directory holds expected/wrapper.txt and expected/reminder.txt, the exact texts it renders to. An entry with symlinks is built when it is run: copy the folder, then make each named link point at its target. A collection entry gives the outcome for each package folder in it.",
   "fixtures": [
     {
       "path": "valid/smallest/VALUES.md",
@@ -2111,6 +2111,680 @@
       "body-chars": 66,
       "core-chars": 66,
       "note": "The reserved text is matched ignoring the case of A to Z only. A long s (U+017F) is a different character."
+    },
+    {
+      "path": "valid/size-budget/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 7500,
+      "core-chars": 56,
+      "wrapper-chars": 9432,
+      "note": "The longest name (64 characters), the longest steward name (100) and the longest body (7,500). The rendered wrapper is 9,432 characters, the most a wrapper can be."
+    },
+    {
+      "path": "valid/remote-server",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 264,
+      "core-chars": 56,
+      "note": "A package with one remote MCP server. The specification's worked example uses this fixture."
+    },
+    {
+      "path": "valid/remote-server-sse",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A remote server with type sse."
+    },
+    {
+      "path": "valid/remote-server-no-type",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A remote server needs only url. type is optional."
+    },
+    {
+      "path": "valid/local-server",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A local server with args and env. The underscore in its name is allowed."
+    },
+    {
+      "path": "valid/local-server-type-stdio",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "The rule on type belongs to a remote server. On a local server type is one more key that is ignored, so the common \"type\": \"stdio\" is valid."
+    },
+    {
+      "path": "valid/mcp-unknown-keys",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Unknown keys at the top level and inside a server are ignored. Two servers, one remote and one local."
+    },
+    {
+      "path": "valid/mcp-bounds",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A server name of exactly 64 characters and a command of exactly one character."
+    },
+    {
+      "path": "valid/mcp-no-servers",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "An empty mcpServers object declares no servers."
+    },
+    {
+      "path": "valid/skill-and-references",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A package with a skill and a bundled text."
+    },
+    {
+      "path": "valid/other-entries-ignored",
+      "scope": "folder",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "The standard defines nothing else in the folder. Entries made for one product, and any other file, are ignored."
+    },
+    {
+      "path": "invalid/v7-not-json",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:not-json"
+      ],
+      "note": "The file is cut off, so it is not JSON."
+    },
+    {
+      "path": "invalid/v7-not-a-number-literal",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:not-json"
+      ],
+      "note": "NaN is not a JSON value, though some parsers accept it."
+    },
+    {
+      "path": "invalid/v7-not-utf8",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:not-json"
+      ],
+      "note": "The file holds a byte that is not UTF-8."
+    },
+    {
+      "path": "invalid/v7-not-an-object",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:type"
+      ],
+      "note": "The file is a JSON list."
+    },
+    {
+      "path": "invalid/v7-no-mcpservers",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:required/mcpServers"
+      ],
+      "note": "No mcpServers key."
+    },
+    {
+      "path": "invalid/v7-mcpservers-list",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/type"
+      ],
+      "note": "mcpServers as a list. It is an object."
+    },
+    {
+      "path": "invalid/v7-server-name-space",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/propertyNames/pattern"
+      ],
+      "note": "A server name with a space."
+    },
+    {
+      "path": "invalid/v7-server-name-empty",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/propertyNames/pattern"
+      ],
+      "note": "An empty server name."
+    },
+    {
+      "path": "invalid/v7-server-name-too-long",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/propertyNames/maxLength"
+      ],
+      "note": "A server name of 65 characters."
+    },
+    {
+      "path": "invalid/v7-server-string",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/type"
+      ],
+      "note": "A server given as a string. It is an object. A value of the wrong type is reported once, for its type."
+    },
+    {
+      "path": "invalid/v7-url-and-command",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/oneOf"
+      ],
+      "note": "Both url and command. A server is one or the other."
+    },
+    {
+      "path": "invalid/v7-neither-url-nor-command",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/oneOf"
+      ],
+      "note": "Neither url nor command."
+    },
+    {
+      "path": "invalid/v7-http-address",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/url/properties/url/pattern"
+      ],
+      "note": "An http:// address."
+    },
+    {
+      "path": "invalid/v7-http-loopback",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/url/properties/url/pattern"
+      ],
+      "note": "An http:// address is refused on loopback too."
+    },
+    {
+      "path": "invalid/v7-url-number",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/url/properties/url/type"
+      ],
+      "note": "A url that is a number."
+    },
+    {
+      "path": "invalid/v7-type-unknown",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/url/properties/type/enum"
+      ],
+      "note": "A type that is neither http nor sse on a remote server."
+    },
+    {
+      "path": "invalid/v7-command-empty",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/command/minLength"
+      ],
+      "note": "An empty command."
+    },
+    {
+      "path": "invalid/v7-command-list",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/command/type"
+      ],
+      "note": "A command given as a list. It is one string, and its arguments go in args."
+    },
+    {
+      "path": "invalid/v7-args-string",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/args/type"
+      ],
+      "note": "args as one string. It is a list."
+    },
+    {
+      "path": "invalid/v7-args-number",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/args/items/type"
+      ],
+      "note": "args holding a number."
+    },
+    {
+      "path": "invalid/v7-env-list",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/env/type"
+      ],
+      "note": "env as a list. It is an object."
+    },
+    {
+      "path": "invalid/v7-env-number",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/dependentSchemas/command/properties/env/additionalProperties/type"
+      ],
+      "note": "An env value that is a number."
+    },
+    {
+      "path": "invalid/v7-headers",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/not"
+      ],
+      "note": "headers is not allowed. A server that needs a credential gets it from the host."
+    },
+    {
+      "path": "invalid/v7-second-server-invalid",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:properties/mcpServers/additionalProperties/not"
+      ],
+      "note": "Every server is checked. The first is valid and the second has headers."
+    },
+    {
+      "path": "invalid/v8-no-skill-md",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:no-skill-md"
+      ],
+      "note": "A folder under skills/ with no SKILL.md."
+    },
+    {
+      "path": "invalid/v8-no-frontmatter",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-frontmatter"
+      ],
+      "note": "A SKILL.md with no frontmatter."
+    },
+    {
+      "path": "invalid/v8-unexpected-field",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-unexpected-field"
+      ],
+      "note": "A field Agent Skills does not define. New fields cannot live in SKILL.md."
+    },
+    {
+      "path": "invalid/v8-missing-name",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-name-missing"
+      ],
+      "note": "No name."
+    },
+    {
+      "path": "invalid/v8-name-capital",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-name-format"
+      ],
+      "note": "A name with capital letters. The folder has the same name, so only the form of the name is wrong."
+    },
+    {
+      "path": "invalid/v8-name-not-folder",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-name-folder"
+      ],
+      "note": "A name that is not the folder's name."
+    },
+    {
+      "path": "invalid/v8-missing-description",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-description-missing"
+      ],
+      "note": "No description."
+    },
+    {
+      "path": "invalid/v8-description-too-long",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-description-too-long"
+      ],
+      "note": "A description of 1,025 characters."
+    },
+    {
+      "path": "invalid/v8-compatibility-too-long",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:skill-compatibility"
+      ],
+      "note": "A compatibility field of 501 characters."
+    },
+    {
+      "path": "invalid/v8-second-skill-invalid",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V8"
+      ],
+      "details": [
+        "V8:no-skill-md"
+      ],
+      "note": "Every folder under skills/ is checked. One is a valid skill and the other has no SKILL.md."
+    },
+    {
+      "path": "invalid/v9-link-to-file",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V9"
+      ],
+      "details": [
+        "V9:symbolic-link"
+      ],
+      "symlinks": {
+        "references/latest.md": "charter.md"
+      },
+      "note": "A symbolic link to a file. The link is made when the fixture is run, because a link committed to git does not survive every checkout: copy the folder, then make references/latest.md a link to charter.md."
+    },
+    {
+      "path": "invalid/v9-link-to-directory",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V9"
+      ],
+      "details": [
+        "V9:symbolic-link"
+      ],
+      "symlinks": {
+        "texts": "references"
+      },
+      "note": "A symbolic link to a directory, made when the fixture is run: texts is a link to references."
+    },
+    {
+      "path": "invalid/folder-several-rules",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V3",
+        "V7",
+        "V8"
+      ],
+      "details": [
+        "V3:required/name",
+        "V7:properties/mcpServers/additionalProperties/not",
+        "V8:no-skill-md"
+      ],
+      "note": "The folder rules are each judged on their own, whatever the file rules found: no name (V3), headers in .mcp.json (V7) and a skill folder with no SKILL.md (V8)."
+    },
+    {
+      "path": "invalid/v1-folder-without-values-file",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V1",
+        "V7"
+      ],
+      "details": [
+        "V1:file-name",
+        "V7:not-json"
+      ],
+      "note": "A folder with no VALUES.md is not a package. Checked as one, it fails V1, and the folder rules are still judged."
+    },
+    {
+      "path": "unsupported/folder-later-version",
+      "scope": "folder",
+      "outcome": "unsupported-version",
+      "note": "A later version in a folder whose .mcp.json and skill would fail V7 and V8. No rule is judged at any scope."
+    },
+    {
+      "path": "collections/two-packages/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "second-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        }
+      },
+      "note": "A collection of two valid packages. expected/marketplace.json holds their Claude Code marketplace entries, for a marketplace file whose root is the directory that holds values/."
+    },
+    {
+      "path": "collections/folder-name-differs/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "renamed-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V10"
+          ],
+          "details": [
+            "V10:folder-name"
+          ]
+        }
+      },
+      "note": "The folder renamed-sample holds a package named original-sample."
+    },
+    {
+      "path": "collections/duplicate-name/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V10"
+          ],
+          "details": [
+            "V10:duplicate-name"
+          ]
+        },
+        "first-sample-copy": {
+          "outcome": "invalid",
+          "rules": [
+            "V10"
+          ],
+          "details": [
+            "V10:duplicate-name",
+            "V10:folder-name"
+          ]
+        }
+      },
+      "note": "Two packages are named first-sample. Both break V10: each has a name another package has, and one is also in a folder not named for it."
+    },
+    {
+      "path": "collections/unsupported-beside-valid/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "later-sample": {
+          "outcome": "unsupported-version"
+        }
+      },
+      "note": "A package of a later version beside a valid one. It is not judged, and it takes no part in V10: it claims the name first-sample, and first-sample is still valid."
+    },
+    {
+      "path": "collections/v10-with-other-failures/values",
+      "scope": "collection",
+      "packages": {
+        "first-sample": {
+          "outcome": "valid",
+          "body-chars": 40,
+          "core-chars": 40
+        },
+        "second-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V3",
+            "V10"
+          ],
+          "details": [
+            "V10:folder-name",
+            "V3:properties/name/pattern"
+          ]
+        },
+        "third-sample": {
+          "outcome": "invalid",
+          "rules": [
+            "V2"
+          ],
+          "details": [
+            "V2:duplicate-key"
+          ]
+        }
+      },
+      "note": "V10 is judged whenever name could be read as a string. second-sample has a malformed name, which still is not its folder's name. third-sample has a duplicate key, so its name could not be read and V10 is not judged."
     }
   ]
 }

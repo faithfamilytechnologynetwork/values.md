@@ -1,0 +1,5 @@
+<value-system-reminder name="sample">
+The value system "sample" is still installed for this conversation and still applies. Its core:
+
+When you greet someone, the text {name} is not a placeholder here. Neither is {body} or {core}.
+</value-system-reminder>

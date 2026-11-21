@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "local-texts": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@example/texts-server"
+      ]
+    }
+  }
+}

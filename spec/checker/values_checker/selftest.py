@@ -24,7 +24,7 @@ def _save(root: Path, manifest: dict) -> None:
 
 
 def _entry(manifest: dict, directory: str) -> dict:
-    (entry,) = [e for e in manifest["fixtures"] if e["path"].startswith(directory + "/")]
+    (entry,) = [e for e in manifest["fixtures"] if fixtures.fixture_directory(e) == directory]
     return entry
 
 
@@ -33,7 +33,7 @@ def _delete(root: Path, keep: Callable[[dict], bool]) -> None:
     manifest = _manifest(root)
     for entry in manifest["fixtures"]:
         if not keep(entry):
-            shutil.rmtree((root / entry["path"]).parent)
+            shutil.rmtree(root / fixtures.fixture_directory(entry))
     manifest["fixtures"] = [e for e in manifest["fixtures"] if keep(e)]
     _save(root, manifest)
 
@@ -68,6 +68,23 @@ def _change_body_count(root: Path) -> None:
     _save(root, manifest)
 
 
+def _change_expected_wrapper(root: Path) -> None:
+    expected = root / "valid/smallest/expected/wrapper.txt"
+    text = expected.read_text(encoding="utf-8")
+    expected.write_text(text.replace("vouches", "vouchez", 1), encoding="utf-8")
+
+
+def _remove_expected_renderings(root: Path) -> None:
+    shutil.rmtree(root / "valid/smallest/expected")
+
+
+def _change_expected_marketplace(root: Path) -> None:
+    expected = root / "collections/two-packages/expected/marketplace.json"
+    listing = json.loads(expected.read_text(encoding="utf-8"))
+    listing[0]["tags"].reverse()
+    expected.write_text(json.dumps(listing), encoding="utf-8")
+
+
 def _no_fences(lines: list[str]) -> list[bool]:
     return [False] * len(lines)
 
@@ -86,19 +103,22 @@ CASES: list[tuple[str, Callable[[Path], None] | None, str]] = [
     ),
     (
         "the only fixture for one failure removed",
-        lambda root: _delete(root, lambda e: not e["path"].startswith("invalid/v2-explicit-tag/")),
+        lambda root: _delete(root, lambda e: fixtures.fixture_directory(e) != "invalid/v2-explicit-tag"),
         "no fixture produces the failure V2:explicit-tag",
     ),
     (
         "the only fixture for one schema constraint removed",
-        lambda root: _delete(root, lambda e: not e["path"].startswith("invalid/v3-claim-unknown/")),
-        "rejected by the schema constraint properties/steward/properties/claim/enum",
+        lambda root: _delete(root, lambda e: fixtures.fixture_directory(e) != "invalid/v3-claim-unknown"),
+        "rejected by the V3 schema constraint properties/steward/properties/claim/enum",
     ),
     (
         "the fixture at the lower bounds removed",
-        lambda root: _delete(root, lambda e: not e["path"].startswith("valid/bounds-minimum/")),
-        "exactly at the bound",
+        lambda root: _delete(root, lambda e: fixtures.fixture_directory(e) != "valid/bounds-minimum"),
+        "exactly at the V3 bound",
     ),
+    ("an expected wrapper changed by one character", _change_expected_wrapper, "rendered wrapper differs"),
+    ("a valid fixture with its expected renderings removed", _remove_expected_renderings, "has no expected rendering"),
+    ("an expected marketplace entry with its tags in another order", _change_expected_marketplace, "marketplace entries differ"),
     ("the fence rule switched off in the reading code", None, "fence"),
 ]
 

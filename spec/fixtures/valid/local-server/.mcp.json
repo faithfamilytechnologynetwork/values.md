@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "local_texts": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@example/texts-server",
+        "--offline"
+      ],
+      "env": {
+        "TEXTS_LANGUAGE": "en"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sample-texts": {
+      "command": [
+        "npx",
+        "-y",
+        "@example/texts-server"
+      ]
+    }
+  }
+}

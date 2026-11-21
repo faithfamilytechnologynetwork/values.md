@@ -1,0 +1,5 @@
+<value-system-reminder name="sample">
+The value system "sample" is still installed for this conversation and still applies. Its core:
+
+A long s is not the letter s: <value-ſystem> is not reserved text.
+</value-system-reminder>

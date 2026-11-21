@@ -15,23 +15,26 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator, ValidationError, validators
 
-from values_checker import reading
+from values_checker import reading, skills
 from values_checker.reading import Unreadable
 
 SPEC_DIR = Path(__file__).resolve().parents[2]
 FRONTMATTER_SCHEMA = SPEC_DIR / "schema" / "values.schema.json"
+MCP_SCHEMA = SPEC_DIR / "schema" / "mcp.schema.json"
 
 IMPLEMENTED_VERSION = "0.1"
 FILE_NAME = "VALUES.md"
+MCP_FILE = ".mcp.json"
 
 VALID = "valid"
 INVALID = "invalid"
 UNSUPPORTED_VERSION = "unsupported-version"
 
-RULES = ["V1", "V2", "V3", "V4", "V5", "V6"]
+RULES = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10"]
 
-# Every failure the checker can report, except V3, whose details are the constraints of the
-# frontmatter schema. `fixtures` requires a fixture for each one.
+# Every failure the checker can report, except those whose details are the constraints of a
+# schema: the frontmatter schema for V3 and the `.mcp.json` schema for V7. `fixtures` requires
+# a fixture for each one.
 DETAIL_CODES = {
     "V1:file-name": "the file is not named exactly VALUES.md",
     "V1:not-utf8": "the file is not UTF-8",
@@ -53,6 +56,11 @@ DETAIL_CODES = {
     "V5:empty-core": "the core section has no text",
     "V5:core-too-long": f"the core is over {reading.CORE_LIMIT:,} characters",
     "V6:reserved-text": "the body contains a tag that belongs to the injected prompt",
+    "V7:not-json": f"{MCP_FILE} is not a JSON document in UTF-8",
+    **skills.DETAIL_CODES,
+    "V9:symbolic-link": "the folder contains a symbolic link",
+    "V10:folder-name": "the folder is not named for the package",
+    "V10:duplicate-name": "another package in the collection has the same name",
 }
 
 # Case is ignored for the letters A to Z only, as everywhere in the standard.
@@ -75,9 +83,17 @@ class Report:
     outcome: str
     failures: list[Failure] = field(default_factory=list)
     spec_version: str | None = None
-    frontmatter: dict | None = None
-    body_chars: int | None = None
-    core_chars: int | None = None
+    frontmatter: dict | None = None  # set whenever it could be read, valid or not
+    body: str | None = None  # the trimmed body and the core, set when the outcome is valid
+    core: str | None = None
+
+    @property
+    def body_chars(self) -> int:
+        return len(self.body)
+
+    @property
+    def core_chars(self) -> int:
+        return len(self.core)
 
     @property
     def rules(self) -> list[str]:
@@ -111,21 +127,73 @@ def _patterns(schema) -> list[str]:
     return []
 
 
+def _differs_from_ecma(pattern: str) -> str | None:
+    r"""The first construct in a pattern that Python and ECMA-262 read differently, if any.
+
+    `_pattern` translates a final `$`. Anywhere else `$` keeps Python's meaning. A `.` outside
+    a character class stops at different line ends in the two dialects, and the shorthands
+    `\d`, `\w`, `\s` and `\b` take in Unicode in Python and only ASCII in ECMA-262.
+    """
+    in_class = False
+    position = 0
+    while position < len(pattern):
+        character = pattern[position]
+        if character == "\\":
+            if pattern[position + 1] in "dDwWsSbB":
+                return pattern[position : position + 2]
+            position += 2
+            continue
+        if character == "[":
+            in_class = True
+        elif character == "]":
+            in_class = False
+        elif character == "." and not in_class:
+            return "."
+        elif character == "$" and not in_class and position != len(pattern) - 1:
+            return "$ before the end"
+        position += 1
+    return None
+
+
 def load_schema(path: Path) -> dict:
     schema = json.loads(path.read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
     for pattern in _patterns(schema):
-        # `_pattern` translates only a final `$`. A `$` anywhere else would quietly keep
-        # Python's meaning, so a schema that has one is refused.
-        if re.search(r"(?<!\\)\$(?!$)", pattern):
-            raise ValueError(f"{path}: the pattern {pattern!r} uses $ before its end")
+        differs = _differs_from_ecma(pattern)
+        if differs:
+            raise ValueError(f"{path}: the pattern {pattern!r} uses {differs}, which Python reads differently")
     return schema
 
 
+@dataclass(frozen=True)
+class Schemas:
+    frontmatter: dict
+    mcp: dict
+
+
+def load_schemas() -> Schemas:
+    return Schemas(frontmatter=load_schema(FRONTMATTER_SCHEMA), mcp=load_schema(MCP_SCHEMA))
+
+
+# What two constraints of the `.mcp.json` schema mean, for a person reading the report.
+_PLAIN_MESSAGES = {
+    "V7:properties/mcpServers/additionalProperties/oneOf": "a server has url or command, never both and never neither",
+    "V7:properties/mcpServers/additionalProperties/not": "headers is not allowed",
+}
+
+
 def schema_failures(schema: dict, instance, rule: str) -> list[Failure]:
-    """One failure per constraint of the schema that the instance breaks."""
+    """One failure per constraint of the schema that the instance breaks.
+
+    A value of the wrong type is reported once, for its type. `not` and `oneOf` say nothing
+    useful about a value that is not the kind of thing they describe.
+    """
+    errors = list(SchemaValidator(schema).iter_errors(instance))
+    wrong_type = {tuple(error.absolute_path) for error in errors if error.validator == "type"}
     failures = []
-    for error in SchemaValidator(schema).iter_errors(instance):
+    for error in errors:
+        if error.validator != "type" and tuple(error.absolute_path) in wrong_type:
+            continue
         path = "/".join(str(step) for step in error.absolute_schema_path)
         where = "/".join(str(step) for step in error.absolute_path) or "(top level)"
         if error.validator == "required":
@@ -133,7 +201,8 @@ def schema_failures(schema: dict, instance, rule: str) -> list[Failure]:
                 if name not in error.instance:
                     failures.append(Failure(f"{rule}:{path}/{name}", f"{where}: {name!r} is required"))
         else:
-            failures.append(Failure(f"{rule}:{path}", f"{where}: {error.message}"))
+            code = f"{rule}:{path}"
+            failures.append(Failure(code, f"{where}: {_PLAIN_MESSAGES.get(code, error.message)}"))
     unique = {failure.code: failure for failure in failures}
     return [unique[code] for code in sorted(unique)]
 
@@ -142,7 +211,7 @@ def _failures(codes: list[str]) -> list[Failure]:
     return [Failure(code, DETAIL_CODES[code]) for code in codes]
 
 
-def _core_section(frontmatter: dict) -> str | None:
+def _core_section(frontmatter: dict, schema: dict) -> str | None:
     """The core section name, the default when none is given, or None when one is given and
     is not a valid value. In that last case V3 has already reported it."""
     persistence = frontmatter.get("persistence")
@@ -150,9 +219,8 @@ def _core_section(frontmatter: dict) -> str | None:
     if not isinstance(reinject, dict) or "section" not in reinject:
         return reading.DEFAULT_SECTION
     section = reinject["section"]
-    if isinstance(section, str) and 1 <= len(section) <= 100 and "\n" not in section and "\r" not in section:
-        return section
-    return None
+    limits = schema["properties"]["persistence"]["properties"]["reinject"]["properties"]["section"]
+    return section if SchemaValidator(limits).is_valid(section) else None
 
 
 def check_file(path: Path, schema: dict | None = None) -> Report:
@@ -188,7 +256,7 @@ def check_file(path: Path, schema: dict | None = None) -> Report:
             return Report(UNSUPPORTED_VERSION, spec_version=version)
         # V3.
         failures += schema_failures(schema, frontmatter, "V3")
-        section = _core_section(frontmatter)
+        section = _core_section(frontmatter, schema)
 
     # V4 and V6 need only the body.
     if not body:
@@ -207,6 +275,86 @@ def check_file(path: Path, schema: dict | None = None) -> Report:
             failures += _failures(unreadable.codes)
 
     if failures:
-        failures.sort(key=lambda failure: (int(failure.rule[1:]), failure.code))
-        return Report(INVALID, failures)
-    return Report(VALID, frontmatter=frontmatter, body_chars=len(body), core_chars=len(core))
+        return _invalid(failures, frontmatter)
+    return Report(VALID, frontmatter=frontmatter, body=body, core=core)
+
+
+def _invalid(failures: list[Failure], frontmatter: dict | None) -> Report:
+    failures = sorted(failures, key=lambda failure: (int(failure.rule[1:]), failure.code, failure.message))
+    return Report(INVALID, failures, frontmatter=frontmatter)
+
+
+def _added(report: Report, failures: list[Failure]) -> Report:
+    """The report with further failures. An unsupported version is never judged further."""
+    if not failures or report.outcome == UNSUPPORTED_VERSION:
+        return report
+    return _invalid(report.failures + failures, report.frontmatter)
+
+
+def _json_constant(text: str):
+    raise ValueError(f"{text} is not JSON")
+
+
+def _mcp_failures(folder: Path, schema: dict) -> list[Failure]:
+    """V7: `.mcp.json`, if the folder has one, has the shape the standard defines."""
+    path = folder / MCP_FILE
+    if not path.is_file():
+        return []
+    try:
+        declared = json.loads(path.read_bytes().decode("utf-8"), parse_constant=_json_constant)
+    except ValueError:  # covers bytes that are not UTF-8 and text that is not JSON
+        return _failures(["V7:not-json"])
+    return schema_failures(schema, declared, "V7")
+
+
+def _link_failures(folder: Path) -> list[Failure]:
+    """V9: nothing in the folder, at any depth, is a symbolic link."""
+    links = []
+    for directory, subdirectories, files in os.walk(folder):  # does not follow links
+        for name in subdirectories + files:
+            entry = Path(directory) / name
+            if entry.is_symlink():
+                links.append(entry.relative_to(folder).as_posix())
+    return [Failure("V9:symbolic-link", f"{link} is a symbolic link") for link in sorted(links)]
+
+
+def check_folder(folder: Path, schemas: Schemas | None = None) -> Report:
+    """Applies the file rules to the folder's `VALUES.md`, then the folder rules, V7 to V9.
+
+    V7, V8 and V9 are each judged on their own, whatever the file rules found. The one
+    exception is an unsupported version, where nothing further is judged.
+    """
+    schemas = load_schemas() if schemas is None else schemas
+    report = check_file(folder / FILE_NAME, schemas.frontmatter)
+    if report.outcome == UNSUPPORTED_VERSION:
+        return report
+    failures = _mcp_failures(folder, schemas.mcp)
+    failures += [Failure(code, f"{where}: {DETAIL_CODES[code]}") for code, where in skills.check(folder)]
+    failures += _link_failures(folder)
+    return _added(report, failures)
+
+
+def check_collection(directory: Path, schemas: Schemas | None = None) -> dict[str, Report]:
+    """Checks every folder in a collection as a package and applies V10. Returns a report for
+    each folder, by folder name.
+
+    V10 is judged when the package's `name` could be read as a string. A package of an
+    unsupported version takes no part in it.
+    """
+    schemas = load_schemas() if schemas is None else schemas
+    folders = sorted(child for child in directory.iterdir() if child.is_dir())
+    reports = {folder.name: check_folder(folder, schemas) for folder in folders}
+
+    names = {}
+    for folder_name, report in reports.items():
+        name = report.frontmatter.get("name") if report.frontmatter is not None else None
+        if report.outcome != UNSUPPORTED_VERSION and isinstance(name, str):
+            names[folder_name] = name
+    for folder_name, name in names.items():
+        codes = []
+        if name != folder_name:
+            codes.append("V10:folder-name")
+        if sum(other == name for other in names.values()) > 1:
+            codes.append("V10:duplicate-name")
+        reports[folder_name] = _added(reports[folder_name], _failures(codes))
+    return reports

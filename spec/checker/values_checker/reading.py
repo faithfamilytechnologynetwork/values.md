@@ -101,7 +101,7 @@ def _resolve_plain_scalar(text: str):
     return text
 
 
-def parse_frontmatter(text: str) -> dict:
+def parse_frontmatter(text: str, resolve_scalars: bool = True) -> dict:
     """Reading rule 2: YAML 1.2, core schema, a mapping, no duplicate keys, anchors or aliases.
 
     The YAML library is used only as a parser. Values are built here from its events, because
@@ -111,6 +111,9 @@ def parse_frontmatter(text: str) -> dict:
     Three things are refused that the core schema could express but JSON cannot hold or a
     second reader might read differently: a mapping key that is not a string, an explicit
     tag, and a number that is infinite or not a number.
+
+    With `resolve_scalars` off, every scalar is read as a string. `VALUES.md` is never read
+    that way. It is how the Agent Skills reference validator reads a `SKILL.md` (rule V8).
     """
     try:
         events = list(YAML(typ="safe", pure=True).parse(text))
@@ -135,15 +138,17 @@ def parse_frontmatter(text: str) -> dict:
     for event in stream:
         if isinstance(event, DocumentStartEvent):
             break
-    value = _build(stream)
+    value = _build(stream, resolve_scalars)
     if not isinstance(value, dict):
         raise Unreadable("V2:not-a-mapping")
     return value
 
 
-def _scalar(event: ScalarEvent):
+def _scalar(event: ScalarEvent, resolve: bool):
     plain_untagged, quoted_untagged = event.implicit
     if plain_untagged:
+        if not resolve:
+            return event.value
         value = _resolve_plain_scalar(event.value)
         if isinstance(value, float) and not math.isfinite(value):
             raise Unreadable("V2:non-finite-number")
@@ -156,7 +161,7 @@ def _scalar(event: ScalarEvent):
 _AWAITING_KEY = object()
 
 
-def _build(stream):
+def _build(stream, resolve_scalars: bool):
     """Builds one document's value from the parser's events.
 
     It keeps its own stack and does not recurse, so frontmatter nested thousands of levels
@@ -183,7 +188,7 @@ def _build(stream):
 
     for event in stream:
         if isinstance(event, ScalarEvent):
-            place(_scalar(event))
+            place(_scalar(event, resolve_scalars))
         elif isinstance(event, SequenceStartEvent | MappingStartEvent):
             if not event.implicit:
                 raise Unreadable("V2:explicit-tag")

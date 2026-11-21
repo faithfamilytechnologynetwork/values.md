@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sample-texts": {
+      "url": "https://mcp.example.org/mcp"
+    },
+    "more-texts": {
+      "url": "https://mcp.example.net/mcp",
+      "headers": {}
+    }
+  }
+}
