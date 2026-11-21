@@ -597,7 +597,8 @@ installed and choose between them. It MAY activate several at once, under these 
 - A fine-tuned model belongs to the package that declares it. Running it lets the host skip
   reinjection for that package only. The others are reinjected as usual.
 - With several value systems active, every package's wrapper is in context, so no model runs
-  without its prompt (part 6, mode C).
+  without its prompt (part 6, mode C). A model declared `prompt: omit` is therefore not used
+  while a second value system is active.
 - Value systems are never merged. When they conflict on a question, the preamble tells the
   model to say that they differ and to attribute each position to the value system that holds
   it. A package cannot declare precedence over another. Only the user can.

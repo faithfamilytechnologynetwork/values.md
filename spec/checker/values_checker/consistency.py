@@ -306,7 +306,10 @@ def check(texts: dict[str, str], spec_dir: Path = rules.SPEC_DIR) -> list[str]:
             elif not rows:
                 problems.append(f"{marker.where}: the table after values-md:{marker.kind} has no rows")
             elif marker.kind == FIELD_TABLE:
-                problems += _field_table_problems(marker.where, rows, schema)
+                try:
+                    problems += _field_table_problems(marker.where, rows, schema)
+                except ValueError as no_words:
+                    problems.append(f"{marker.where}: the field table cannot be checked, because {no_words}")
             elif [row[0] for row in rows] != rules.RULES:
                 listed = ", ".join(row[0] for row in rows)
                 problems.append(f"{marker.where}: the rule table lists {listed}, and the checker implements {', '.join(rules.RULES)}")
