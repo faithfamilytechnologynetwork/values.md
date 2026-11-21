@@ -544,7 +544,9 @@ Installing a package does not authorise what it declares.
   folder checks V1 to V9. When the outcome is "unsupported version", the host says that the
   package targets a version of the standard it does not implement.
 - Before activating a package, a host MUST show the user its name, description, steward and
-  kind of claim, version, where the package came from, and the tools and models it declares.
+  kind of claim, version, where the package came from, and the models it declares. A host
+  that reads `.mcp.json`, which is every host at Level 2 or above, MUST also show the servers
+  it declares. A Level 1 host does not read that file and connects to nothing in it.
 - Where a host keeps installed packages is its own business. The suggested shared location
   for file-based hosts is `~/.agents/values/<name>/`.
 
