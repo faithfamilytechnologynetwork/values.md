@@ -42,3 +42,29 @@ Architect's reply on provider access (2026-11-21): the owner is being asked. The
 known belongs to the account that trained the checkpoints, so it would not settle the
 second-account check. Carry on: spec on the reported facts, live verification as the plan's
 first step.
+
+## 2026-11-20 — specify: reviewed, at the spec-approval gate
+
+Codex and Claude both asked for changes; the Gemini lane produced no review (its CLI exited
+with code 3). All points taken except one detail (MCP session identifiers and reply formats
+are left to the client library). The main changes:
+
+- A probe in a script is answered by the model, shown and recorded, and not carried forward,
+  so every pane continues from the same conversation.
+- The context window is checked before a request with the host's own count (four characters
+  to a token) plus the reply limit. Reported counts are shown and recorded only.
+- Numbers: 8 tool calls a turn, 120 seconds for a tool call, 300 seconds for a model request,
+  8,192 tokens for a reply, 65,536 for the host's window. All settings.
+- The host checks `Host` and `Origin`, and does not follow a redirect from a consented
+  address.
+- The adapter keeps no state: it finds its last placement in the transcript. This rests on
+  Claude Code writing hook text into the transcript, to be checked first.
+- Consent on a command-line run is given in the command, by package and server.
+- Records name packages by collection folder and hold no machine path or user name. Only
+  scripted runs made for the findings are committed.
+
+Four questions are open for the owner at the gate, each with a recommendation: demo length
+under 64K, the live link as a local directory, Level 2 (the Roman Catholic pane then cannot
+open its catechism), and replies written in advance in the long script. Two practical
+matters for the architect: provider access, and getting `spec/` and `values/` onto this
+branch before implementation.
