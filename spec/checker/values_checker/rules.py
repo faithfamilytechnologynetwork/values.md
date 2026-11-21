@@ -37,6 +37,7 @@ RULES = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10"]
 # a fixture for each one.
 DETAIL_CODES = {
     "V1:file-name": "the file is not named exactly VALUES.md",
+    "V1:no-file": "the folder holds no file named exactly VALUES.md",
     "V1:not-a-file": "VALUES.md is not a file",
     "V1:not-utf8": "the file is not UTF-8",
     "V1:no-frontmatter": "the first line is not exactly ---",
@@ -67,6 +68,12 @@ DETAIL_CODES = {
 # Case is ignored for the letters A to Z only, as everywhere in the standard.
 _RESERVED_TEXT = re.compile(r"<[ \t\n]*/?[ \t\n]*(values|value-system)", re.IGNORECASE | re.ASCII)
 _VERSION_FORM = re.compile(r"[0-9]+\.[0-9]+")
+
+
+class CouldNotJudge(Exception):
+    """This checker could not read a package well enough to give any of the three outcomes.
+
+    It is a limit of the checker and not a rule of the standard, so it is not a failure."""
 
 
 @dataclass(frozen=True)
@@ -232,8 +239,10 @@ def check_file(path: Path, schema: dict | None = None) -> Report:
     schema = load_schema(FRONTMATTER_SCHEMA) if schema is None else schema
 
     # V1. A failure ends the check: nothing else can be read.
-    if path.name != FILE_NAME or path.name not in os.listdir(path.parent):
+    if path.name != FILE_NAME:
         return Report(INVALID, _failures(["V1:file-name"]))
+    if path.name not in os.listdir(path.parent):
+        return Report(INVALID, _failures(["V1:no-file"]))
     if not path.is_file():  # a directory of that name, for one
         return Report(INVALID, _failures(["V1:not-a-file"]))
     try:
@@ -312,6 +321,9 @@ def _mcp_failures(folder: Path, schema: dict) -> list[Failure]:
         declared = json.loads(path.read_bytes().decode("utf-8"), parse_constant=_json_constant)
     except ValueError:  # covers bytes that are not UTF-8 and text that is not JSON
         return _failures(["V7:not-json"])
+    except RecursionError:
+        # The document may well be valid JSON, so calling it invalid would be a wrong verdict.
+        raise CouldNotJudge(f"{path} is nested too deeply for this checker to read") from None
     return schema_failures(schema, declared, "V7")
 
 

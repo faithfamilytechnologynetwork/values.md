@@ -48,6 +48,12 @@ def _scope_of(path: Path) -> Scope:
     raise typer.BadParameter(f"{path} does not exist")
 
 
+def _not_judged(reason: rules.CouldNotJudge) -> typer.Exit:
+    """No verdict was reached. Says why in a sentence and ends the run with exit code 2."""
+    typer.echo(f"could not judge: {reason}", err=True)
+    return typer.Exit(2)
+
+
 def _check_package(path: Path, scope: Scope) -> rules.Report:
     if scope == Scope.file:
         if not path.is_file():
@@ -55,12 +61,15 @@ def _check_package(path: Path, scope: Scope) -> rules.Report:
         return rules.check_file(path)
     if not path.is_dir():
         raise typer.BadParameter(f"{path} is not a directory")
-    return rules.check_folder(path)
+    try:
+        return rules.check_folder(path)
+    except rules.CouldNotJudge as reason:
+        raise _not_judged(reason) from None
 
 
 def _exit_code(reports: list[rules.Report]) -> int:
     """0 when every package is valid, 1 when any is invalid, 3 when the only thing wrong is a
-    version this checker does not implement."""
+    version this checker does not implement. A run that reaches no verdict ends with 2."""
     outcomes = {report.outcome for report in reports}
     if rules.INVALID in outcomes:
         return 1
@@ -84,7 +93,10 @@ def _show(label: str, report: rules.Report) -> None:
 def _collection_reports(path: Path) -> dict[str, rules.Report]:
     if not path.is_dir():
         raise typer.BadParameter(f"{path} is not a directory")
-    reports = rules.check_collection(path)
+    try:
+        reports = rules.check_collection(path)
+    except rules.CouldNotJudge as reason:
+        raise _not_judged(reason) from None
     if not reports:
         raise typer.BadParameter(f"{path} holds no package folders")
     return reports

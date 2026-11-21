@@ -15,14 +15,18 @@ the standard itself, against it.
 | [`prompts/`](prompts/) | The three texts a host injects, each as a file to copy: `wrapper.txt`, `reminder.txt` and `preamble.txt`. |
 | [`fixtures/`](fixtures/) | Small packages made to test one thing each. [`fixtures/fixtures.json`](fixtures/fixtures.json) lists every one with the outcome a conforming checker gives. Each valid fixture has an `expected/` directory with the exact wrapper and reminder it renders to. |
 | [`checker/`](checker/) | A small Python program that applies the validity and rendering rules. It is the standard testing itself. It is not a loader, it talks to no model, and it makes no network call. |
+| [`LICENSE.md`](LICENSE.md) | Which licence covers which file. |
 
 The example packages are not here. They live once, in the collection at
 [`../values/`](../values/).
 
 ## Running the checks
 
-The checker needs [uv](https://docs.astral.sh/uv/). Install its environment once, from the
-root of the repository. This is the only step that uses the network:
+The checker needs [uv](https://docs.astral.sh/uv/) and runs from a checkout of this
+repository. It finds the schemas, the prompt texts and the fixtures by their paths beside it,
+so a copy installed on its own, without the rest of `spec/`, does not work. Install its
+environment once, from the root of the repository. This is the only step that uses the
+network:
 
 ```
 uv sync --project spec/checker --locked
@@ -38,7 +42,8 @@ uv run --project spec/checker python -m values_checker check values/
 It prints, for each package, `valid`, `invalid` with the rules that failed, or `unsupported
 version`. Its exit code is 0 when every package is valid, 1 when any is invalid, and 3 when
 nothing is invalid but a package targets a version of the standard this checker does not
-implement.
+implement. When it cannot reach a verdict at all, it prints `could not judge` with the reason
+and exits with 2.
 
 To run every check on the standard itself:
 
@@ -82,8 +87,10 @@ marked table with no rows.
   [agentskills/agentskills](https://github.com/agentskills/agentskills). There is one known
   difference: the reference refuses flow-style YAML lists and mappings in a `SKILL.md`, which
   the Agent Skills specification does not ask for, and this checker accepts them.
-- A `.mcp.json` nested many thousands of levels deep ends the run with an error and no
-  verdict. The exit code is not zero.
+- A `.mcp.json` nested many thousands of levels deep is more than the checker can read. The
+  file may still be valid, so the checker does not call the package invalid. It prints
+  `could not judge`, names the file and exits with 2. In a collection this ends the run, and
+  no package gets a verdict.
 
 ## Licences
 
@@ -91,5 +98,6 @@ Three documents are licensed under [CC BY 4.0](https://creativecommons.org/licen
 the specification (`specification.md`), the rationale (`rationale.md`) and the compatibility
 note (`compatibility.md`). Everything else here, including this README, the schemas, the
 prompt files, the fixtures and the checker, is under the MIT licence, as is the rest of the
-repository apart from public-domain texts bundled inside a package. See
-[`../LICENSE`](../LICENSE).
+repository apart from public-domain texts bundled inside a package.
+[`LICENSE.md`](LICENSE.md) in this directory says which licence covers which file, and
+[`../LICENSE`](../LICENSE) is the MIT text.

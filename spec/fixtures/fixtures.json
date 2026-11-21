@@ -2664,7 +2664,7 @@
         "V7"
       ],
       "details": [
-        "V1:file-name",
+        "V1:no-file",
         "V7:not-json"
       ],
       "note": "A folder with no VALUES.md is not a package. Checked as one, it fails V1, and the folder rules are still judged."
