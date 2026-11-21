@@ -15,7 +15,7 @@
         "command": "uv sync --project spec/checker --locked"
       },
       "tests": {
-        "command": "uv run --project spec/checker python -m values_checker fixtures && uv run --project spec/checker python -m values_checker selftest"
+        "command": "uv run --project spec/checker python -m values_checker fixtures && uv run --project spec/checker python -m values_checker selftest && uv run --project spec/checker python -m values_checker check values/"
       }
     }
   }
