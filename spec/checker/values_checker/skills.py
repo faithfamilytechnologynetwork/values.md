@@ -5,8 +5,13 @@ commit 83021e2be457a9b6679148719c1f6074f0ad975e of https://github.com/agentskill
 (`skills-ref/src/skills_ref/validator.py` and `parser.py`, Apache-2.0). They are written out
 here, not imported, so that the check runs offline with nothing fetched from a git repository.
 
-A name may hold letters and digits of any script, as the reference allows and its own tests
-show. It is not limited to `a` to `z`.
+Three things here are the reference's and may surprise a reader of the values.md standard.
+A name may hold letters and digits of any script, not only `a` to `z`. A skill's file may be
+named `skill.md` when there is no `SKILL.md`. And the frontmatter is whatever lies between
+the `---` that opens the file and the next `---` anywhere after it, not the next line that is
+exactly `---`.
+
+Nothing is read through a symbolic link. Rule V9 reports the link.
 
 One known difference. The reference reads the frontmatter with a restricted YAML library that
 also refuses flow-style lists and mappings such as `[a, b]`. The Agent Skills specification
@@ -82,6 +87,8 @@ def _skill_codes(skill_dir: Path) -> list[str]:
     file_name = next((name for name in ("SKILL.md", "skill.md") if name in present), None)
     if file_name is None:
         return ["V8:no-skill-md"]
+    if (skill_dir / file_name).is_symlink():
+        return []
     try:
         frontmatter = _frontmatter(skill_dir / file_name)
     except Unreadable as unreadable:
@@ -106,9 +113,9 @@ def _skill_codes(skill_dir: Path) -> list[str]:
 def check(package: Path) -> list[tuple[str, str]]:
     """Every V8 failure in a package folder, as (detail code, the skill folder it is in)."""
     skills = package / SKILLS_DIR
-    if not skills.is_dir():
+    if skills.is_symlink() or not skills.is_dir():
         return []
     found = []
-    for skill_dir in sorted(child for child in skills.iterdir() if child.is_dir()):
+    for skill_dir in sorted(child for child in skills.iterdir() if child.is_dir() and not child.is_symlink()):
         found += [(code, f"{SKILLS_DIR}/{skill_dir.name}") for code in _skill_codes(skill_dir)]
     return found

@@ -144,7 +144,7 @@ def marketplace(
                 _show(str(collection / folder), report)
         typer.echo("no entries were made, because not every package is valid", err=True)
         raise typer.Exit(_exit_code(list(reports.values())))
-    root = collection.resolve().parent if root is None else root
+    root = Path(os.path.abspath(collection)).parent if root is None else root
     try:
         listing = marketplace_module.entries(reports, collection, root)
     except ValueError:

@@ -56,7 +56,7 @@ DETAIL_CODES = {
     "V5:empty-core": "the core section has no text",
     "V5:core-too-long": f"the core is over {reading.CORE_LIMIT:,} characters",
     "V6:reserved-text": "the body contains a tag that belongs to the injected prompt",
-    "V7:not-json": f"{MCP_FILE} is not a JSON document in UTF-8",
+    "V7:not-json": f"{MCP_FILE} is not a file holding a JSON document in UTF-8",
     **skills.DETAIL_CODES,
     "V9:symbolic-link": "the folder contains a symbolic link",
     "V10:folder-name": "the folder is not named for the package",
@@ -296,10 +296,15 @@ def _json_constant(text: str):
 
 
 def _mcp_failures(folder: Path, schema: dict) -> list[Failure]:
-    """V7: `.mcp.json`, if the folder has one, has the shape the standard defines."""
+    """V7: `.mcp.json`, if the folder has one, has the shape the standard defines.
+
+    A `.mcp.json` that is a symbolic link is not read. V9 reports it.
+    """
     path = folder / MCP_FILE
-    if not path.is_file():
+    if MCP_FILE not in os.listdir(folder) or path.is_symlink():
         return []
+    if not path.is_file():  # a directory of that name, for one
+        return _failures(["V7:not-json"])
     try:
         declared = json.loads(path.read_bytes().decode("utf-8"), parse_constant=_json_constant)
     except ValueError:  # covers bytes that are not UTF-8 and text that is not JSON
@@ -323,9 +328,15 @@ def check_folder(folder: Path, schemas: Schemas | None = None) -> Report:
 
     V7, V8 and V9 are each judged on their own, whatever the file rules found. The one
     exception is an unsupported version, where nothing further is judged.
+
+    Nothing is read through a symbolic link, since what it points at may lie outside the
+    folder. V9 reports the link, and a rule that would need its content is not judged.
     """
     schemas = load_schemas() if schemas is None else schemas
-    report = check_file(folder / FILE_NAME, schemas.frontmatter)
+    if (folder / FILE_NAME).is_symlink():
+        report = Report(INVALID)
+    else:
+        report = check_file(folder / FILE_NAME, schemas.frontmatter)
     if report.outcome == UNSUPPORTED_VERSION:
         return report
     failures = _mcp_failures(folder, schemas.mcp)

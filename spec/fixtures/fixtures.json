@@ -2830,6 +2830,50 @@
       },
       "marketplace-root": "values",
       "note": "The marketplace file's root is the collection directory itself, so a source is ./ followed by the folder name."
+    },
+    {
+      "path": "invalid/v7-directory",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V7"
+      ],
+      "details": [
+        "V7:not-json"
+      ],
+      "note": "A directory named .mcp.json. The entry is present and is not a JSON document."
+    },
+    {
+      "path": "invalid/v9-links-are-not-read",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V9"
+      ],
+      "details": [
+        "V9:symbolic-link"
+      ],
+      "symlinks": {
+        ".mcp.json": "drafts/servers.txt",
+        "skills/prayer-guide": "../drafts",
+        "skills/daily-reflection/SKILL.md": "../../drafts/notes.md"
+      },
+      "note": "Nothing is read through a symbolic link. The links are made when the fixture is run: .mcp.json points at a file that is not JSON, skills/prayer-guide at a folder with no SKILL.md, and skills/daily-reflection/SKILL.md at a file with no frontmatter. Read through, they would fail V7 and V8. Only V9 is reported."
+    },
+    {
+      "path": "invalid/v9-linked-values-file",
+      "scope": "folder",
+      "outcome": "invalid",
+      "rules": [
+        "V9"
+      ],
+      "details": [
+        "V9:symbolic-link"
+      ],
+      "symlinks": {
+        "VALUES.md": "source.md"
+      },
+      "note": "VALUES.md is itself a symbolic link, made when the fixture is run, to a file that has no name. It is not read, so no file rule is judged and only V9 is reported."
     }
   ]
 }
