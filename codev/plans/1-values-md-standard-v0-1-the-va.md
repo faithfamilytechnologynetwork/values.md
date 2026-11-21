@@ -175,23 +175,25 @@ the order. A rule that could not be evaluated is not reported at all.
   case. If the committed file measures differently, the text is first compared with part 4. If
   it matches, the figures are wrong, and that is reported to the architect as an erratum.
 
-### For the owner at the plan gate
+### Settled by the owner at the plan gate (2026-11-20)
 
-Three points are the owner's to settle. The plan states what it will do if no answer comes, so
-that work is not blocked.
+The owner approved this plan and answered its open points. They are recorded on issue #1.
 
-1. **The `prompt` value for `example-islam`** (the spec's open question 3). The checkpoint was
-   trained and evaluated with no system prompt, and running it under a value-system prompt is
-   untested. `omit` claims nothing unproved, but it means the only example that declares a
-   model cannot be used to try "fine-tuned model with the prompt". `optional` allows that, and
-   claims it works. Recommended: `omit` now, changed to `optional` when the reference
-   implementation has tested the combination.
-2. **The `tradition` value for `example-islam`**: `[Islam]` or `[Islam, Sunni]`. The checkpoint
-   is described as Sunni and the Ansari service is not limited to one school. Recommended:
-   `[Islam]`.
-3. **The licence for everything that is not the specification text.** Until it is answered, no
-   licence file is added and the examples carry no `license` field. `spec/README.md` states
-   that the text is CC BY 4.0, which is decided.
+1. **The `prompt` value for `example-islam` is `omit`.** It changes to `optional` once the
+   reference implementation (issue #2) has tested the model with a prompt on top.
+2. **The `tradition` value for `example-islam` is `[Islam, Sunni]`.**
+3. **Licences.** Everything that is not the specification text (schemas, fixtures, checker,
+   examples) is under the MIT licence. The specification text stays CC BY 4.0. A `LICENSE`
+   file with the MIT text goes at the root. The two README files say which licence covers
+   what, and link to the CC BY 4.0 text. The three `example-` packages carry `license: MIT`.
+   `plain-speaking` carries no `license` field, because it must stay identical to the smallest
+   file shown in the spec, and the root licence covers it. The bundled catechism is in the
+   public domain, and its file says so.
+4. **The two gaps this plan fills are accepted:** the CommonMark rule for closing a fence, and
+   the fixed order of evaluation.
+5. **A short README at the root of the repository** is added: what values.md is, and where the
+   specification, the examples and the checker live. It is written last, in Phase 5, when
+   everything it points to exists.
 
 ## Phases (Machine Readable)
 
@@ -204,7 +206,7 @@ that work is not blocked.
     {"id": "phase_2", "title": "Folder and collection validity, rendering and the marketplace mapping"},
     {"id": "phase_3", "title": "The four example packages in values/"},
     {"id": "phase_4", "title": "The specification text"},
-    {"id": "phase_5", "title": "Rationale and compatibility note"}
+    {"id": "phase_5", "title": "Rationale, compatibility note and root README"}
   ]
 }
 ```
@@ -232,6 +234,7 @@ only. Rendering arrives in Phase 2.
 - `spec/fixtures/.gitattributes`, `spec/fixtures/fixtures.json`
 - `spec/fixtures/valid/…` and `spec/fixtures/invalid/…`, file-scope fixtures only
 - `.codev/config.json` (the `porch.checks` entry)
+- `LICENSE` (the MIT text, at the root)
 
 #### Deliverables
 
@@ -247,6 +250,7 @@ only. Rendering arrives in Phase 2.
       heading text, core resolution.
 - [ ] `rules.py`: V1 to V6, the version gate, and the order of evaluation.
 - [ ] `check`, `fixtures` (validity and the three audits) and `selftest` commands.
+- [ ] The root `LICENSE` file, and `license = "MIT"` in the checker's `pyproject.toml`.
 - [ ] File fixtures, each in `fixtures.json` with its outcome, rules and detail codes. The
       lists below are the cases that must exist. Audits 2 and 3 add any that are missing.
 
@@ -425,14 +429,15 @@ show that each is valid there by the standard's rules alone.
       its author" notice.
 - [ ] `example-islam`: a body that keeps to high-consensus basics and sends rulings, verses and
       hadith to Ansari; `.mcp.json` declaring `https://mcp.ansari.chat/mcp`; the model entry
-      from part 13 with a `description` and the `prompt` value settled at the plan gate;
+      from part 13 with a `description` and `prompt: omit`; `tradition: [Islam, Sunni]`;
       `languages: [en]`.
 - [ ] `example-roman-catholic`: a body that keeps to high-consensus basics; a self-contained
       skill that answers basic questions from the bundled catechism and points to the current
       Catechism online; the Apostles' Creed and a list of sources in `references/`. Every
       bundled text states its source and the basis for its public-domain status.
 - [ ] The three `example-` packages name the values.md project as steward with the claim
-      `organization`, and carry their notice in the description, the body and the README.
+      `organization`, carry their notice in the description, the body and the README, and
+      declare `license: MIT`.
 - [ ] No copy of any package under `spec/`.
 
 #### Acceptance Criteria
@@ -504,8 +509,8 @@ tie it to the machine-readable parts so that the two stay the same.
 - [ ] Each of the issue's eight questions answered in a section a reader can find, with a short
       table at the end pointing to each, as in part 17 of the spec. Question 7 points to the
       Examples section.
-- [ ] `spec/README.md`: what each file is, the commands that run every check, and the licence
-      of the text.
+- [ ] `spec/README.md`: what each file is, the commands that run every check, and the two
+      licences: CC BY 4.0 for the three documents, MIT for the rest.
 - [ ] The `consistency` command. The documents carry markers in HTML comments, and the command
       checks, across every Markdown file under `spec/`:
   - the field table (marked, exactly once, in `specification.md`) against the schema, in both
@@ -541,20 +546,21 @@ tie it to the machine-readable parts so that the two stay the same.
 - Read the specification against the table in part 17 of the spec and tick each of the eight
   questions.
 
-### Phase 5: Rationale and compatibility note
+### Phase 5: Rationale, compatibility note and root README
 
 **Dependencies**: Phases 3 and 4
 
 #### Objective
 
-Record why the format has this shape, and say exactly what each kind of existing host gets
-from a package.
+Record why the format has this shape, say exactly what each kind of existing host gets from a
+package, and give a visitor to the repository a front page.
 
 #### Files to Create / Modify
 
 - `spec/rationale.md`
 - `spec/compatibility.md`
 - `spec/README.md` (index entries)
+- `README.md` (at the root)
 
 #### Deliverables
 
@@ -569,6 +575,10 @@ from a package.
       mapping with a worked `marketplace.json` for `values/`, and the plain statement that the
       install screen shows the steward's claim only through the description; what a host that
       only reads skills gets; what a host that only reads AGENTS.md gets.
+- [ ] The root `README.md`, kept short: what values.md is in a paragraph; the smallest valid
+      file; where the specification, the examples and the checker live, each with a link; the
+      one command that checks a package; the two licences. It makes no claim the specification
+      does not make.
 - [ ] The facts the spec marked as read through a summary only, re-read at the source before
       they are stated: the hook output cap, what hooks receive, and anything else the two
       documents rely on.
@@ -579,7 +589,9 @@ from a package.
       observed or that is quoted from the linked documentation, and it says which.
 - [ ] The worked `marketplace.json` equals what the `marketplace` command prints for `values/`.
 - [ ] A link check finds every cited URL reachable, or the document notes the one that is not.
-- [ ] Principled pluralism appears in neither document except in a list of the examples.
+- [ ] Principled pluralism appears in neither document, nor in the root README, except in a
+      list of the examples.
+- [ ] Every path the root README links to exists, and the command it gives runs as written.
 - [ ] `consistency` (which reads these two documents as well), `selftest`, `fixtures` and
       `check values/` still exit zero.
 
@@ -587,7 +599,9 @@ from a package.
 
 - Re-fetch each cited page and compare it with the claim made.
 - Compare the worked marketplace file with the command's output.
-- Search all of `spec/` for the words "principled pluralism" and confirm where they appear.
+- Search all of `spec/` and the root README for the words "principled pluralism" and confirm
+  where they appear.
+- Follow every link in the root README and run its command from a fresh checkout.
 - Go through the spec's Success Criteria one by one and record, for each, the command or
   observation that shows it is met, or that it could not be verified.
 
@@ -595,7 +609,7 @@ from a package.
 
 | Criterion (short form) | Phase |
 |---|---|
-| Deliverables present under `spec/` and `values/`, nothing else changed | 5 |
+| Deliverables present under `spec/` and `values/`; outside them only Codev files, the root `LICENSE` and the root README the owner asked for | 5 |
 | Examples exist once, in `values/`, and are valid there; `spec/` refers to them by path | 3, 4 |
 | Specification opens with the smallest file and the two lists | 4 |
 | Eight questions answered | 4 |
@@ -637,7 +651,6 @@ from a package.
 | The public-domain status of a bundled text is less clear than it looks. | Low | Medium | Only the 1885 Baltimore Catechism is bundled, from a Project Gutenberg edition marked public domain in the United States. Anything else is cited and linked. |
 | Phase 4 is the largest phase and overruns. | Medium | Low | It stays one commit because the text and the command that checks it belong together. If it must be cut, the host conformance requirements move to a follow-up commit in the same phase, and the architect is told. |
 | The Ansari server is down when Phase 3 runs. | Low | Low | Validity does not depend on it. The probe is retried, and if it still fails the criterion is reported as not verified. |
-| The examples' licence is still undecided when Phase 3 commits. | Medium | Low | The examples carry no `license` field and no licence file is added until the owner answers. The review says so. |
 
 ## Documentation Updates
 
@@ -648,6 +661,5 @@ from a package.
 - `codev/resources/arch.md` and `codev/resources/lessons-learned.md` are still placeholders.
   They are filled in during the review phase, once there is an architecture and there are
   lessons to record.
-- No README is added at the root of the repository. The spec limits this project to `spec/`
-  and `values/`. The repository is public and has none, which is worth the architect's
-  attention separately.
+- `README.md` at the root is new, at the owner's request, and is written in Phase 5.
+- `LICENSE` at the root is new (MIT).
