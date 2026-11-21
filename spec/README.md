@@ -8,6 +8,8 @@ the standard itself, against it.
 | Path | What it is |
 |---|---|
 | [`specification.md`](specification.md) | The standard. Start here. It opens with the smallest valid `VALUES.md` and says what a first-time author and a simple host can ignore. |
+| [`rationale.md`](rationale.md) | Why the format has this shape: the four shapes considered, the comparison with AGENTS.md, Agent Skills, Claude Code plugins and Belief Protocol, and the reasoning behind the main decisions. Not normative. |
+| [`compatibility.md`](compatibility.md) | What Claude Code, a host that only reads Agent Skills and a host that only reads AGENTS.md get from a package today, including the mapping to a Claude Code marketplace. Not normative. |
 | [`schema/values.schema.json`](schema/values.schema.json) | JSON Schema (draft 2020-12) for the frontmatter of `VALUES.md`. Validity rule V3. |
 | [`schema/mcp.schema.json`](schema/mcp.schema.json) | JSON Schema for the `.mcp.json` a package folder may carry. Validity rule V7. |
 | [`prompts/`](prompts/) | The three texts a host injects, each as a file to copy: `wrapper.txt`, `reminder.txt` and `preamble.txt`. |
