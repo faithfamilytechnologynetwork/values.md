@@ -1,9 +1,24 @@
 id: '1'
 title: values-md-standard-v0-1-the-va
 protocol: spir
-phase: plan
-plan_phases: []
-current_plan_phase: null
+phase: implement
+plan_phases:
+  - id: phase_1
+    title: 'File-level validity: schema, normative prompt texts, checker and file fixtures'
+    status: in_progress
+  - id: phase_2
+    title: Folder and collection validity, rendering and the marketplace mapping
+    status: pending
+  - id: phase_3
+    title: The four example packages in values/
+    status: pending
+  - id: phase_4
+    title: The specification text
+    status: pending
+  - id: phase_5
+    title: Rationale, compatibility note and root README
+    status: pending
+current_plan_phase: phase_1
 gates:
   spec-approval:
     status: approved
@@ -18,10 +33,10 @@ gates:
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
+build_complete: false
 history: []
 started_at: '2026-11-20T19:27:27.204Z'
-updated_at: '2026-11-21T00:45:12.793Z'
+updated_at: '2026-11-21T00:45:39.345Z'
 pr_history:
   - phase: specify
     pr_number: 4
