@@ -206,8 +206,15 @@ _FENCE_OPEN = re.compile(r" {0,3}(`{3,}|~{3,})(.*)")
 _HEADING = re.compile(r"(#{1,2}) (.*)")
 
 
-def fenced(lines: list[str]) -> list[bool]:
-    """For each line, whether it belongs to a fenced code block (reading rule 5).
+@dataclass(frozen=True)
+class Fence:
+    first: int  # the opening line
+    last: int  # the closing line, or the last line when the fence is never closed
+    closed: bool
+
+
+def fences(lines: list[str]) -> list[Fence]:
+    """The fenced code blocks among these lines (reading rule 5).
 
     A fence opens on a line indented by at most three spaces that starts with three or more
     backticks or tildes. A backtick fence's opening line holds no further backtick. It closes
@@ -215,21 +222,30 @@ def fenced(lines: list[str]) -> list[bool]:
     at most three spaces, with optional trailing spaces. A fence that is never closed runs to
     the end of the body.
     """
-    inside = []
+    found = []
+    first = 0
     closing = None
-    for line in lines:
+    for number, line in enumerate(lines):
         if closing is not None:
-            inside.append(True)
             if closing.fullmatch(line):
+                found.append(Fence(first, number, closed=True))
                 closing = None
             continue
         opening = _FENCE_OPEN.fullmatch(line)
         if opening and not (opening[1][0] == "`" and "`" in opening[2]):
             marker = opening[1]
             closing = re.compile(" {0,3}" + re.escape(marker[0]) + "{" + str(len(marker)) + ",} *")
-            inside.append(True)
-        else:
-            inside.append(False)
+            first = number
+    if closing is not None:
+        found.append(Fence(first, len(lines) - 1, closed=False))
+    return found
+
+
+def fenced(lines: list[str]) -> list[bool]:
+    """For each line, whether it belongs to a fenced code block, its fence lines included."""
+    inside = [False] * len(lines)
+    for fence in fences(lines):
+        inside[fence.first : fence.last + 1] = [True] * (fence.last + 1 - fence.first)
     return inside
 
 

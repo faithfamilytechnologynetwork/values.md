@@ -11,6 +11,7 @@ from typing import Annotated
 
 import typer
 
+from values_checker import consistency as consistency_module
 from values_checker import fixtures as fixtures_module
 from values_checker import marketplace as marketplace_module
 from values_checker import render as render_module
@@ -174,11 +175,30 @@ def fixtures(
 def selftest(
     directory: Annotated[Path, typer.Option(help="The fixtures directory.")] = FIXTURES_DIR,
 ) -> None:
-    """Break copies of the fixtures on purpose and confirm that each break is reported."""
+    """Break copies of the fixtures and of the documents on purpose and confirm that each
+    break is reported."""
     fixtures_module.block_network()
     undetected = selftest_module.run(directory)
     for case in undetected:
         typer.echo(case)
     if undetected:
         raise typer.Exit(1)
-    typer.echo(f"selftest: all {len(selftest_module.CASES)} deliberate breaks were reported")
+    breaks = len(selftest_module.CASES) + len(selftest_module.DOCUMENT_CASES)
+    typer.echo(f"selftest: all {breaks} deliberate breaks were reported")
+
+
+@app.command()
+def consistency() -> None:
+    """Check the documents under spec/ against the schema, the prompt files, the fixtures and
+    the smallest example in values/."""
+    fixtures_module.block_network()
+    problems = consistency_module.check(consistency_module.documents(rules.SPEC_DIR))
+    for problem in problems:
+        typer.echo(problem)
+    if problems:
+        typer.echo(f"{len(problems)} problem(s)")
+        raise typer.Exit(1)
+    typer.echo(
+        "consistency: the field table, the rule table, the smallest file and every quoted "
+        "normative text agree with what they describe"
+    )

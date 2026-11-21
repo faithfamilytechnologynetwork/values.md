@@ -1,7 +1,8 @@
-"""Shows that `fixtures` can fail.
+"""Shows that `fixtures` and `consistency` can fail.
 
-Each case breaks a temporary copy of the fixtures, or the reading code, in one way and
-requires `fixtures.run` to report it. A check that cannot fail proves nothing.
+Each case breaks a temporary copy of the fixtures, the reading code, or the text of a
+document in one way, and requires the check to report it. A check that cannot fail proves
+nothing.
 """
 
 from __future__ import annotations
@@ -12,7 +13,7 @@ import tempfile
 from collections.abc import Callable
 from pathlib import Path
 
-from values_checker import fixtures, reading
+from values_checker import consistency, fixtures, reading, rules
 
 
 def _manifest(root: Path) -> dict:
@@ -123,14 +124,79 @@ CASES: list[tuple[str, Callable[[Path], None] | None, str]] = [
 ]
 
 
+def _edited(old: str, new: str) -> Callable[[str], str]:
+    """An edit to the specification text: the first place `old` appears becomes `new`."""
+    return lambda text: text.replace(old, new, 1)
+
+
+def _without_line(start: str) -> Callable[[str], str]:
+    """An edit that drops every line beginning with `start`."""
+    return lambda text: "".join(line for line in text.splitlines(keepends=True) if not line.startswith(start))
+
+
+_FIELD_TABLE_MARKER = "<!-- values-md:field-table -->\n"
+_SMALLEST_MARKER = "<!-- values-md:smallest-file -->\n"
+
+# (what is broken, an edit to the specification text, a phrase the report must contain)
+DOCUMENT_CASES: list[tuple[str, Callable[[str], str], str]] = [
+    (
+        "one character changed in the quoted wrapper",
+        _edited("{steward} vouches for it.", "{steward} vouchez for it."),
+        "the quoted wrapper differs from prompts/wrapper.txt",
+    ),
+    (
+        "one character changed in a wrapper shown as a fixture's rendering",
+        _edited("The Sample Society vouches for it.", "The Sample Society vouchez for it."),
+        "differs from fixtures/valid/remote-server/expected/wrapper.txt",
+    ),
+    ("a row dropped from the field table", _without_line("| `license` |"), "no row for `license`"),
+    (
+        "a limit changed in the field table",
+        _edited("String of 1 to 1,024 characters", "String of 1 to 1,025 characters"),
+        "`description` is given as",
+    ),
+    (
+        "a field marked required that the schema leaves optional",
+        _edited("| `version` | No |", "| `version` | Yes |"),
+        "`version` is given as required",
+    ),
+    ("a marker removed", _edited(_FIELD_TABLE_MARKER, ""), "values-md:field-table is missing"),
+    (
+        "a marker duplicated",
+        _edited(_SMALLEST_MARKER, _SMALLEST_MARKER + "\n" + _SMALLEST_MARKER),
+        "values-md:smallest-file appears 2 times",
+    ),
+    (
+        "one character changed in the smallest file shown",
+        _edited("Do not flatter me.", "Do not flatter me!"),
+        "the smallest file shown differs",
+    ),
+    ("a rule dropped from the rule table", _without_line("| V9 |"), "the rule table lists"),
+]
+
+
+def _run_document_cases() -> list[str]:
+    documents = consistency.documents(rules.SPEC_DIR)
+    if consistency.check(documents):
+        return ["the unbroken documents do not pass consistency, so nothing can be concluded"]
+    undetected = []
+    for what, edit, phrase in DOCUMENT_CASES:
+        broken = {**documents, consistency.SPECIFICATION: edit(documents[consistency.SPECIFICATION])}
+        if broken == documents:
+            undetected.append(f"{what}: the break could not be made, because the text to change was not found")
+        elif not any(phrase in problem for problem in consistency.check(broken)):
+            undetected.append(f"{what}: not reported (expected a problem mentioning {phrase!r})")
+    return undetected
+
+
 def run(fixtures_dir: Path) -> list[str]:
     """Returns the cases that went undetected. An empty list means every break was caught."""
-    undetected = []
+    undetected = _run_document_cases()
     with tempfile.TemporaryDirectory() as scratch:
         baseline = Path(scratch) / "baseline"
         shutil.copytree(fixtures_dir, baseline)
         if fixtures.run(baseline):
-            return ["the unbroken fixtures do not pass, so nothing can be concluded"]
+            return undetected + ["the unbroken fixtures do not pass, so nothing can be concluded"]
 
         for number, (what, break_it, phrase) in enumerate(CASES):
             copy = Path(scratch) / f"case-{number}"
