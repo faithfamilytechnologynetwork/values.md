@@ -538,6 +538,47 @@ while the reviews ran.
 - **Concern**: two figures in the rationale supersede the spec's → **N/A**: reported as
   errata, above.
 
+### Review Phase (Round 1)
+
+No code changed in response to this round. One reviewer's diff file was empty, so it reviewed
+the files on disk.
+
+#### Gemini
+- `CONSULT_ERROR`: lane skipped.
+
+#### Codex (REQUEST_CHANGES)
+- **Concern**: a `.mcp.json` nested deeply enough makes the checker end with an error and no
+  outcome, though the document may be valid → **Rebutted**, and put to the owner. The limit
+  is real: 5,000 levels parse and 100,000 do not. It is stated in `spec/README.md` and in
+  this review. The run exits non-zero, so a submission check fails closed. Calling such a
+  file invalid would be a wrong verdict, and a depth limit would be a new rule of the
+  standard, which the architect's standing instruction rules out without the owner's say. It
+  is listed under Follow-up Items as a decision.
+- **Concern**: many commits are `chore(porch): ...` and not in the `[Spec 1][Phase: ...]`
+  form → **Rebutted**: those are porch's own state commits. Every commit the builder made
+  carries the required form. Rewording them means rewriting a pushed branch, which is not the
+  builder's to do. Squashing at merge is the owner's choice.
+
+#### Claude (APPROVE)
+- **Concern**: `LICENSE` holds only the MIT text while the documents say three files are
+  CC BY 4.0 → **N/A** for the builder, and put to the owner. The owner settled at the plan
+  gate that the root `LICENSE` carries the MIT text and that the two READMEs say which
+  licence covers what. That is what was built. Whether `LICENSE` should also name the
+  exceptions is listed under Follow-up Items.
+- **Concern**: the thread file and the review records are untracked and not ignored →
+  **N/A**: kept off the branch at the owner's request. Whether to add them back or ignore
+  them is already a question for the owner before merge.
+- **Concern**: the catechism comparison covers the answers, and other editorial changes in a
+  1977 printing cannot be ruled out; keep it on the merge checklist → **Addressed**: it is
+  the first item for the owner under Follow-up Items and is named in the pull request.
+- **Concern**: `check` is the one command that does not block the network → **Rebutted**, as
+  in phase 3: the plan puts the guard in `fixtures`, and the checker has no network client.
+  Listed as an optional small item.
+- **Concern**: `render.substitute` raises a bare `KeyError` for an unknown placeholder →
+  **N/A**: offered as take-or-leave, and left. The three prompt files are fixed by the
+  standard.
+- The reviewer read the four unreviewed commits and found nothing that needed another round.
+
 ## Lessons Learned
 
 ### What Went Well
@@ -628,7 +669,14 @@ For the owner or architect to decide:
 - The steward name "The values.md project".
 - Whether the two errata are applied to the approved spec file.
 - Whether the review records and the builder's thread file, kept off the branch at the
-  owner's request, are added back before merge.
+  owner's request, are added back before merge. If they stay off, an ignore rule would keep
+  them from being committed by accident.
+- Whether the root `LICENSE`, which holds the MIT text alone, should also name the three
+  CC BY 4.0 documents and the bundled public-domain texts. A reviewer of the pull request
+  asked for this before merge.
+- Whether the standard should set a depth limit for `.mcp.json`, or the checker should be
+  made to read any depth. Today a file nested many thousands of levels deep gets an error
+  and no verdict. A reviewer of the pull request asked for one or the other.
 
 For the reference implementation (issue #2):
 
@@ -648,7 +696,8 @@ Smaller items:
 - Read the principled-pluralism essay in full and compare it with the package.
 - Install the two single-file packages from a marketplace, and try hooks in a marketplace
   entry.
-- Decide whether a depth limit for `.mcp.json` belongs in a later version.
+- Add the network guard to the `check` command, which two review rounds asked for. It is one
+  line, and the plan did not ask for it.
 - If `values/` changes, regenerate the worked marketplace file in `spec/compatibility.md`.
   An automatic check for it, and for the root README's copy of the smallest file, is not in
   place.
