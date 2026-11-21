@@ -282,7 +282,11 @@ Rendering rules:
 
 **The wrapper** ([`prompts/wrapper.txt`](prompts/wrapper.txt)) is placed once, in the system
 prompt, after the host's own instructions. What separates the two, such as a blank line, is
-the host's choice. Placeholders: `{name}`, `{steward}` and `{body}`.
+the host's choice. A host that controls its own system prompt MUST place the wrapper there.
+An adapter that adds value systems to an existing agent from outside, and cannot reach that
+agent's system prompt, MAY instead place the wrapper once at the start of the conversation,
+before the first user message. It MUST tell the user that the wrapper is in the conversation
+and not in the system prompt. Placeholders: `{name}`, `{steward}` and `{body}`.
 
 ```
 <value-system name="{name}" steward="{steward}">
@@ -477,6 +481,9 @@ MCP is how a host with no skill or plugin loader uses a package's tools: a Level
 connects to each remote server as any MCP client does and offers the server's tools to the
 model. It needs no file system, no shell and no skill loader.
 
+An adapter that places the wrapper at the start of the conversation, as part 4 allows,
+claims a level like any other host.
+
 A host that is given a package above its level uses the parts it understands and ignores the
 rest. A Level 2 host given a package with `skills/` and `references/` ignores both, and the
 prompt and the remote tools still work.
@@ -588,7 +595,9 @@ A host MUST support one active value system per conversation. It MAY let a user 
 installed and choose between them. It MAY activate several at once, under these rules:
 
 - The preamble of part 4 comes first, then one wrapper for each package, in the order the
-  user activated them. All of it goes in the system prompt after the host's own instructions.
+  user activated them. All of it goes where part 4 places a wrapper: in the system prompt
+  after the host's own instructions, or, for an adapter that cannot reach the system prompt,
+  at the start of the conversation.
 - Two packages with the same `name` are never active together. The host MUST refuse the
   second.
 - Each package has its own count and its own interval. At a boundary, every package whose
@@ -888,6 +897,10 @@ observe.
   the host does not offer to run the model without the prompt.
 - **H10. Two value systems and a standalone model** (parts 6 and 10). With two packages
   active, the host does not run either one's model without its prompt.
+- **H11. Where the wrapper is placed** (part 4). A host that controls its own system prompt
+  places the wrapper there, after its own instructions, and not in the conversation. An
+  adapter that cannot reach the system prompt places the wrapper once at the start of the
+  conversation, before the first user message, and tells the user that it is there.
 
 ## 16. Examples
 
@@ -900,7 +913,7 @@ lives, by the rules of this document alone.
 | [`values/plain-speaking`](../values/plain-speaking/) | The smallest valid package: the single file shown at the top of this document. A non-religious value system whose whole body is its core. |
 | [`values/example-principled-pluralism`](../values/example-principled-pluralism/) | A minimal package: a `VALUES.md` with no core section, short enough to be reinjected whole. Its value system is a way of answering questions about religion, principled pluralism, taken from a published essay that the package cites. |
 | [`values/example-islam`](../values/example-islam/) | A folder package that works at Level 2. Its `.mcp.json` declares a remote MCP server, its body sends specifics to that tool, and it declares a fine-tuned model with `prompt: omit`. |
-| [`values/example-roman-catholic`](../values/example-roman-catholic/) | A folder package with Level 3 depth: a bundled public-domain text in `references/` and a skill in `skills/`. It declares no tool and no model. |
+| [`values/example-roman-catholic`](../values/example-roman-catholic/) | A folder package with Level 3 depth: a bundled public-domain text in `references/` and a skill in `skills/` that says how to look a point up on the web. It declares no tool and no model. |
 
 The three packages whose names begin `example-` are illustrations. Each describes someone
 else's tradition or work, names the values.md project as its steward with the claim

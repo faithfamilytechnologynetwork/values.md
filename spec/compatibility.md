@@ -100,8 +100,10 @@ adapter supplies it.
 
 There are two ways to get the wrapper into a Claude Code session: hooks, and a forced output
 style. Each needs something added beyond the manifest, and each falls short of the standard in
-a different place. Neither was built or run for this note. This section is **documented**
-only, from the [hooks reference](https://code.claude.com/docs/en/hooks.md) and the
+a different place. Placing the wrapper in the conversation is not one of those places: part 4
+of the specification allows it to an adapter that cannot reach the system prompt. Neither
+was built or run for this note. This section is **documented** only, from the
+[hooks reference](https://code.claude.com/docs/en/hooks.md) and the
 [output styles page](https://code.claude.com/docs/en/output-styles.md). The adapter itself is
 code. It is not part of the standard, and it is not in this directory.
 
@@ -154,11 +156,16 @@ rendered reminder when it is due.
 - When several hooks add context for one event, "Claude receives all of the values". The page
   does not say in what order.
 
+Where the wrapper sits is not a departure. Part 4 places the wrapper "in the system prompt,
+after the host's own instructions", and requires that of a host that controls its own system
+prompt. A hook cannot reach it: "Claude Code wraps the string in a system reminder and
+inserts it into the conversation at the point where the hook fired." Part 4 lets an adapter
+in that position place the wrapper at the start of the conversation, and a `SessionStart`
+hook on `startup` or `clear` does. The adapter must tell the user that the wrapper is in the
+conversation and not in the system prompt.
+
 Where this departs from the specification:
 
-- **Placement.** Part 4 places the wrapper "in the system prompt, after the host's own
-  instructions". A hook cannot do that. "Claude Code wraps the string in a system reminder and
-  inserts it into the conversation at the point where the hook fired."
 - **Once.** Part 4 places the wrapper once. An adapter that emits it on a resume or a fork
   whose conversation already holds it puts it in context twice, and one that holds back when
   the conversation has lost it leaves the value system out. Getting this right depends on
@@ -185,8 +192,8 @@ plugin is enabled, without requiring users to select it." An output style "chang
 instructions Claude Code gives Claude", and "Claude Code sends the active style's instructions
 with every request." The style's text would be the rendered wrapper.
 
-This puts the wrapper with Claude Code's instructions, which is nearer to part 4 than a hook
-gets. The page does not say where in those instructions a style's text is placed. The costs:
+This puts the wrapper with Claude Code's instructions, where part 4 puts it for a host that
+controls its own system prompt. The page does not say where in those instructions a style's text is placed. The costs:
 
 - **No reminder.** A style is fixed text. Nothing is placed in the conversation as it grows.
   The style's text is sent with every request, and whether that is enough to prevent prompt
@@ -322,7 +329,7 @@ frontmatter changes, so run the command again and do not copy the list from this
     {
       "name": "example-roman-catholic",
       "source": "./values/example-roman-catholic",
-      "description": "An illustrative example, not endorsed by any religious authority. It answers questions about the Catholic faith from within Roman Catholic teaching, keeps its own statements to the basics, and takes detail from a bundled public-domain catechism. Vouched for by The values.md project (organization).",
+      "description": "An illustrative example, not endorsed by any religious authority. It answers questions about the Catholic faith from within Roman Catholic teaching, keeps its own statements to the basics, and takes detail from web search, preferring the Holy See's own site. Vouched for by The values.md project (organization).",
       "version": "0.1.0",
       "author": {
         "name": "The values.md project",
@@ -404,9 +411,9 @@ skill's description and opens the skill when a task matches. It never sees the b
 who vouches for it.
 
 A package's skills are written as depth behind its prompt. The catechism skill in
-`example-roman-catholic`, for instance, finds an answer in a bundled text. Without the body it
-still does that, and nothing tells the model to answer from within the tradition or to use
-the skill in preference to its own memory.
+`example-roman-catholic`, for instance, says how to look a point up in the current Catechism
+on the web. Without the body it still does that, and nothing tells the model to answer from
+within the tradition or to use the skill in preference to its own memory.
 
 Copying the body into a skill of its own would not make it always on, for the same reason. It
 would be read only when the model decided a task called for it.
