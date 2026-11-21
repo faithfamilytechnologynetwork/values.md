@@ -42,7 +42,8 @@ and no required structure inside the body.
 **A Level 1 host can ignore:**
 
 - `.mcp.json`, `skills/` and `references/`. Those are Levels 2 and 3.
-- `models`. Using a declared model is always optional.
+- `models`, apart from showing the user that the package declares them. Using a declared model
+  is always optional.
 - `tradition`, `languages`, `tags`, `license`, `authors` and `metadata`. They are for listings
   and display.
 - Collections, marketplaces and activating more than one value system at a time.
@@ -537,9 +538,11 @@ Installing a package does not authorise what it declares.
   must not change an assistant's values.
 - A folder is a package if and only if `VALUES.md` is at its root.
 - A host MUST check a package before it installs it, and install it only when the outcome is
-  valid (part 11). A Level 1 host, which reads only `VALUES.md`, checks rules V1 to V6. A host
-  that reads the folder checks V1 to V9. When the outcome is "unsupported version", the host
-  says that the package targets a version of the standard it does not implement.
+  valid (part 11). A Level 1 host, which reads only `VALUES.md`, checks rules V1 to V6. Handed
+  a folder, it reads the `VALUES.md` at the folder's root, and it does not read one that is a
+  symbolic link, since that may point outside the folder (part 1). A host that reads the
+  folder checks V1 to V9. When the outcome is "unsupported version", the host says that the
+  package targets a version of the standard it does not implement.
 - Before activating a package, a host MUST show the user its name, description, steward and
   kind of claim, version, where the package came from, and the tools and models it declares.
 - Where a host keeps installed packages is its own business. The suggested shared location
@@ -587,7 +590,8 @@ installed and choose between them. It MAY activate several at once, under these 
 - Two packages with the same `name` are never active together. The host MUST refuse the
   second.
 - Each package has its own count and its own interval. At a boundary, every package whose
-  reminder is due gets it, in activation order.
+  reminder is due gets it, in activation order. One package's reminder counts towards the
+  other packages' counts like anything else added to the conversation.
 - A fine-tuned model belongs to the package that declares it. Running it lets the host skip
   reinjection for that package only. The others are reinjected as usual.
 - With several value systems active, every package's wrapper is in context, so no model runs

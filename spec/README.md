@@ -85,8 +85,8 @@ marked table with no rows.
 
 ## Licences
 
-The documents in this directory, which are the Markdown files outside `fixtures/` and
-`checker/`, are licensed under
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Everything else here, including the
-schemas, the prompt files, the fixtures and the checker, is under the MIT licence, as is the
-rest of the repository. See [`../LICENSE`](../LICENSE).
+Three documents are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/):
+the specification (`specification.md`), the rationale (`rationale.md`) and the compatibility
+note (`compatibility.md`). Everything else here, including this README, the schemas, the
+prompt files, the fixtures and the checker, is under the MIT licence, as is the rest of the
+repository. See [`../LICENSE`](../LICENSE).
