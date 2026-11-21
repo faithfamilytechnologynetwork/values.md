@@ -71,7 +71,7 @@ def split_file(data: bytes) -> SplitFile:
 
 
 # YAML 1.2 core schema, section 10.3.2 of the YAML specification: how a plain scalar resolves.
-_NULL = re.compile(r"null|Null|NULL|~|")
+_NULL = re.compile(r"null|Null|NULL|~|")  # the last alternative is the empty scalar
 _BOOL = re.compile(r"true|True|TRUE|false|False|FALSE")
 _INT = re.compile(r"[-+]?[0-9]+")
 _INT_OCTAL = re.compile(r"0o[0-7]+")

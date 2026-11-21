@@ -2095,6 +2095,22 @@
         "V3:properties/metadata/type"
       ],
       "note": "metadata as a list. It is an object."
+    },
+    {
+      "path": "valid/core-closing-hashes-no-space/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 1668,
+      "core-chars": 56,
+      "note": "Any closing run of # characters is removed from heading text, with or without a space before it, so ## Core# matches."
+    },
+    {
+      "path": "valid/reserved-text-ascii-case-only/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 66,
+      "core-chars": 66,
+      "note": "The reserved text is matched ignoring the case of A to Z only. A long s (U+017F) is a different character."
     }
   ]
 }

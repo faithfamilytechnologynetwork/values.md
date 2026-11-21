@@ -55,7 +55,8 @@ DETAIL_CODES = {
     "V6:reserved-text": "the body contains a tag that belongs to the injected prompt",
 }
 
-_RESERVED_TEXT = re.compile(r"<[ \t\n]*/?[ \t\n]*(values|value-system)", re.IGNORECASE)
+# Case is ignored for the letters A to Z only, as everywhere in the standard.
+_RESERVED_TEXT = re.compile(r"<[ \t\n]*/?[ \t\n]*(values|value-system)", re.IGNORECASE | re.ASCII)
 _VERSION_FORM = re.compile(r"[0-9]+\.[0-9]+")
 
 
