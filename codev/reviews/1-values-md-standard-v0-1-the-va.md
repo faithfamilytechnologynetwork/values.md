@@ -69,7 +69,7 @@ final tree for this review. Results from earlier phases give the phase.
   Run: `fixtures`. The expected files were made from the normative texts separately from
   `render`, and two were typed by hand first. (Phase 2)
 - [x] **Example bodies at most 7,500 characters and cores at most 1,500.** Run: body / core
-  are 203 / 203, 1,382 / 1,382, 2,758 / 643 and 3,722 / 748. (Phase 3)
+  are 203 / 203, 1,382 / 1,382, 2,758 / 643 and 3,673 / 720. (Phase 3 and review)
 - [x] **A cold reader can render a package and say when the first reminder is due.** Two
   fresh agents did, byte for byte. The record is under "Cold-reader test" below, with its
   limits. (Phase 4)
@@ -85,18 +85,22 @@ final tree for this review. Results from earlier phases give the phase.
   `claude plugin validate` and loads with its skills and servers available; the compatibility
   note says what Claude Code does not provide.** Passed with warnings on Claude Code 2.1.330.
   "Available" means listed and connected. No model session used the skill or the tool.
-  Details under "Outside-tool results". (Phases 3 and 5)
+  Details under "Outside-tool results". Run again on the Roman Catholic example after it
+  was rewritten at the pull request gate. (Phases 3 and 5, and review)
 - [x] **(tool) A generated `marketplace.json` passes `claude plugin validate` and an example
   installs from it with no `plugin.json`.** Both folder examples installed. The two
-  single-file packages were not tried. (Phase 3)
+  single-file packages were not tried. Run again for the rewritten Roman Catholic example.
+  (Phase 3 and review)
 - [x] **(tool) Every skill inside an example passes `skills-ref validate`.** The one skill,
-  `catechism-answers`, is valid under the reference validator at commit `83021e2`. (Phase 3)
+  `catechism-answers`, is valid under the reference validator at commit `83021e2`, before
+  and after it was rewritten. (Phase 3 and review)
 - [x] **The rationale covers the four options, compares the four formats and says why option
   3, with a link and a date for every claim.** `spec/rationale.md`. Every cited page was read
   again at the source on 2026-11-21 UTC, and every cited URL returned 200. (Phase 5)
 - [x] **No bundled text is under third-party copyright, and each states its source and
-  status.** The only bundled texts are the Baltimore Catechism No. 2 and the Apostles' Creed
-  taken from it. See "Catechism source" below, which the owner has not yet answered. (Phase 3)
+  status.** The only bundled text is the Apostles' Creed, in an 1885 wording that is in the
+  public domain. The catechism it was taken from was bundled until the pull request gate and
+  was removed at the owner's decision. See "The catechism" below. (Phase 3 and review)
 - [x] **`example-principled-pluralism` is valid, cites the essay and carries the notice;
   nothing else in `spec/` mentions principled pluralism.** A search of `spec/` and the root
   README finds the words once, as the package name in the examples table of part 16. The
@@ -159,6 +163,15 @@ All on 2026-11-21 UTC (2026-11-20 local), on temporary copies outside the reposi
   installed from a marketplace with no `plugin.json`, into a throwaway configuration
   directory. A copy of the fixture `invalid/v2-duplicate-key` with a `plugin.json` added also
   passes, and the output never mentions `VALUES.md`.
+- **After the Roman Catholic example was rewritten** (same day, same versions): a copy with a
+  name-only `plugin.json` passes `claude plugin validate` with the same three warnings and
+  reports the skill `example-roman-catholic:catechism-answers`; `claude plugin details` lists
+  that skill; `skills-ref validate` calls the skill valid; the worked marketplace file,
+  regenerated, passes; and the example installed from it with no `plugin.json`, into a
+  throwaway configuration directory.
+- **The Catechism of the Catholic Church** was read on the Holy See's site, page by page, to
+  trace each basic statement in the Roman Catholic example to its paragraphs. The table is in
+  the package's `references/sources.md`.
 - **Sources read again with `curl`:** the Claude Code hooks, plugin manifest, marketplace and
   output-styles references, agents.md, the Agent Skills specification and client guide, the
   `skills-ref` validator, the Belief Protocol README and LICENSE, and the MCP home page.
@@ -191,25 +204,43 @@ review, applied to the spec file, so it agrees with the published documents.
 The spec's two measured figures for the wrapper held: 1,504 characters of fixed text and
 9,432 for the worst case.
 
-### Catechism source
+### The catechism
 
-The bundled catechism comes from Project Gutenberg ebook 14552. It is listed as public domain
-in the United States and carries the 1885 approval, but its text follows a printing of 1977.
-The transcription says answer 257 was rewritten for that printing, and a comparison of all
-421 answers with the two sibling volumes (ebooks 14553 and 14554) showed answers 254 and 258
-also differ in substance. The bundled copy keeps the thirty-seven lessons, has 421 questions
-with the answers to 418 of them, marks the three left out, and leaves out the prayers and
-hymns. Project Gutenberg is named nowhere in `values/`, because its terms ask that its name
-and its licence go together or not at all. The package says the copy is a public-domain
-transcription of a 1977 printing. This finding was sent to the architect in phase 3 and has
-not been answered. If the owner wants the text removed or taken from another source, that
-is a change to make before or after merge.
+Phase 3 bundled the Baltimore Catechism No. 2 with the Roman Catholic example. Its source,
+Project Gutenberg ebook 14552, is listed as public domain in the United States and carries
+the 1885 approval, but its text follows a printing of 1977. Three answers (254, 257 and 258)
+differ in substance from the two sibling volumes (ebooks 14553 and 14554) and were left out.
+
+Asked at the pull request gate whether to keep the text, the owner answered "No, use web
+search." The architect read that as: drop the bundled catechism, and take detail from web
+search. That is what the package now does (`eec9093`).
+
+- The catechism file is removed.
+- The body and its core tell the model to search the web for detail, to prefer the Holy
+  See's own site for the current Catechism of the Catholic Church, to give the paragraph
+  number and the link, and not to quote from memory as if the wording were exact. With no
+  web search, the model says so and keeps to the basics.
+- The skill stays, rewritten as how to look a point up. It keeps its name. Dropping it was
+  the other choice. It stays because this is the only example that shows a skill, and the
+  specification's list of examples and the compatibility note's observations both rest on
+  one being there.
+- The basic statements were checked again, this time against the current Catechism on the
+  Holy See's site, and several were reworded to what it says, among them the Pope as head of
+  the college of bishops, the Eucharist, the creed and the two great commandments. They are
+  paraphrases, with the paragraph numbers in `references/sources.md`.
+- The Apostles' Creed stays bundled. Its note now says that the catechism it came from is
+  not bundled. The transcriptions of the two sibling volumes give the same wording apart
+  from punctuation, capital letters and, in one of them, a single "and". Project Gutenberg
+  is still named nowhere in `values/`.
+
+Not verified: no model session ran the package with a web search tool.
 
 ### Commits no reviewer saw
 
 Each was made after the last review round of its phase. The first pull request review read
-the code the first four touched and found nothing. The last three were made after both pull
-request rounds, in answer to the architect's integration review.
+the code the first four touched and found nothing. The next three were made after both pull
+request rounds, in answer to the architect's integration review, and the last two carry the
+owner's two changes at the pull request gate.
 
 | Commit | Phase | What it changed |
 |---|---|---|
@@ -220,6 +251,8 @@ request rounds, in answer to the architect's integration review.
 | `7ac0d12` | review | A folder with no `VALUES.md` is reported as such (`V1:no-file`); a `.mcp.json` nested too deep gives a plain "could not judge" message and exit code 2. |
 | `78e3a58` | review | `spec/LICENSE.md`; a sentence in part 10 and a case in H6; the two errata in the spec file. |
 | `bc501a5` | review | The GitHub workflow that runs the four checks; the ignore rule. |
+| `eec9093`, `7bc8260` | review | The Roman Catholic example takes detail from web search; the bundled catechism is removed; the creed's note is corrected. |
+| `f4ac5b2` | review | Part 4 lets an outside adapter place the wrapper at the start of the conversation; parts 7, 10 and 15 and the compatibility note follow. |
 
 ## Deviations from Plan
 
@@ -253,7 +286,8 @@ request rounds, in answer to the architect's integration review.
 
 ### Phase 3
 
-- The catechism's source is a later printing than the plan assumed. See "Catechism source".
+- The catechism's source is a later printing than the plan assumed. The text was bundled
+  with three answers left out, and was removed at the pull request gate. See "The catechism".
 - `example-principled-pluralism` has no core section. Its body is under 1,500 characters, so
   the whole body is reinjected.
 - The steward is named "The values.md project", with the article, because the wrapper opens
@@ -639,6 +673,27 @@ ignore rule. All are made.
 - Considered by the architect and not asked for: refusing duplicate keys in `.mcp.json`, and
   extending `consistency` to the two hand-kept copies.
 
+### Owner's decisions at the pull request gate
+
+Relayed by the architect in a comment on the pull request. Both changes are made.
+
+- **Decision**: relax where the wrapper is placed (part 4) → **Addressed** in `f4ac5b2`. A
+  host that controls its own system prompt must place the wrapper there. An adapter that adds
+  value systems to an existing agent from outside, and cannot reach its system prompt, may
+  place the wrapper once at the start of the conversation and must tell the user. Part 7 says
+  such an adapter claims a level like any other host, part 10 names both places, and part 15
+  has a new requirement, H11. In the compatibility note a hook's placement is no longer
+  listed as a departure. The other departures (exactness, "once", a lost reminder) stand as
+  they were.
+- **Decision**: "No, use web search" for the bundled catechism → **Addressed** in `eec9093`.
+  See "The catechism" above.
+- **Decision**: the steward name "The values.md project" stays for now → no change.
+- **Decision**: review records and builder notes stay out of the repository → no change. The
+  ignore rule is in place.
+
+The approved spec file under `codev/specs/` was not edited for these two decisions. It still
+describes the wrapper in the system prompt only and a bundled catechism.
+
 ## Lessons Learned
 
 ### What Went Well
@@ -724,13 +779,9 @@ That is a reviewer that did not run, not a test.
 
 For the owner or architect to decide:
 
-- The catechism finding: keep the 1977-printing text with three answers left out, replace
-  the source, or drop the bundled text.
-- The steward name "The values.md project".
-- Whether the review records and the builder's thread file, kept off the branch at the
-  owner's request, are added back before merge. An ignore rule now keeps them from being
-  committed by accident.
-- Where the prompt is placed, which the architect said the owner will answer.
+- Whether the approved spec file is brought into line with the owner's two decisions at the
+  pull request gate (wrapper placement, and no bundled catechism).
+- The steward name "The values.md project" stays for now, by the owner's decision.
 
 For the reference implementation (issue #2):
 
@@ -739,7 +790,10 @@ For the reference implementation (issue #2):
   UTF-16 units.
 - Check whether Claude Code asks for consent before connecting a plugin's MCP server, and
   look at the install screen.
-- Use the example skill and the Ansari tool in a model session.
+- Use the example skill and the Ansari tool in a model session, and run the Roman Catholic
+  example with a web search tool.
+- An adapter that places the wrapper in the conversation has to tell the user so. How it
+  tells them is for the adapter to settle.
 - Try the stage 2 checkpoint with a prompt on top. `example-islam` changes from
   `prompt: omit` to `optional` once that works. Until then, in the mode its own model
   declares, the instruction to use the Ansari tool is not in context, so the prompt with
