@@ -14,11 +14,11 @@ plan_phases:
     status: complete
   - id: phase_4
     title: The specification text
-    status: in_progress
+    status: complete
   - id: phase_5
     title: Rationale, compatibility note and root README
-    status: pending
-current_plan_phase: phase_4
+    status: in_progress
+current_plan_phase: phase_5
 gates:
   spec-approval:
     status: approved
@@ -32,8 +32,8 @@ gates:
     status: pending
   verify-approval:
     status: pending
-iteration: 3
-build_complete: true
+iteration: 1
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_1
@@ -148,7 +148,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/values.md/.builders/spir-1/codev/projects/1-values-md-standard-v0-1-the-va/1-phase_4-iter2-claude.txt
 started_at: '2026-11-20T19:27:27.204Z'
-updated_at: '2026-11-21T03:45:08.357Z'
+updated_at: '2026-11-21T03:49:55.379Z'
 pr_history:
   - phase: specify
     pr_number: 4
@@ -167,6 +167,8 @@ context_refreshes:
   - boundary: plan-phase:phase_4
     at: '2026-11-21T03:12:45.387Z'
     acknowledged_at: '2026-11-21T03:16:10.620Z'
+  - boundary: plan-phase:phase_5
+    at: '2026-11-21T03:49:55.379Z'
 force_advanced:
   phase: phase_2
   iteration: 3
