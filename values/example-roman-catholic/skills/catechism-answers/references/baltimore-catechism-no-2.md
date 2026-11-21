@@ -4,14 +4,13 @@ Commonly called the Baltimore Catechism No. 2. Prepared and enjoined by order of
 Plenary Council of Baltimore, and approved on 6 April 1885 by John Cardinal McCloskey,
 Archbishop of New York, and James Gibbons, Archbishop of Baltimore.
 
-**Source.** The text below is the thirty-seven lessons of the catechism, 421 numbered
-questions and answers, as transcribed in Project Gutenberg ebook no. 14552
-(https://www.gutenberg.org/ebooks/14552), copied on 2026-11-20. That transcription follows a
-printing of 1977. The prayers and hymns printed with that edition are not included here.
+**Source.** The text below is the thirty-seven lessons of the catechism: 421 numbered
+questions, with the answers to 418 of them. It was taken on 2026-11-21 (UTC) from a
+public-domain transcription that follows a printing of 1977. The prayers and hymns printed
+with that edition are not included here.
 
 **Status.** Public domain. The catechism was published in the United States in 1885, and its
-copyright there has long expired. Project Gutenberg lists its transcription as "Public domain
-in the USA."
+copyright there has long expired.
 
 **What was changed for this copy.**
 

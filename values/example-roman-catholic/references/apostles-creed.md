@@ -11,9 +11,8 @@ of sins, the resurrection of the body, and the life everlasting. Amen.
 ## Source and status
 
 **Source.** The answer to question 12 of the Baltimore Catechism No. 2 (A Catechism of
-Christian Doctrine, No. 2, approved in 1885), as transcribed in Project Gutenberg ebook
-no. 14552 (https://www.gutenberg.org/ebooks/14552), copied on 2026-11-20. Only the line
-breaks differ. The whole catechism is bundled with this package's `catechism-answers` skill.
+Christian Doctrine, No. 2, approved in 1885), taken on 2026-11-21 (UTC) from the copy bundled
+with this package's `catechism-answers` skill. Only the line breaks differ.
 
 **Status.** Public domain. This English wording was published in the United States in 1885,
 and its copyright there has long expired.

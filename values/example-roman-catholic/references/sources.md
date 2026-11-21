@@ -9,16 +9,16 @@ from each.
 ### The Baltimore Catechism No. 2
 
 - **What it is.** A Catechism of Christian Doctrine, No. 2, prepared and enjoined by order of
-  the Third Plenary Council of Baltimore and approved on 6 April 1885. 421 questions and
-  answers in 37 lessons.
+  the Third Plenary Council of Baltimore and approved on 6 April 1885. 421 questions in 37
+  lessons.
 - **Where it is.** `skills/catechism-answers/references/baltimore-catechism-no-2.md`
-- **Source.** Project Gutenberg ebook no. 14552, https://www.gutenberg.org/ebooks/14552,
-  copied on 2026-11-20. The transcription follows a printing of 1977.
-- **Status.** Public domain. It was published in the United States in 1885, and Project
-  Gutenberg lists its transcription as "Public domain in the USA."
+- **Source.** A public-domain transcription, taken on 2026-11-21 (UTC), that follows a
+  printing of 1977.
+- **Status.** Public domain. It was published in the United States in 1885, and its
+  copyright there has long expired.
 - **What was left out.** The prayers and hymns printed with that edition, and three answers
-  (254, 257 and 258) whose wording in that printing is later than 1885. The top of the file
-  gives the details.
+  (254, 257 and 258) whose wording in that printing is later than 1885. So the copy has 421
+  questions and 418 answers. The top of the file gives the details.
 - **Quoting.** It may be quoted freely. Give the number of the question.
 
 ### The Apostles' Creed
@@ -64,4 +64,4 @@ Each statement under "The basics" in `VALUES.md` was compared with the bundled c
 Two statements rest on the current Catechism and not on the bundled text: that "Extreme
 Unction" is an older name for the Anointing of the Sick (paragraph 1512), and that the
 current Catechism treats the necessity of the Church at more length (paragraphs 846 to 848).
-Both were read on the Holy See's website on 2026-11-20.
+Both were read on the Holy See's website on 2026-11-21 (UTC).

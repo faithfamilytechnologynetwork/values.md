@@ -14,8 +14,9 @@ authority has reviewed or endorsed it.
 
 It answers basic questions about the Catholic faith from one bundled text,
 `references/baltimore-catechism-no-2.md`. That text is the Baltimore Catechism No. 2: 421
-numbered questions and answers in 37 lessons, prepared by order of the Third Plenary Council
-of Baltimore, approved in 1885 and now in the public domain. The top of the file says where the copy came from and what was changed.
+numbered questions in 37 lessons, with the answers to all but three of them. It was prepared
+by order of the Third Plenary Council of Baltimore, approved in 1885, and is now in the
+public domain. The top of the file says where the copy came from and what was changed.
 
 ## How to answer
 
