@@ -78,7 +78,9 @@ package's tools and skills and nothing of the value system itself.
   mention `VALUES.md`. That command checks the plugin's own files. It does not apply validity
   rules V1 to V10. Run the checker first ([`README.md`](README.md)).
 - **It does not show the steward or the kind of claim** as the standard asks of a host (part
-  9). See [what the install screen shows](#what-the-install-screen-shows).
+  9). **Documented:** a plugin's display fields include none for a steward or a claim. The
+  install screen itself was not looked at. See
+  [what the install screen shows](#what-the-install-screen-shows).
 - **It does not use `models`.** This also follows from the first point and was not checked
   separately: `models` is a field of `VALUES.md`. **Documented:** the manifest's table
   of top-level fields has none for a model.
@@ -265,8 +267,8 @@ it to a collection.
   from it, with no `plugin.json` in their folders.
 
 This is the file for the four packages in [`../values/`](../values/), for a marketplace at the
-root of this repository. Its `plugins` list is exactly what this command printed on
-2026-11-21:
+root of this repository. Its `plugins` list is, value for value, what this command printed on
+2026-11-21, indented two spaces further to sit inside the file:
 
 ```
 uv run --project spec/checker python -m values_checker marketplace values/ --root .
