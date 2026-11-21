@@ -32,8 +32,8 @@ gates:
     status: pending
   verify-approval:
     status: pending
-iteration: 2
-build_complete: true
+iteration: 3
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_1
@@ -83,8 +83,24 @@ history:
         verdict: APPROVE
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/values.md/.builders/spir-1/codev/projects/1-values-md-standard-v0-1-the-va/1-phase_2-iter1-claude.txt
+  - iteration: 2
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: gemini
+        verdict: COMMENT
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/values.md/.builders/spir-1/codev/projects/1-values-md-standard-v0-1-the-va/1-phase_2-iter2-gemini.txt
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/values.md/.builders/spir-1/codev/projects/1-values-md-standard-v0-1-the-va/1-phase_2-iter2-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/values.md/.builders/spir-1/codev/projects/1-values-md-standard-v0-1-the-va/1-phase_2-iter2-claude.txt
 started_at: '2026-11-20T19:27:27.204Z'
-updated_at: '2026-11-21T02:38:59.865Z'
+updated_at: '2026-11-21T02:44:47.710Z'
 pr_history:
   - phase: specify
     pr_number: 4
