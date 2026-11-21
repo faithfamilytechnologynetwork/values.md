@@ -11,13 +11,13 @@ import json
 import socket
 from pathlib import Path
 
-from values_checker import reading, rules
+from values_checker import rules
 
 MANIFEST = "fixtures.json"
 GROUPS = ("valid", "invalid", "unsupported")
 
 _CONSTRAINT_KEYWORDS = {
-    "pattern", "enum", "const", "not",
+    "type", "pattern", "enum", "const", "not",
     "minLength", "maxLength", "minItems", "maxItems", "minimum", "maximum",
 }
 _BOUND_KEYWORDS = ("minLength", "maxLength", "minItems", "maxItems", "minimum", "maximum")
@@ -113,8 +113,7 @@ def run(fixtures_dir: Path, schema_path: Path = rules.FRONTMATTER_SCHEMA) -> lis
                 problems.append(f"{name}: body is {report.body_chars} characters, expected {entry['body-chars']}")
             if report.core_chars != entry["core-chars"]:
                 problems.append(f"{name}: core is {report.core_chars} characters, expected {entry['core-chars']}")
-            frontmatter = reading.parse_frontmatter(reading.split_file(path.read_bytes()).frontmatter)
-            bounds_covered |= bounds_met(schema, frontmatter)
+            bounds_covered |= bounds_met(schema, report.frontmatter)
 
     for group in GROUPS:
         for child in sorted((fixtures_dir / group).iterdir()):
@@ -127,7 +126,9 @@ def run(fixtures_dir: Path, schema_path: Path = rules.FRONTMATTER_SCHEMA) -> lis
     for code in sorted(rules.DETAIL_CODES):
         if code not in details_covered:
             problems.append(f"audit: no fixture produces the failure {code}")
-    for constraint in sorted(constraints(schema)):
+    # The schema's own top-level `type` cannot fail under V3: frontmatter that is not a mapping
+    # has already failed V2.
+    for constraint in sorted(constraints(schema) - {"type"}):
         if f"V3:{constraint}" not in details_covered:
             problems.append(f"audit: no fixture is rejected by the schema constraint {constraint}")
         if constraint.rsplit("/", 1)[-1] in _BOUND_KEYWORDS and constraint not in bounds_covered:

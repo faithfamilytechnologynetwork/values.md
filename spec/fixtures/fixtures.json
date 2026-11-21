@@ -706,7 +706,7 @@
         "V3"
       ],
       "details": [
-        "V3:properties/steward/properties/name/not"
+        "V3:properties/steward/properties/name/pattern"
       ],
       "note": "A steward name containing < and >."
     },
@@ -718,7 +718,7 @@
         "V3"
       ],
       "details": [
-        "V3:properties/steward/properties/name/not"
+        "V3:properties/steward/properties/name/pattern"
       ],
       "note": "A steward name containing a double quote."
     },
@@ -730,7 +730,7 @@
         "V3"
       ],
       "details": [
-        "V3:properties/steward/properties/name/not"
+        "V3:properties/steward/properties/name/pattern"
       ],
       "note": "A steward name on two lines."
     },
@@ -1138,7 +1138,7 @@
         "V3"
       ],
       "details": [
-        "V3:properties/persistence/properties/reinject/properties/section/not"
+        "V3:properties/persistence/properties/reinject/properties/section/pattern"
       ],
       "note": "A section name on two lines."
     },
@@ -1671,6 +1671,430 @@
       "scope": "file",
       "outcome": "unsupported-version",
       "note": "A later version with no name and reserved text in the body. The outcome is still unsupported version: a v0.1 checker does not judge it."
+    },
+    {
+      "path": "valid/language-tags-well-formed/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "Language tags of every form RFC 5646 allows: script, region, variant, extension, private use, and an irregular grandfathered tag in either case."
+    },
+    {
+      "path": "invalid/v3-language-single-letter/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/items/pattern"
+      ],
+      "note": "A one-letter primary subtag that is not a registered grandfathered tag."
+    },
+    {
+      "path": "invalid/v3-language-empty-extension/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/items/pattern"
+      ],
+      "note": "An extension singleton with no subtag after it."
+    },
+    {
+      "path": "invalid/v3-language-too-long-subtag/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/items/pattern"
+      ],
+      "note": "A primary subtag of nine letters."
+    },
+    {
+      "path": "valid/url-with-port-path-query/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "A steward url with a port, a path, a query and a fragment."
+    },
+    {
+      "path": "invalid/v3-url-no-host/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/pattern"
+      ],
+      "note": "https:// followed by no host."
+    },
+    {
+      "path": "invalid/v3-url-with-credentials/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/pattern"
+      ],
+      "note": "A user name and password in the url."
+    },
+    {
+      "path": "invalid/v3-url-with-space/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/pattern"
+      ],
+      "note": "A space in the url."
+    },
+    {
+      "path": "valid/persistence-empty/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "persistence and persistence.reinject may be empty. Every key in them is optional and takes its default."
+    },
+    {
+      "path": "valid/persistence-without-reinject/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "persistence with no reinject key."
+    },
+    {
+      "path": "valid/metadata-deeply-nested/VALUES.md",
+      "scope": "file",
+      "outcome": "valid",
+      "body-chars": 40,
+      "core-chars": 40,
+      "note": "metadata nested 1,100 levels deep. A checker reads it like any other value and does not fail on depth."
+    },
+    {
+      "path": "invalid/v3-section-trailing-line-feed/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/section/pattern"
+      ],
+      "note": "A block scalar leaves a line feed at the end of the section name, so it is not on one line. V5 is not evaluated."
+    },
+    {
+      "path": "invalid/v3-name-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/name/type"
+      ],
+      "note": "name as a number."
+    },
+    {
+      "path": "invalid/v3-description-list/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/description/type"
+      ],
+      "note": "description as a list."
+    },
+    {
+      "path": "invalid/v3-steward-name-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/name/type"
+      ],
+      "note": "steward.name as a number."
+    },
+    {
+      "path": "invalid/v3-url-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/steward/properties/url/type"
+      ],
+      "note": "steward.url as a number."
+    },
+    {
+      "path": "invalid/v3-license-boolean/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/license/type"
+      ],
+      "note": "license as a boolean."
+    },
+    {
+      "path": "invalid/v3-authors-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/authors/type"
+      ],
+      "note": "authors as one string. It is a list."
+    },
+    {
+      "path": "invalid/v3-author-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/authors/items/type"
+      ],
+      "note": "An author that is a number."
+    },
+    {
+      "path": "invalid/v3-tradition-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tradition/type"
+      ],
+      "note": "tradition as one string. It is a list."
+    },
+    {
+      "path": "invalid/v3-tradition-entry-null/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tradition/items/type"
+      ],
+      "note": "A tradition entry that is null."
+    },
+    {
+      "path": "invalid/v3-languages-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/type"
+      ],
+      "note": "languages as one string. It is a list."
+    },
+    {
+      "path": "invalid/v3-language-boolean/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/languages/items/type"
+      ],
+      "note": "A language that is a boolean."
+    },
+    {
+      "path": "invalid/v3-tags-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tags/type"
+      ],
+      "note": "tags as one string. It is a list."
+    },
+    {
+      "path": "invalid/v3-tag-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/tags/items/type"
+      ],
+      "note": "A tag that is a number."
+    },
+    {
+      "path": "invalid/v3-reinject-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/type"
+      ],
+      "note": "persistence.reinject as a number."
+    },
+    {
+      "path": "invalid/v3-every-tokens-fraction/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/every-tokens/type"
+      ],
+      "note": "every-tokens that is not a whole number."
+    },
+    {
+      "path": "invalid/v3-section-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/persistence/properties/reinject/properties/section/type"
+      ],
+      "note": "A section name that is a number. V5 is not evaluated."
+    },
+    {
+      "path": "invalid/v3-models-mapping/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/type"
+      ],
+      "note": "models as a single mapping. It is a list."
+    },
+    {
+      "path": "invalid/v3-model-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/type"
+      ],
+      "note": "A model entry that is a string."
+    },
+    {
+      "path": "invalid/v3-model-provider-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/provider/type"
+      ],
+      "note": "A provider that is a number."
+    },
+    {
+      "path": "invalid/v3-model-base-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/base/type"
+      ],
+      "note": "A base that is a number."
+    },
+    {
+      "path": "invalid/v3-model-adapter-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/adapter/type"
+      ],
+      "note": "An adapter that is a number."
+    },
+    {
+      "path": "invalid/v3-model-context-window-string/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/context-window/type"
+      ],
+      "note": "A context-window given as a quoted string."
+    },
+    {
+      "path": "invalid/v3-model-description-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/description/type"
+      ],
+      "note": "A model description that is a number."
+    },
+    {
+      "path": "invalid/v3-model-trained-on-number/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/models/items/properties/trained-on/type"
+      ],
+      "note": "trained-on: 1.0 without quotes is a number."
+    },
+    {
+      "path": "invalid/v3-metadata-list/VALUES.md",
+      "scope": "file",
+      "outcome": "invalid",
+      "rules": [
+        "V3"
+      ],
+      "details": [
+        "V3:properties/metadata/type"
+      ],
+      "note": "metadata as a list. It is an object."
     }
   ]
 }

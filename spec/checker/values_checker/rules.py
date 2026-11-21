@@ -74,6 +74,7 @@ class Report:
     outcome: str
     failures: list[Failure] = field(default_factory=list)
     spec_version: str | None = None
+    frontmatter: dict | None = None
     body_chars: int | None = None
     core_chars: int | None = None
 
@@ -100,9 +101,23 @@ def _pattern(validator, pattern, instance, schema):
 SchemaValidator = validators.extend(Draft202012Validator, {"pattern": _pattern})
 
 
+def _patterns(schema) -> list[str]:
+    if isinstance(schema, dict):
+        own = [schema["pattern"]] if isinstance(schema.get("pattern"), str) else []
+        return own + [found for value in schema.values() for found in _patterns(value)]
+    if isinstance(schema, list):
+        return [found for value in schema for found in _patterns(value)]
+    return []
+
+
 def load_schema(path: Path) -> dict:
     schema = json.loads(path.read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
+    for pattern in _patterns(schema):
+        # `_pattern` translates only a final `$`. A `$` anywhere else would quietly keep
+        # Python's meaning, so a schema that has one is refused.
+        if re.search(r"(?<!\\)\$(?!$)", pattern):
+            raise ValueError(f"{path}: the pattern {pattern!r} uses $ before its end")
     return schema
 
 
@@ -193,4 +208,4 @@ def check_file(path: Path, schema: dict | None = None) -> Report:
     if failures:
         failures.sort(key=lambda failure: (int(failure.rule[1:]), failure.code))
         return Report(INVALID, failures)
-    return Report(VALID, body_chars=len(body), core_chars=len(core))
+    return Report(VALID, frontmatter=frontmatter, body_chars=len(body), core_chars=len(core))

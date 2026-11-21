@@ -14,6 +14,7 @@ from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 from ruamel.yaml.events import (
     AliasEvent,
+    DocumentEndEvent,
     DocumentStartEvent,
     MappingEndEvent,
     MappingStartEvent,
@@ -52,7 +53,7 @@ def split_file(data: bytes) -> SplitFile:
         text = data.decode("utf-8")
     except UnicodeDecodeError:
         raise Unreadable("V1:not-utf8") from None
-    if text.startswith("﻿"):
+    if text.startswith("\ufeff"):
         text = text[1:]
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     lines = text.split("\n")
@@ -134,45 +135,66 @@ def parse_frontmatter(text: str) -> dict:
     for event in stream:
         if isinstance(event, DocumentStartEvent):
             break
-    value = _build(next(stream), stream)
+    value = _build(stream)
     if not isinstance(value, dict):
         raise Unreadable("V2:not-a-mapping")
     return value
 
 
-def _build(event, stream):
-    if isinstance(event, ScalarEvent):
-        plain_untagged, quoted_untagged = event.implicit
-        if plain_untagged:
-            value = _resolve_plain_scalar(event.value)
-            if isinstance(value, float) and not math.isfinite(value):
-                raise Unreadable("V2:non-finite-number")
-            return value
-        if quoted_untagged:
-            return event.value
-        raise Unreadable("V2:explicit-tag")
-    if isinstance(event, SequenceStartEvent):
-        if not event.implicit:
-            raise Unreadable("V2:explicit-tag")
-        items = []
-        for item in stream:
-            if isinstance(item, SequenceEndEvent):
-                return items
-            items.append(_build(item, stream))
-    if isinstance(event, MappingStartEvent):
-        if not event.implicit:
-            raise Unreadable("V2:explicit-tag")
-        mapping = {}
-        for key_event in stream:
-            if isinstance(key_event, MappingEndEvent):
-                return mapping
-            key = _build(key_event, stream)
-            if not isinstance(key, str):
+def _scalar(event: ScalarEvent):
+    plain_untagged, quoted_untagged = event.implicit
+    if plain_untagged:
+        value = _resolve_plain_scalar(event.value)
+        if isinstance(value, float) and not math.isfinite(value):
+            raise Unreadable("V2:non-finite-number")
+        return value
+    if quoted_untagged:
+        return event.value
+    raise Unreadable("V2:explicit-tag")
+
+
+_AWAITING_KEY = object()
+
+
+def _build(stream):
+    """Builds one document's value from the parser's events.
+
+    It keeps its own stack and does not recurse, so frontmatter nested thousands of levels
+    deep is read like any other and cannot exhaust the interpreter's stack.
+    """
+    document = []
+    open_nodes: list = []  # the mappings and sequences not yet closed, innermost last
+    pending_keys: list = []  # for each open node: the key whose value comes next, if any
+
+    def place(value) -> None:
+        if not open_nodes:
+            document.append(value)
+        elif isinstance(open_nodes[-1], list):
+            open_nodes[-1].append(value)
+        elif pending_keys[-1] is _AWAITING_KEY:
+            if not isinstance(value, str):
                 raise Unreadable("V2:key-not-string")
-            if key in mapping:
+            if value in open_nodes[-1]:
                 raise Unreadable("V2:duplicate-key")
-            mapping[key] = _build(next(stream), stream)
-    raise AssertionError(f"unexpected YAML event {event!r}")
+            pending_keys[-1] = value
+        else:
+            open_nodes[-1][pending_keys[-1]] = value
+            pending_keys[-1] = _AWAITING_KEY
+
+    for event in stream:
+        if isinstance(event, ScalarEvent):
+            place(_scalar(event))
+        elif isinstance(event, SequenceStartEvent | MappingStartEvent):
+            if not event.implicit:
+                raise Unreadable("V2:explicit-tag")
+            open_nodes.append([] if isinstance(event, SequenceStartEvent) else {})
+            pending_keys.append(_AWAITING_KEY)
+        elif isinstance(event, SequenceEndEvent | MappingEndEvent):
+            pending_keys.pop()
+            place(open_nodes.pop())
+        elif isinstance(event, DocumentEndEvent):
+            break
+    return document[0]
 
 
 _FENCE_OPEN = re.compile(r" {0,3}(`{3,}|~{3,})(.*)")
