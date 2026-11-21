@@ -58,3 +58,4 @@ The specification, the rationale and the compatibility note are licensed under
 including the schemas, the fixtures, the checker and the example packages, is under the MIT
 licence. See [`LICENSE`](LICENSE). The one exception is a text bundled inside a package that
 is in the public domain. Each such text states its source and its status.
+[`spec/LICENSE.md`](spec/LICENSE.md) says which licence covers which file.

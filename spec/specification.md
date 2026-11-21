@@ -592,8 +592,11 @@ installed and choose between them. It MAY activate several at once, under these 
 - Two packages with the same `name` are never active together. The host MUST refuse the
   second.
 - Each package has its own count and its own interval. At a boundary, every package whose
-  reminder is due gets it, in activation order. One package's reminder counts towards the
-  other packages' counts like anything else added to the conversation.
+  reminder is due gets it, in activation order. Which packages are due is decided once, from
+  the counts as they stand before any reminder is placed at that boundary. One package's
+  reminder counts towards the other packages' counts like anything else added to the
+  conversation, so a reminder placed at a boundary can make another package due at the next
+  boundary and never at the same one.
 - A fine-tuned model belongs to the package that declares it. Running it lets the host skip
   reinjection for that package only. The others are reinjected as usual.
 - With several value systems active, every package's wrapper is in context, so no model runs
@@ -868,7 +871,10 @@ observe.
   rule, and injects the complete wrapper.
 - **H6. Two value systems** (part 10). With two active, the preamble comes first and names
   both in activation order, each package has its own wrapper, each has its own count, and each
-  reminder is placed when its own count is due. A second package with a name already active is
+  reminder is placed when its own count is due. When both are due at one boundary, both
+  reminders are placed there, in activation order. When only the first is due and its
+  reminder would carry the second's count past its interval, the second's reminder is placed
+  at the next boundary and not at this one. A second package with a name already active is
   refused.
 - **H7. Consent** (part 7). The host asks before it first connects to each declared remote
   server, showing the address, and before it starts each local command, showing the full

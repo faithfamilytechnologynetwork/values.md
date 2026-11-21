@@ -48,7 +48,7 @@ When you are unsure, tell me you are unsure.
 Three frontmatter fields and a body in ordinary prose. There is no folder, no required heading
 and no required structure inside the body. For comparison, the smallest valid `BELIEF.md` needs
 a `decision-surface` structure and an Agent Orientations section, and every belief in it must
-carry a `layer`, a `grip` and a `source`.
+carry a `layer`, a `grip` and a `warrant`, and record a `source`.
 
 **A first-time author can ignore** everything else in this specification:
 
@@ -990,14 +990,15 @@ Each of these was open. The first alternative listed is the one adopted in Desir
   6 to 8 percent to the conversation. This departs from the owner's wording in decision 5 for
   any body longer than the core limit. He was shown the costs below and confirmed core only.
 - Rejected: the whole prompt. A 7,500-character body every 5,000 tokens would add about 38
-  percent. The figures, at four characters to a token and the default interval:
+  percent. The figures, at four characters to a token and the default interval, with the
+  reminder's own fixed text of 149 characters and a name of 13 characters included:
 
   | What is reinjected | Tokens per reminder | Added to the conversation | Reminder tokens after 100,000 tokens of conversation, if every reminder is kept |
   |---|---|---|---|
   | A typical core of 1,000 characters | about 290 | about 6% | about 5,800 |
-  | The largest core, 1,500 characters | about 415 | about 8% | about 8,300 |
+  | The largest core, 1,500 characters | about 420 | about 8% | about 8,400 |
   | A whole body of 4,000 characters | about 1,040 | about 21% | about 20,800 |
-  | The largest body, 7,500 characters | about 1,915 | about 38% | about 38,300 |
+  | The largest body, 7,500 characters | about 1,920 | about 38% | about 38,400 |
 
 - Rejected: a fixed one-line pointer with no content. It restates that a value system exists
   without restating what it says, which is the part that fades.
