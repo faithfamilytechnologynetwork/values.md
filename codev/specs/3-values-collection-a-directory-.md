@@ -75,14 +75,14 @@ What is missing, and what that costs:
 - A user of Claude Code cannot install a package from here, because the repository has no
   `.claude-plugin/marketplace.json`.
 
-Facts checked for this spec:
+Facts checked for this spec. Dates here and below are in UTC.
 
 | Subject | Finding | Status |
 |---|---|---|
 | The repository | Public. GitHub Pages is not enabled. | Checked on 2026-11-21 through the GitHub API. |
 | Claude Code marketplaces | The file is `.claude-plugin/marketplace.json` at the marketplace root. `name`, `owner` and `plugins` are required, and `description` is optional, with a warning from `claude plugin validate` when it is missing. A user adds a marketplace kept in a GitHub repository with `/plugin marketplace add <owner>/<repo>` and installs with `/plugin install <plugin>@<marketplace>`. An entry whose `source` is a relative path works only when the marketplace is added from a git repository. Added as a bare URL to the file, such an entry fails at install. Automatic updating is off by default. An installed plugin is fetched again only when its `version` changes. | Documentation read on 2026-11-21. |
 | The marketplace mapping | The checker's `marketplace` command, run on `values/`, prints four entries that follow part 12. A file built from them passed `claude plugin validate` in the standard's own project, and both folder packages installed from it. | Command run on 2026-11-21. The validation and installs are that project's report. |
-| What Claude Code gets from a package | A package's skills and MCP servers. Not its prompt, because Claude Code does not read `VALUES.md`. Two of the four packages are a `VALUES.md` alone, so installing them gives Claude Code nothing until a prompt adapter exists. The adapter belongs to issue #2 and is not built. | From the standard's compatibility note. |
+| What Claude Code gets from a package | A package's skills and MCP servers. Not its prompt, because Claude Code does not read `VALUES.md`. Two of the four packages are a `VALUES.md` alone, so installing them gives Claude Code nothing to use until a prompt adapter exists. The note says installing those two was not tried, so whether Claude Code installs an empty plugin or refuses is not known. The adapter belongs to issue #2 and is not built. | From the standard's compatibility note. |
 | The reference chatbot | The owner has decided it is hosted on the internet. Its spec is being revised, and it has no public address yet. | From issue #2. |
 
 ## Desired State
@@ -131,8 +131,8 @@ package is not endorsing it. The collection lists value systems its maintainers 
 and the browser says so on every page.
 
 **Who decides.** A submission is merged by a maintainer. The owner names the maintainers and
-settles any dispute. A submission that is declined is told which rule it breaks, and may be
-revised and resubmitted.
+settles any dispute. A maintainer does not merge a submission whose check fails. A submission
+that is declined is told which rule it breaks, and may be revised and resubmitted.
 
 **What is listed.** A package is listed when all of these hold:
 
@@ -157,7 +157,10 @@ revised and resubmitted.
 **Disagreement is not a ground for removal.** A package is its steward's statement. Someone
 who holds that it gets their tradition wrong can submit their own, and both are listed. A
 package is removed when it turns out to break the policy, when its steward withdraws the
-statement that supports its claim, or when a server it declares has become unsafe.
+statement that supports its claim, or when a server it declares has become unsafe. Its page
+then no longer exists. Its name is not given to a different steward afterwards, so that an
+install that refers to the name can never be handed someone else's value system. The policy
+keeps the list of removed names.
 
 **Changes.** A change to a listed package is reviewed like a new one, comes from its steward
 or with the steward's agreement, and carries a new `version`.
@@ -186,13 +189,16 @@ before listing:
 - The collection checks the statement once, at merge. It does not watch the page afterwards.
 
 How the browser shows the difference. Every listing and every page carries the steward's name
-and the kind of claim, in words, and the page says what was and was not checked:
+and the kind of claim, in words, and the page says what was and was not checked. A page shows
+the wording for its package's kind of claim, unless the package is one of the standard's
+examples:
 
 | Claim | What the page says |
 |---|---|
-| `individual` | One person's own statement of this value system. They speak for nobody else. The collection has not checked who they are. |
+| `individual` | One person's own statement of this value system. They speak for nobody else. The collection has not checked who they are. If the package gives an address for the steward, it is shown as an address the package gives, which the collection has not checked. |
 | `organization` | An organization that stands behind this package as its own work. It does not claim to be the authority over the value system. When the package was listed, the organization's own site said so. A link to `steward.url` follows, for the visitor to check. |
 | `official` | The steward says it is the body with authority here, or is authorised by it, and that this is its official statement. When the package was listed, that body's own site said so. A link to `steward.url` follows, for the visitor to check. |
+| One of the standard's examples, whatever its claim | The kind of claim and what it means, as the standard defines it. Then: this is an example from the standard, and the collection checked no statement for it. The steward's address is shown as an address the package gives. |
 
 On every page the claim is called a claim made by the package. No badge, tick or colour
 suggests that the collection vouches for it.
@@ -203,16 +209,23 @@ These are the rules a program can check. The submission check applies them after
 
 | Rule | A package is accepted only if |
 |---|---|
-| C1 | It is a folder that the standard's checker finds valid. A package the checker cannot judge, because it targets a later version of the standard, is not accepted. |
+| C1 | It is a folder that the standard's checker finds valid. Any other result means it is not accepted: invalid, a later version of the standard that the checker does not implement, or a file the checker cannot judge. |
 | C2 | Its `VALUES.md` has a `version`, and a `license` that is on the collection's list (part 6). |
 | C3 | Its `.mcp.json`, if it has one, declares no local server. |
-| C4 | Every file in it is UTF-8 text, and its files come to no more than 2 MB together. |
+| C4 | Every file in it is UTF-8 text, and its files come to no more than 10 MB together. |
 | C5 | Its name does not begin `example-`. |
 
+C4 means a package holds no image, archive or other binary file. The limit leaves room for a
+long bundled text, such as a public-domain translation of a scripture.
+
 The four packages already in `values/` are the standard's own examples. The generator's
-settings list them by name, the collection rules are not applied to them, and the browser
-labels each as an example from the standard. One of them, `plain-speaking`, is the smallest
-valid file and so has neither `version` nor `license`.
+settings list them by name, and the browser labels each as an example from the standard. C2
+and C5 are not applied to them. C1, C3 and C4 are. One of them, `plain-speaking`, is the
+smallest valid file and so has neither `version` nor `license`.
+
+The standard's checker has one result that is about a whole collection and not one package: a
+`.mcp.json` nested too deeply for it to read ends its run with no verdict for any package. On
+a pull request that fails the check, like any other failure, and the submission is not merged.
 
 A failed rule is reported by its identifier with a sentence saying what is wrong, in the same
 manner as the checker's own output.
@@ -225,7 +238,8 @@ standard makes a host ask for consent. The collection does its own part before l
 - **No local servers** (C3). A local server is a command run on the user's machine. The
   standard lets a collection refuse them, and this one does.
 - **A remote server is reviewed once, by a maintainer, before merging:**
-  1. The package's README says who runs the server and what is sent to it.
+  1. The package has a `README.md` that says who runs the server and what is sent to it. The
+     browser links to a package's README wherever it has one.
   2. The server answers and lists its tools.
   3. The names and descriptions of its tools are read. They match what the package says the
      server is for, and they contain no instructions aimed at the model beyond describing the
@@ -237,14 +251,17 @@ standard makes a host ask for consent. The collection does its own part before l
 - **The browser shows each declared server** by name and address, with one plain sentence:
   installing this value system lets an assistant send your questions to that address, and the
   collection looked at the server when the package was listed and does not watch it.
-- **Skills and bundled texts** are read by the reviewer as the body is. Rule C4 keeps them to
-  text.
+- **Skills and bundled texts** are read by the reviewer as the body is. A skill is
+  instructions and texts. A skill that carries a program, or tells the model to run commands
+  or to fetch from an address the package does not declare, is not accepted. A long bundled
+  text is checked for its source and status, and is not read word for word.
 
 **Declared models.** The standard allows a package to declare only a model that anyone with
 access to the provider can load.
 
 - A maintainer loads a declared model once before merging. If no maintainer has access to the
-  provider, the package is merged without that model entry.
+  provider, the submitter is asked to take that model entry out, and the package can be
+  listed without it.
 - The browser shows each declared model with its provider, base model, adapter, context
   window and description, and what its `prompt` value means in plain words: that it is meant
   to run with this prompt, with or without it, or on its own without it. It says that using
@@ -263,12 +280,19 @@ access to the provider can load.
 - By submitting, the submitter states that they have the right to offer the content under
   that licence. The pull request template has them say so.
 - **Bundled texts.** A package may bundle a text only if it is in the public domain, or the
-  submitter holds the rights to it, or it is under an accepted licence. Each bundled text
-  states its source and the basis of its status, as the standard's own examples do. A text
-  under someone else's copyright is cited and linked, not bundled.
+  submitter holds the rights to it, or it is under an accepted licence. A text under someone
+  else's copyright is cited and linked, not bundled.
+- **What the stated licence covers.** A package's `license` covers everything in the package
+  that does not say otherwise. A bundled text that is in the public domain, or under a
+  different accepted licence, says so itself, with its source and the basis of its status, as
+  the standard's own examples do. The browser says, above a package's list of bundled texts,
+  that such a text may carry its own status and that the file states it.
 - The repository's licence index currently says every package in `values/` is under the MIT
   licence. It is changed to say that each package is under the licence its own `VALUES.md`
-  names, and that the four examples are MIT.
+  names, apart from a bundled text that states its own status, and that the four examples are
+  MIT. The index is a list of the repository's licences and not part of the standard's text.
+  The change is agreed with the architect first, because the standard's pull request is still
+  open.
 
 ### 7. Names
 
@@ -291,25 +315,28 @@ The standard already makes names unique: V10 requires the folder name to equal t
 - **Languages.** One package may list several languages. A translation maintained separately
   is its own package, with the language tag at the end of its name.
 - **A listed name does not change.** Installs refer to it. A package that needs another name
-  is submitted anew and the old one removed.
+  is submitted anew and the old one removed. The name of a removed package is not given to a
+  different steward (part 2).
 - **`example-`** is kept for the standard's own examples (C5).
 
 ### 8. Submitting
 
 - A submission is a pull request that adds or changes one folder under `values/` and touches
   nothing else. The submitter does not edit the marketplace file or anything the browser is
-  built from.
+  built from. The submission check enforces this: a pull request that changes anything under
+  `values/` fails if it changes more than one folder there, or any file outside `values/`. A
+  change that needs both, such as a maintainer's own, is made as two pull requests.
 - The contributing guide says, in order: what a package is, with a link to the smallest valid
   file; what the policy asks; how to choose a name; what evidence a claim needs; what a
-  declared server or model needs; how to run the check before submitting; and what happens
-  after the pull request is opened.
+  declared server or model needs, the README included; how to run the check before
+  submitting; and what happens after the pull request is opened.
 - The pull request template is the reviewer's checklist in the submitter's words: the name,
   the kind of claim and where the steward's statement is, the licence and the statement of
   rights, who runs any declared server, and the source of any bundled text.
 - **The submission check** runs on every pull request, without write access to the repository
-  and without secrets. It runs the standard's checks as today, then the collection rules,
-  then a trial build of the browser and the marketplace file. It fails if any of these fails.
-  It publishes nothing.
+  and without secrets. It runs the standard's checks as today, then the one-folder rule
+  above, then the collection rules, then a trial build of the browser and the marketplace
+  file. It fails if any of these fails. It publishes nothing.
 - Everything the policy asks that a program cannot judge is checked by a maintainer, using the
   template.
 
@@ -318,7 +345,7 @@ The standard already makes names unique: V10 requires the folder name to equal t
 **Form.** A static website: plain pages generated from `values/`, with no server, no accounts
 and no database. It is published with GitHub Pages from this repository.
 
-**The list page** shows every package: its name, its description, its steward and kind of
+**The list page** shows every package, in order of name: its name, its description, its steward and kind of
 claim, its tradition and its languages, and marks for "connects to a tool", "declares a
 fine-tuned model" and "example from the standard".
 
@@ -328,7 +355,9 @@ fine-tuned model" and "example from the standard".
 - With scripts turned off in the visitor's browser, the whole list is still there. Only
   search and filters need scripts.
 
-**A page for each package**, at an address made from its name, shows:
+**A page for each package** has an address made from its name. All package pages sit under
+one path of their own, apart from the site's own pages, so that no package name can take the
+address of the list page or of anything else the site serves. The page shows:
 
 1. The name, the description and the label "example from the standard" where it applies.
 2. The steward, the kind of claim and what was checked, as part 3 sets out.
@@ -347,11 +376,16 @@ fine-tuned model" and "example from the standard".
      repository, and a link to the `VALUES.md` file itself.
    - In Claude Code: the two commands, to add this repository as a marketplace and to install
      this package from it. The page says plainly what Claude Code gets: the package's tools
-     and skills and not its prompt. For a package that is a `VALUES.md` alone, it says that
-     installing it in Claude Code does nothing yet.
+     and skills and not its prompt. A package that is a `VALUES.md` alone has nothing Claude
+     Code reads. What Claude Code does when asked to install one has not been tried. It is
+     tried in this project (test scenario 24), and the page for such a package says what was
+     seen: either that installing it gives Claude Code nothing to use yet, or, if Claude Code
+     refuses it, that it cannot be installed there yet, with no commands shown. If it cannot
+     be tried, the page says that it has not been.
    - **Try it**: a link to the reference chatbot with this value system chosen, shown when the
      chatbot's address is set (part 11).
-9. A link to the package's folder and to its history in the repository.
+9. Links to the package's folder, to its history and, where it has one, to its README, all
+   in the repository.
 
 **Every page** carries a line saying that listing is not endorsement, and links to the policy,
 to the standard and to the contributing guide.
@@ -361,8 +395,10 @@ Markdown is not rendered, and none of its content is run or treated as markup. A
 from a package is shown with its full address visible.
 
 **Staying current.** The browser is rebuilt and published whenever `values/` changes on the
-main branch. Nobody edits a page by hand, and no built page is kept in the repository. If a
-build fails, the site that was published before stays up.
+main branch. Nobody edits a page by hand, and no built page is kept in the repository. The
+build publishes all of the collection or none of it. If any package fails a check, or the
+build fails for any other reason, nothing is published, the marketplace file is not touched,
+and the site and the file that were there before stay as they were.
 
 The browser is in English in this version.
 
@@ -378,6 +414,10 @@ The browser is in English in this version.
 - It is regenerated and committed by the same automatic step that publishes the browser,
   whenever `values/` changes on the main branch. A submitter never edits it, so two
   submissions open at once do not collide over it.
+- An installed plugin is fetched again only when its `version` changes. Rule C2 gives every
+  submission a version, and the policy asks for a new one with each change. `plain-speaking`
+  has none and cannot gain one, so a copy of it installed in Claude Code may not pick up a
+  later change.
 - It carries no hooks. Getting a package's prompt into Claude Code needs the adapter of issue
   #2. Attaching that adapter to the marketplace entries is later work (open question 5).
 
@@ -437,11 +477,17 @@ Documents
 
 The submission check
 
-- [ ] On a pull request, the check runs the standard's four commands, the collection rules
-      and a trial build, and fails when any of them fails.
+- [ ] On a pull request, the check runs the standard's four commands, the one-folder rule,
+      the collection rules and a trial build, and fails when any of them fails.
+- [ ] A pull request that changes two folders under `values/`, or one folder there and a
+      file outside `values/`, fails the check. One that changes a single folder there passes
+      this rule, and so does one that changes nothing under `values/`.
 - [ ] For each of C1 to C5 there is a test package that breaks that rule alone, and the check
       reports it by its identifier. A package that meets all five passes.
+- [ ] A package the checker finds invalid, one that targets a later version of the standard
+      and one whose `.mcp.json` the checker cannot judge each fail C1.
 - [ ] The four examples pass, although `plain-speaking` has neither `version` nor `license`.
+      A package on the examples list that declares a local server fails C3.
 - [ ] The workflow that runs on a pull request has no write permission and uses no secret.
 - [ ] The collection rules and the build run with the network blocked.
 
@@ -457,16 +503,23 @@ The browser
       everything in part 9.
 - [ ] Each package page shows the nine items of part 9. The prompt shown is, character for
       character, the body the standard's checker reads from the file.
-- [ ] For each kind of claim, the page carries the wording of part 3. A page for an
-      `individual` package shows no link presented as evidence. No page shows a mark that
-      presents a claim as verified by the collection.
+- [ ] For each kind of claim, the page carries the wording of part 3. A steward's address on
+      a page for an `individual` package is labelled as given by the package and not checked.
+      No page shows a mark that presents a claim as verified by the collection.
+- [ ] The page of each of the standard's examples carries the examples wording of part 3 and
+      does not say that anyone's site was checked.
+- [ ] The list page is in order of name. A package named `index` gets its own page, and the
+      list page is still the list page.
+- [ ] A package with a README has a link to it on its page. A package with bundled texts
+      carries the sentence of part 6 above their list.
 - [ ] A package with a declared server shows the server's name and address and the sentence
       of part 5. A package with none says that it connects to nothing.
 - [ ] A package with a declared model shows the fields of part 5 and the plain-words meaning
       of its `prompt` value, for each of `required`, `optional` and `omit`.
 - [ ] The Claude Code instructions on a page name this repository and the package, and say
       what Claude Code does and does not get. For a package that is a `VALUES.md` alone the
-      page says installing it in Claude Code does nothing yet.
+      page carries the wording part 9 gives for what was seen when one was installed, and the
+      review records what was seen and the date. If it could not be tried, the page says so.
 - [ ] A package whose name, description, steward, body, tags, tool names and file names
       contain HTML and script markup is built into pages on which all of it appears as text.
       A built page loads no script, style, image or frame from an address a package supplied.
@@ -491,6 +544,8 @@ Publishing
 
 - [ ] A change to `values/` on the main branch rebuilds the browser, regenerates the
       marketplace file and commits it if it changed, with no person involved.
+- [ ] When a package in the collection fails a check, the publishing step publishes nothing
+      and leaves the marketplace file as it was.
 - [ ] (owner) GitHub Pages is enabled for the repository, the browser is reachable at its
       public address, and the review records that address and the date it was opened.
 - [ ] (owner) After a merge that adds a package, that package appears in the published
@@ -731,8 +786,9 @@ written.
 6. The form of the link to the reference chatbot. It is a setting, filled in when issue #2
    has an address.
 7. Whether the standard's compatibility note should change. It says this repository does not
-   ship a marketplace file. After this project it does. Reported to the architect, since the
-   note belongs to the standard.
+   ship a marketplace file, and that installing a single-file package was not tried. After
+   this project the first is no longer so and the second has an answer. Reported to the
+   architect, since the note is one of the standard's documents.
 8. Whether the browser should also publish the list as a data file for other programs to
    read. Not built now. Nothing needs it yet.
 
@@ -745,11 +801,13 @@ Without a network:
 2. **The standard's valid fixtures.** A collection made from the valid fixtures builds without
    error once given the fields C2 asks for, and each page's prompt equals the body the
    checker reads.
-3. **Each collection rule.** A package breaking only C1, only C2 (no `version`, no `license`,
-   a licence not on the list), only C3, only C4 (a file that is not UTF-8, a folder over the
-   size limit) and only C5 is reported with that rule's identifier and the build stops.
-4. **The examples are exempt.** `plain-speaking` builds with no `version` or `license`. A
-   package of the same shape that is not on the examples list fails C2.
+3. **Each collection rule.** A package breaking only C1 (invalid, and a later version of the
+   standard), only C2 (no `version`, no `license`, a licence not on the list), only C3, only
+   C4 (a file that is not UTF-8, a folder over the size limit) and only C5 is reported with
+   that rule's identifier and the build stops.
+4. **The examples and C2.** `plain-speaking` builds with no `version` or `license`. A package
+   of the same shape that is not on the examples list fails C2. An example that declares a
+   local server fails C3.
 5. **Kinds of claim.** One package of each kind gives the wording of part 3. The `individual`
    page has no evidence link.
 6. **Tools.** A package with a remote server shows its name, its address and the warning. A
@@ -777,20 +835,33 @@ Without a network:
 17. **Cold reader.** An agent given the contributing guide, the policy and the standard, and
     nothing else, writes a package that passes the submission check.
 
+18. **One folder.** A change set touching two folders under `values/` fails. So does one
+    touching a folder there and a file elsewhere. One folder alone passes, and so does a
+    change set with nothing under `values/`.
+19. **A package the checker cannot judge.** A package whose `.mcp.json` is nested too deeply
+    for the checker fails C1, the build stops, and neither the site's output nor the
+    marketplace file is written.
+20. **Addresses.** A collection with packages named `index` and `search` builds. Each has its
+    own page, and the list page is unchanged by them.
+21. **The examples' wording.** The three `organization` examples show the examples wording
+    and not the sentence about the organization's own site. A package of the same shape that
+    is not on the examples list shows the `organization` wording.
+
 With GitHub, and so with the owner's help:
 
-18. **Publishing.** After a merge to the main branch that changes `values/`, the browser at
+22. **Publishing.** After a merge to the main branch that changes `values/`, the browser at
     its public address shows the change and the marketplace file on the main branch matches.
-19. **A submission from outside.** A pull request from a fork runs the check and can neither
+23. **A submission from outside.** A pull request from a fork runs the check and can neither
     publish nor write.
-20. **Claude Code.** The marketplace is added from the repository and a folder package
-    installs from it. Reported as not verified if it cannot be run.
+24. **Claude Code.** The marketplace is added from the repository. A folder package installs
+    from it. Installing a package that is a `VALUES.md` alone is tried, and what Claude Code
+    does is recorded. Reported as not verified if it cannot be run.
 
 Non-functional:
 
-21. **No second reading.** `browser/` contains no parser of `VALUES.md` and no marketplace
+25. **No second reading.** `browser/` contains no parser of `VALUES.md` and no marketplace
     mapping.
-22. **Honesty of the display.** No page presents a claim as verified by the collection, and no
+26. **Honesty of the display.** No page presents a claim as verified by the collection, and no
     page omits the line that listing is not endorsement.
 
 ## Risks and Mitigation
@@ -802,7 +873,8 @@ Non-functional:
 | A steward's statement disappears after listing. | Medium | Medium | The browser says the statement was checked when the package was listed. A withdrawn statement is a ground for removal when reported. |
 | A declared server turns hostile after listing. | Low | High | Hosts must ask consent before connecting, by the standard. The browser shows the address and says the collection does not watch it. Local servers are refused outright. A report leads to removal. |
 | A stranger's text runs as markup on the project's site. | Medium | High | Everything from a package is shown as text and nothing is rendered. A hostile test package is part of the tests. |
-| A pull request from outside abuses the workflow. | Low | High | The workflow on a pull request has no write access and no secret. Publishing happens only from the main branch. |
+| A pull request from outside abuses the workflow. | Low | High | The workflow on a pull request has no write access and no secret. Publishing happens only from the main branch. The one-folder rule fails a submission that also touches a workflow, the generator or the marketplace file. |
+| One bad package stops the whole collection from publishing. | Low | Medium | The check on a pull request fails first, and a maintainer does not merge a failing submission. If one reaches the main branch all the same, nothing is published and what was there before stays, until the package is fixed or removed. |
 | The policy is seen as taking sides between traditions. | Medium | Medium | The content rule is about harm to people, not about doctrine. Disagreement is not a ground for removal, and rival statements are both listed. The owner decides the wording. |
 | The automatic commit of the marketplace file is blocked by a repository setting. | Low | Low | Raised with the owner at the gate. The fallback is a maintainer running one command at merge. |
 | Review does not keep up with submissions. | Low | Medium | The check removes malformed submissions before a person looks. The owner can name more maintainers. |
