@@ -1,8 +1,8 @@
 ---
 name: catechism-answers
-description: Answers basic questions about Roman Catholic belief and practice from a bundled public-domain catechism, the Baltimore Catechism No. 2 of 1885, and points to the current Catechism of the Catholic Church for present wording and present rules. Use when the user asks what the Catholic Church teaches about God, Jesus Christ, the Church, the sacraments, the commandments, prayer, or death and judgment.
+description: Looks up what the Roman Catholic Church teaches in the current Catechism of the Catholic Church through web search, preferring the Holy See's own site, and answers with the paragraph number and a link. Use when the user asks what the Catholic Church teaches about God, Jesus Christ, the Church, the sacraments, the commandments, prayer, or death and judgment.
 license: MIT
-compatibility: Needs to read one file bundled with the skill. Needs no network access and no other tool.
+compatibility: Needs a web search tool, or a tool that can open a web page. Without either, it says so and keeps to the basics in the package's VALUES.md.
 metadata:
   status: Illustrative example. Not endorsed by any religious authority.
 ---
@@ -12,86 +12,52 @@ metadata:
 This skill is part of `example-roman-catholic`, an illustrative example package. No religious
 authority has reviewed or endorsed it.
 
-It answers basic questions about the Catholic faith from one bundled text,
-`references/baltimore-catechism-no-2.md`. That text is the Baltimore Catechism No. 2: 421
-numbered questions in 37 lessons, with the answers to all but three of them. It was prepared
-by order of the Third Plenary Council of Baltimore, approved in 1885, and is now in the
-public domain. The top of the file says where the copy came from and what was changed.
+It says how to look up a point of Catholic teaching in the current Catechism of the Catholic
+Church and how to answer from what you find. It carries no text of its own. The Catechism is
+under copyright, so it is not bundled.
+
+## Where the Catechism is
+
+The Holy See publishes the Catechism in English on its own site:
+
+https://www.vatican.va/archive/ENG0015/_INDEX.HTM
+
+That page is the table of contents. Each section is a page of its own, linked from it. The
+paragraphs are numbered from 1 to 2865, and the number is how the Catechism is cited.
+
+| Part | Subject | Paragraphs |
+|---|---|---|
+| Prologue and Part One | The profession of faith: the creed, article by article | 1 to 1065 |
+| Part Two | The celebration of the Christian mystery: the liturgy and the seven sacraments | 1066 to 1690 |
+| Part Three | Life in Christ: conscience, virtue, sin, and the Ten Commandments | 1691 to 2557 |
+| Part Four | Christian prayer, and the Lord's Prayer | 2558 to 2865 |
+
+## How to look a point up
+
+1. Search the web for the point together with the words "Catechism of the Catholic Church".
+   Prefer a result on `vatican.va`. If the search tool can be limited to one site, limit it to
+   that one.
+2. If you can open a page, open the table of contents above, find the section by its heading
+   and open that section.
+3. Read the paragraphs that answer the question. Note their numbers and the address of the
+   page.
+4. If the Holy See's site cannot be reached, another site that gives the Catechism with its
+   paragraph numbers will do. Say which site you used.
 
 ## How to answer
 
-1. Find the lesson for the question in the table below and read that lesson in the file. If
-   the table does not settle it, search the file for a key word.
-2. Give the catechism's answer in its own words, with the number of the question, and say that
-   it comes from the Baltimore Catechism No. 2 of 1885. Quote exactly. Do not reword a
-   quotation, and do not join two answers into one.
-3. If the user needs it, explain the answer in plain modern English. Keep the explanation
-   apart from the quotation, so that the user can tell the catechism's words from yours.
-4. If the catechism does not answer the question, say so. Do not stretch an answer to fit.
+1. Give the Catechism's teaching, the paragraph number and the link to the page you read.
+2. Quote only words you have in front of you from the page. Do not reword a quotation, and do
+   not join two paragraphs into one.
+3. If the user needs it, explain the teaching in plain English. Keep the explanation apart
+   from the quotation, so that the user can tell the Catechism's words from yours.
+4. If you do not find the point, say so. Do not stretch a paragraph to fit.
+5. For a rule of practice, such as fasting or who may receive Communion, give what the
+   Catechism says and point the user to their own parish.
 
-## What to say about the age of the text
+## Without web search
 
-The catechism is a text of 1885. Say so when it matters, and in these cases always:
-
-- **Names.** It says "Holy Ghost" for the Holy Spirit and "Extreme Unction" for the Anointing
-  of the Sick. Use today's names, and mention the older one when you quote.
-- **Rules of practice.** Rules have changed since 1885. The fast before Holy Communion is one
-  example: the printing this copy follows gives answers 254, 257 and 258 in a wording later
-  than 1885, so the bundled copy leaves those three answers out and marks the questions.
-  Lessons 35 and 36, on
-  the commandments of the Church, and the answers on fasting, abstinence and marriage give
-  the rules of their time. Do not give an old rule as the present one. Say that the rule may
-  have changed, and point to the current Catechism and to the user's parish.
-- **Those outside the Church.** Questions 121 and 133 are short. The current Catechism treats
-  the same matter at more length, in paragraphs 846 to 848. Give the 1885 answer as the 1885
-  answer and point to those paragraphs.
-
-## The current Catechism
-
-The Catechism of the Catholic Church is the Church's present statement of its teaching. It is
-online at https://www.vatican.va/archive/ENG0015/_INDEX.HTM. It is under copyright, so it is
-not bundled with this skill. Point the user to it for present wording. Do not quote it from
-memory as if the wording were exact. If you can open the page in this conversation, quote
-from the page and give the paragraph number.
-
-## Lessons
-
-| Lesson | Subject | Questions |
-|---|---|---|
-| 1 | The end of man | 1 to 12 |
-| 2 | God and His perfections | 13 to 20 |
-| 3 | The unity and Trinity of God | 21 to 31 |
-| 4 | Creation | 32 to 38 |
-| 5 | Our first parents and the Fall | 39 to 50 |
-| 6 | Sin and its kinds | 51 to 59 |
-| 7 | The Incarnation and Redemption | 60 to 77 |
-| 8 | Our Lord's Passion, death, Resurrection and Ascension | 78 to 93 |
-| 9 | The Holy Ghost and His descent upon the Apostles | 94 to 101 |
-| 10 | The effects of the Redemption | 102 to 113 |
-| 11 | The Church | 114 to 121 |
-| 12 | The attributes and marks of the Church | 122 to 135 |
-| 13 | The sacraments in general | 136 to 151 |
-| 14 | Baptism | 152 to 165 |
-| 15 | Confirmation | 166 to 175 |
-| 16 | The gifts and fruits of the Holy Ghost | 176 to 186 |
-| 17 | The sacrament of Penance | 187 to 194 |
-| 18 | Contrition | 195 to 207 |
-| 19 | Confession | 208 to 223 |
-| 20 | The manner of making a good confession | 224 to 230 |
-| 21 | Indulgences | 231 to 237 |
-| 22 | The Holy Eucharist | 238 to 250 |
-| 23 | The ends for which the Holy Eucharist was instituted | 251 to 261 |
-| 24 | The sacrifice of the Mass | 262 to 270 |
-| 25 | Extreme Unction and Holy Orders | 271 to 281 |
-| 26 | Matrimony | 282 to 291 |
-| 27 | The sacramentals | 292 to 302 |
-| 28 | Prayer | 303 to 309 |
-| 29 | The commandments of God | 310 to 314 |
-| 30 | The first commandment | 315 to 330 |
-| 31 | The first commandment: the honor and invocation of saints | 331 to 344 |
-| 32 | From the second to the fourth commandment | 345 to 360 |
-| 33 | From the fourth to the seventh commandment | 361 to 372 |
-| 34 | From the seventh to the end of the tenth commandment | 373 to 388 |
-| 35 | The first and second commandments of the Church | 389 to 396 |
-| 36 | The third, fourth, fifth and sixth commandments of the Church | 397 to 407 |
-| 37 | The Last Judgment and the resurrection, Hell, Purgatory and Heaven | 408 to 421 |
+If you have no web search and cannot open a page in this conversation, say so. Keep to the
+basics in the package's `VALUES.md`. Do not quote the Catechism from memory as if the wording
+were exact, and do not give a paragraph number you have not read. Point the user to the
+address above.
