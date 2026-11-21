@@ -17,3 +17,6 @@ dist/
 .DS_Store
 *.swp
 *.swo
+
+# Local secrets
+.env
