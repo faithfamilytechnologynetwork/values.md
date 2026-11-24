@@ -82,7 +82,7 @@ Facts checked for this spec. Dates here and below are in UTC.
 | The repository | Public. GitHub Pages is not enabled. | Checked on 2026-11-21 through the GitHub API. |
 | Claude Code marketplaces | The file is `.claude-plugin/marketplace.json` at the marketplace root. `name`, `owner` and `plugins` are required, and `description` is optional, with a warning from `claude plugin validate` when it is missing. A user adds a marketplace kept in a GitHub repository with `/plugin marketplace add <owner>/<repo>` and installs with `/plugin install <plugin>@<marketplace>`. An entry whose `source` is a relative path works only when the marketplace is added from a git repository. Added as a bare URL to the file, such an entry fails at install. Automatic updating is off by default. An installed plugin is fetched again only when its `version` changes. | Documentation read on 2026-11-21. |
 | The marketplace mapping | The checker's `marketplace` command, run on `values/`, prints four entries that follow part 12. A file built from them passed `claude plugin validate` in the standard's own project, and both folder packages installed from it. | Command run on 2026-11-21. The validation and installs are that project's report. |
-| What Claude Code gets from a package | A package's skills and MCP servers. Not its prompt, because Claude Code does not read `VALUES.md`. Two of the four packages are a `VALUES.md` alone, so installing them gives Claude Code nothing to use until a prompt adapter exists. The note says installing those two was not tried, so whether Claude Code installs an empty plugin or refuses is not known. The adapter belongs to issue #2 and is not built. | From the standard's compatibility note. |
+| What Claude Code gets from a package | A package's skills and MCP servers. Not its prompt, because Claude Code does not read `VALUES.md`. Two of the four packages are a `VALUES.md` alone, so installing them gives Claude Code nothing to use until a prompt adapter exists. The note says installing those two was not tried, so whether Claude Code installs an empty plugin or refuses is not known. The adapter is its own piece of work, issue #5, and is not built. | From the standard's compatibility note. |
 | The reference chatbot | The owner has decided it is hosted on the internet. Its spec is being revised, and it has no public address yet. | From issue #2. |
 
 ## Desired State
@@ -291,8 +291,12 @@ access to the provider can load.
   licence. It is changed to say that each package is under the licence its own `VALUES.md`
   names, apart from a bundled text that states its own status, and that the four examples are
   MIT. The index is a list of the repository's licences and not part of the standard's text.
-  The change is agreed with the architect first, because the standard's pull request is still
-  open.
+  The architect agreed to the change on 2026-11-21. It is made once the standard's pull
+  request has merged.
+- The standard's compatibility note gets two corrections, also agreed with the architect: it
+  says that the repository ships no marketplace file, and that installing a single-file
+  package in Claude Code was not tried. The first becomes untrue with this project and the
+  second gets an answer from it. Nothing else in the note is changed.
 
 ### 7. Names
 
@@ -418,8 +422,9 @@ The browser is in English in this version.
   submission a version, and the policy asks for a new one with each change. `plain-speaking`
   has none and cannot gain one, so a copy of it installed in Claude Code may not pick up a
   later change.
-- It carries no hooks. Getting a package's prompt into Claude Code needs the adapter of issue
-  #2. Attaching that adapter to the marketplace entries is later work (open question 5).
+- It carries no hooks. Getting a package's prompt into Claude Code needs the prompt adapter,
+  which is issue #5. Attaching that adapter to the marketplace entries is later work (open
+  question 5).
 
 ### 11. The link to the reference chatbot
 
@@ -557,8 +562,11 @@ Scope
 
 - [ ] Outside `browser/`, this project adds or changes only: the policy, the contributing
       guide, the pull request template, the workflows, the marketplace file, the root README,
-      the licence index and Codev artifacts. It changes no package in `values/` and nothing
-      else under `spec/`.
+      the licence index, two sentences of the standard's compatibility note and Codev
+      artifacts. It changes no package in `values/` and nothing else under `spec/`.
+- [ ] The compatibility note says that the repository ships a marketplace file and what
+      installing a single-file package in Claude Code does, or that this could not be tried.
+      The standard's own `consistency` check still passes.
 - [ ] `browser/` holds no reader of `VALUES.md` and no marketplace mapping of its own.
 - [ ] The generator's tests pass with the network blocked.
 
@@ -600,10 +608,19 @@ From the architect's starting notes on the issue (2026-11-21). Also fixed.
   short recommended policy, not a survey.
 - The repository is public. Review records and builder notes are not committed here.
 
+From the architect on 2026-11-21, in answer to this spec's notes. Also fixed.
+
+- The generator may live in `browser/`, a fourth directory at the root.
+- This project edits the licence index under `spec/` once pull request #4 has merged.
+- This project corrects two sentences of the standard's compatibility note (that the
+  repository ships no marketplace file, and what installing a single-file package does) and
+  nothing else in that note.
+- The Claude Code prompt adapter is its own issue, #5, and no longer part of #2.
+
 Further constraints:
 
-- The standard is not changed. The collection rules are the collection's own, and the
-  collection adds no field to `VALUES.md`.
+- No rule of the standard is changed, and neither is its specification text. The collection
+  rules are the collection's own, and the collection adds no field to `VALUES.md`.
 - Every package in `values/` stays a package exactly as the standard defines it. Nothing is
   added to a package folder for the browser's or the marketplace's benefit.
 - A folder directly inside `values/` is a package, by the checker's reading of a collection.
@@ -777,18 +794,18 @@ written.
 5. **Claude Code and the prompt.** Installing from the marketplace gives Claude Code a
    package's tools and skills and not its prompt, and for two of the four packages that is
    nothing. Recommended: publish the marketplace file now, as the issue asks, with each page
-   saying plainly what Claude Code gets, and attach issue #2's prompt adapter to the entries
-   as later work once it exists. The alternative is to leave single-file packages out of the
+   saying plainly what Claude Code gets, and attach the prompt adapter of issue #5 to the
+   entries as later work once it exists. The alternative is to leave single-file packages out of the
    marketplace until then.
 
 **Nice-to-know** (does not block)
 
 6. The form of the link to the reference chatbot. It is a setting, filled in when issue #2
    has an address.
-7. Whether the standard's compatibility note should change. It says this repository does not
-   ship a marketplace file, and that installing a single-file package was not tried. After
-   this project the first is no longer so and the second has an answer. Reported to the
-   architect, since the note is one of the standard's documents.
+7. The standard's compatibility note. It says this repository does not ship a marketplace
+   file, and that installing a single-file package was not tried. After this project the
+   first is no longer so and the second has an answer. Settled by the architect on
+   2026-11-21: this project corrects those two sentences and nothing else in the note.
 8. Whether the browser should also publish the list as a data file for other programs to
    read. Not built now. Nothing needs it yet.
 
@@ -885,7 +902,8 @@ Non-functional:
 ## References
 
 - Issue #3 (this work), with the architect's starting notes in its first comment. Issue #1
-  (the standard) and issue #2 (the reference chatbot).
+  (the standard), issue #2 (the reference chatbot) and issue #5 (the Claude Code prompt
+  adapter).
 - The standard on pull request #4: `spec/specification.md`, parts 2 (frontmatter), 7 (tools
   and consent), 9 (provenance), 11 (validity), 12 (collections, listings and the marketplace
   mapping) and 13 (security considerations). `spec/compatibility.md`, the section "A Claude
