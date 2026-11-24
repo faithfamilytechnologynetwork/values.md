@@ -152,3 +152,44 @@ Ansari project that a public demonstration may call its server.
 
 The revised spec has not been through a second review round. Porch is holding at the gate
 and has not asked for one.
+
+## 2026-11-24 — second review round on the hosted spec; the adapter leaves this project
+
+Two reviews of the hosted rewrite (Codex and Claude) asked for changes, and the architect
+consolidated them on issue #2. The owner then withdrew one of them: no consent prompt for
+visitors. The spec is revised and still at the spec-approval gate.
+
+- **The Claude Code prompt adapter is now issue #5.** Its part, criteria, scenarios, finding,
+  risks and references are out of this spec. The chatbot is the whole of this project. The
+  spec's parts after 10 are renumbered: findings are part 11, the public service part 12,
+  where it runs part 13.
+- **Consent is the operator's.** The standard accepts the user's or the operator's consent.
+  On the service the operator gives it once, by deploying the service with a package in its
+  collection. A visitor is asked nothing. A pane with a connected tool says in one line where
+  questions are sent. One consequence, stated in the spec: merging a package that declares a
+  server into `values/` is also the decision to let the service use that server.
+- **The public service is a required deliverable.** Criteria marked (service) are acceptance,
+  met on the deployed service. Only the owner can waive them. Criteria marked (live) are
+  research checks that may be reported as not verified.
+- **Free use that costs memory.** At most 100 conversations at once and 4 for one visitor. A
+  script play counts as a turn.
+- **How long a turn can take.** A turn has 240 seconds in all. A model request fails at 180.
+  The platform is asked to keep a response open for five minutes, which now covers a turn.
+- **Two value systems at one boundary.** Counts are read before any reminder is placed there.
+- **Reasoning.** Shown and recorded as received, never sent back, so it adds nothing to a
+  count or to the size of a request. To confirm on the first live tool call that the endpoint
+  does not need it back.
+- Smaller: a day is a UTC calendar day; a visitor's address is kept only as a digest keyed
+  with a secret that changes daily; user messages are the only reminder boundaries; H11 is
+  named; the checker is used from the `spec/` tree, so a deployment carries `spec/` and
+  `values/`.
+
+Held, on the architect's instruction, until the owner says whether the prompt-fade
+demonstration stays in the first version: the script, probes, recordings and control panes
+are as they were. That leaves two items of the review list open, both a sentence each: the
+room left after the long script (item 5) and whether a probe adds to the count (item 7).
+
+The standard's branch was read again. The Roman Catholic example now takes its detail from
+web search and declares no search server, so on this host that pane answers from its prompt
+and says it cannot search. Whether the host should offer search is still the owner's
+question.
